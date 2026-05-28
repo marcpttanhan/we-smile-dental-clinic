@@ -1495,20 +1495,6 @@ function ServiceCategoryScreen({ onNav, photoFilter, serviceId }) {
               <p className="ws-lead" style={{ marginTop: 22, maxWidth: 600 }}>
                 {s.longTh}
               </p>
-              <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
-                <span className="chip">
-                  <i data-lucide="tag" style={{ width: 12, height: 12 }}></i>
-                  {s.priceLabel}
-                </span>
-                <span className="chip chip-navy">
-                  <i data-lucide="clock" style={{ width: 12, height: 12 }}></i>
-                  {s.duration}
-                </span>
-                <span className="chip chip-navy">
-                  <i data-lucide="layers" style={{ width: 12, height: 12 }}></i>
-                  {s.subServices?.length || 0} {'ทางเลือก'}
-                </span>
-              </div>
             </div>
             <div className={photoFilter} style={{
               borderRadius: 28, overflow: 'hidden', aspectRatio: '4/3',
@@ -1542,26 +1528,6 @@ function ServiceCategoryScreen({ onNav, photoFilter, serviceId }) {
         </div>
       </section>
 
-      {/* Doctors who specialize */}
-      {doctors.length > 0 && (
-        <section className="ws-section" style={{ background: 'var(--ws-navy-50)' }}>
-          <div className="container">
-            <SectionHead num={2} eyebrow={'ทีมหมอเฉพาะทาง'}
-              title={`หมอที่ดูแล${s.titleTh}`}
-              total={6}
-            />
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(4, doctors.length)}, 1fr)`, gap: 20 }} className="grid-4-md-2">
-              {doctors.map((d, i) => (
-                <DoctorMiniCard key={d.id} d={d} i={i} photoFilter={photoFilter}
-                  onClick={() => onNav(`doctor:${d.id}`)} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Patient stories preview */}
-      <SuccessStoriesSection stories={SUCCESS_STORIES.slice(0, 5)} compact />
 
       <CTABand onNav={onNav} />
     </div>
