@@ -1244,10 +1244,7 @@ function Navbar({ active, onNav }) {
           <img src="assets/logo.png" alt="" style={{ width: 44, height: 44, objectFit: 'contain' }} />
           <div style={{ textAlign: 'left', lineHeight: 1 }}>
             <div style={{ font: '800 16px/1 var(--ws-font-sans)', color: 'var(--ws-navy-800)', letterSpacing: '-0.01em' }}>
-              We Smile
-            </div>
-            <div style={{ font: '500 11px/1 var(--ws-font-sans)', color: 'var(--ws-fg-3)', marginTop: 4, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-              Dental · Ladkrabang
+              We Smile Dental Clinic
             </div>
           </div>
         </button>
@@ -1832,8 +1829,11 @@ function PortfolioShowcase({ num }) {
               </div>
             )}
             <h2 className="ws-h2" style={{ margin:0 }}>
-              {'ผลงานที่'} <em className="accent-fg">{'พูดแทนเรา'}</em>
+              {'ผลงานคนไข้'}
             </h2>
+            <p className="ws-lead" style={{ marginTop:10, marginBottom:0 }}>
+              {'ผลงานที่ พูดแทนเรา'}
+            </p>
           </div>
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
             <span style={{ font:'600 13px/1 var(--ws-font-sans)', color:'var(--ws-fg-3)', marginRight:12 }}>
@@ -1848,7 +1848,7 @@ function PortfolioShowcase({ num }) {
           </div>
         </div>
         {/* Full-width image frame */}
-        <div style={{ position:'relative', borderRadius:32, overflow:'hidden', width:'100%', aspectRatio:'16/9', background:'#111', boxShadow:'var(--ws-shadow-xl)' }}>
+        <div style={{ position:'relative', borderRadius:32, overflow:'hidden', width:'100%', maxWidth:896, margin:'0 auto', aspectRatio:'16/9', background:'#111', boxShadow:'var(--ws-shadow-xl)' }}>
           <img key={safeIdx} src={images[safeIdx]} alt={'ผลงาน ' + (safeIdx + 1)}
             style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', animation:'ws-fadeIn 0.38s ease' }} />
           {/* Left arrow */}
