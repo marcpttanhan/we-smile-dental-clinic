@@ -5313,8 +5313,9 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
 function App() {
   const [screen, setScreen] = React.useState('home');
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
-  const [webData, setWebData] = React.useState(() => ({
-    portfolioImages: [...(window.PORTFOLIO_IMAGES || PORTFOLIO_IMAGES)],
+  const [webData, setWebData] = React.useState(() => {
+    const _def = {
+      portfolioImages: [...(window.PORTFOLIO_IMAGES || PORTFOLIO_IMAGES)],
     branches: window.BRANCHES.map(b => ({
       ...b,
       mapsUrl: b.mapsUrl || ('https://maps.google.com/?q=We+Smile+Dental+Clinic+' + b.name)
@@ -5373,7 +5374,16 @@ function App() {
       /* ── Legacy fields kept for safety ── */
       heroTitleEn: '', heroTitleTh: '', heroLeadEn: '', heroLeadTh: '',
     }
-  }));
+  };
+  try {
+    const _ls = localStorage.getItem('wsdc_webdata');
+    if (_ls) {
+      const _p = JSON.parse(_ls);
+      return { ..._def, ..._p, config: { ..._def.config, ...(_p.config || {}) } };
+    }
+  } catch (_e) { /* corrupted — fall through to defaults */ }
+  return _def;
+});
   window.PORTFOLIO_IMAGES = webData.portfolioImages;
   window.BRANCHES = webData.branches;
   window.SERVICES = webData.services;
@@ -5384,6 +5394,9 @@ function App() {
   React.useEffect(() => { window.toggleAdminDashboard = () => setIsAdminOpen(prev => !prev); }, []);
   React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
   React.useEffect(() => { window.scrollTo({ top: 0, behavior: 'auto' }); }, [screen]);
+  React.useEffect(() => {
+    try { localStorage.setItem('wsdc_webdata', JSON.stringify(webData)); } catch (_e) {}
+  }, [webData]);
   const onNav = (s) => setScreen(s);
   const photoFilter = 'photo-' + tweaks.photoTreatment;
   const densityClass = 'density-' + tweaks.density;
