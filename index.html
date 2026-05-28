@@ -8,6 +8,8 @@
 <link rel="stylesheet" href="styles.css">
 <link rel="icon" href="assets/logo.png">
 
+<!-- Supabase JS CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Core React CDNs -->
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
@@ -53,6 +55,20 @@
 // 1. React Hooks & Component Hoisting
 const { useState, useEffect, useRef, useCallback, useMemo, Fragment } = React;
 Object.assign(window, { useState, useEffect, useRef, useCallback, useMemo, Fragment });
+
+// 2. Supabase client — images stored in "clinic-images" public bucket
+const SUPABASE_URL = 'https://fessufmggqdpfatoibrp.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_Uj7973Ys4iFzqDig_08LBQ_9XQkM2ka';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function uploadToSupabase(file, folder) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const filePath = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const { error } = await supabaseClient.storage.from('clinic-images').upload(filePath, file, { upsert: false });
+  if (error) { console.error('[Supabase upload]', error.message); return null; }
+  const { data } = supabaseClient.storage.from('clinic-images').getPublicUrl(filePath);
+  return data.publicUrl;
+}
 
 // ==========================================
 // Tweaks Panel (tweaks-panel.jsx)
@@ -4395,34 +4411,40 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
     setSelectedDoctorIdx(prev => Math.max(0, prev - (idx <= prev ? 1 : 0)));
   };
 
-  // ── อัปโหลดรูปภาพ → Base64 ──
-  const handleDoctorImageUpload = (e, docIdx) => {
+  // ── อัปโหลดรูปภาพ → Supabase Storage ──
+  const handleDoctorImageUpload = async (e, docIdx) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => updateDoctor(docIdx, 'photo', ev.target.result);
-    reader.readAsDataURL(file);
+    const url = await uploadToSupabase(file, 'doctors');
+    if (url) updateDoctor(docIdx, 'photo', url);
   };
-  const handleBranchImageUpload = (e, branchIdx) => {
+  const handleBranchImageUpload = async (e, branchIdx) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => updateBranch(branchIdx, 'image', ev.target.result);
-    reader.readAsDataURL(file);
+    const url = await uploadToSupabase(file, 'branches');
+    if (url) updateBranch(branchIdx, 'image', url);
   };
-  const handleServiceImageUpload = (e, svcIdx) => {
+  const handleServiceImageUpload = async (e, svcIdx) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => updateService(svcIdx, 'image', ev.target.result);
-    reader.readAsDataURL(file);
+    const url = await uploadToSupabase(file, 'services');
+    if (url) updateService(svcIdx, 'image', url);
   };
-  const handlePortfolioImageUpload = (e, pIdx) => {
+  const handlePortfolioImageUpload = async (e, pIdx) => {
     const file = e.target.files[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => updatePortfolioImage(pIdx, ev.target.result);
-    reader.readAsDataURL(file);
+    const url = await uploadToSupabase(file, 'portfolio');
+    if (url) updatePortfolioImage(pIdx, url);
+  };
+  const handleDoctorPortfolioImageUpload = async (e, docIdx, pIdx) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = await uploadToSupabase(file, 'doctor-portfolio');
+    if (url) {
+      const imgs = [...(formData.doctors[docIdx].portfolioImages || [])];
+      imgs[pIdx] = url;
+      updateDoctor(docIdx, 'portfolioImages', imgs);
+    }
   };
 
   if (!isOpen) return null;
@@ -4501,7 +4523,6 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
           {/* ── LIGHT CONTENT WORKSPACE ── */}
           <div style={{ flex:1, padding:'28px 32px', overflowY:'auto', background:'#f8fafc' }}>
 
-            {/* ═══════════════════════════════════════════
             {/* ═══════════════════════════════════════════
                 TAB 1 — จัดการเนื้อหาทั่วไป (Global CMS)
             ═══════════════════════════════════════════ */}
@@ -4629,8 +4650,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
                   <div>
                     <h3 style={{ margin: 0, color: '#1e293b', fontSize: 16, fontWeight: 700 }}>🦷 จัดการบริการและราคา</h3>
                     <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>แก้ไขชื่อ คำอธิบาย ราคา และระยะเวลาของแต่ละบริการ</p>
-                  </div>
-                  <select value={selectedServiceIdx} onChange={e => setSelectedServiceIdx(Number(e.target.value))}
+                  </div> value={selectedServiceIdx} onChange={e => setSelectedServiceIdx(Number(e.target.value))}
                     style={{ ...inp, width: 'auto', padding: '8px 14px' }}>
                     {formData.services.map((s, i) => (
                       <option key={s.id} value={i}>{s.titleTh || s.title}</option>
@@ -5171,16 +5191,9 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
                       {(formData.doctors[selectedDoctorIdx].portfolioImages || []).map((imgUrl, pIdx) => (
                         <div key={pIdx} style={{ display: 'flex', gap: 8, alignItems: 'center', background: '#f8fafc', borderRadius: 10, padding: '10px 12px', border: '1.5px solid #e8edf5' }}>
                           <span style={{ fontSize: 11, color: '#475569', fontWeight: 700, flexShrink: 0, minWidth: 22 }}>#{pIdx + 1}</span>
-                          <input type="file" accept="image/*" onChange={e => {
-                            const file = e.target.files[0]; if (!file) return;
-                            const reader = new FileReader();
-                            reader.onload = ev => {
-                              const imgs = [...(formData.doctors[selectedDoctorIdx].portfolioImages || [])];
-                              imgs[pIdx] = ev.target.result;
-                              updateDoctor(selectedDoctorIdx, 'portfolioImages', imgs);
-                            };
-                            reader.readAsDataURL(file);
-                          }} style={{ ...inp, flex: '0 0 auto', width: 'auto', padding: '6px 8px', fontSize: 11 }} />
+                          <input type="file" accept="image/*"
+                            onChange={e => handleDoctorPortfolioImageUpload(e, selectedDoctorIdx, pIdx)}
+                            style={{ ...inp, flex: '0 0 auto', width: 'auto', padding: '6px 8px', fontSize: 11 }} />
                           <input type="text" value={imgUrl} placeholder="หรือใส่ URL รูปภาพ..." onChange={e => {
                             const imgs = [...(formData.doctors[selectedDoctorIdx].portfolioImages || [])];
                             imgs[pIdx] = e.target.value;
@@ -5436,3 +5449,4 @@ root.render(<App />);
 </script>
 </body>
 </html>
+
