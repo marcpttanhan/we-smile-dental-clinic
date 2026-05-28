@@ -4661,16 +4661,20 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
                   </select>
                 </div>
 
-                {/* หมวดหมู่บริการ */}
-                <div style={{ background: '#fff', border: '1.5px solid #e8edf5', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(15,23,42,0.06)' }}>
-                  <div style={{ fontSize: 10, color: '#0d9488', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 }}>
-                    ข้อมูลหมวดหมู่บริการหลัก
+                {/* ── Core Service Fields ── */}
+                <div style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:24, boxShadow:'0 1px 4px rgba(15,23,42,0.06)' }}>
+                  <div style={{ fontSize:10, color:'#0d9488', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:18 }}>
+                    ข้อมูลบริการหลัก
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', gap: 14, marginBottom: 14 }}>
-                    <div>
-                      <label style={lbl}>รหัสบริการ (ล็อก)</label>
-                      <span style={slate}>{formData.services[selectedServiceIdx].id}</span>
-                    </div>
+
+                  {/* Service ID chip */}
+                  <div style={{ marginBottom:18 }}>
+                    <label style={lbl}>รหัสบริการ (ล็อก)</label>
+                    <span style={slate}>{formData.services[selectedServiceIdx].id}</span>
+                  </div>
+
+                  {/* Title row */}
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:18 }}>
                     <div>
                       <label style={lbl}>ชื่อบริการ (ภาษาไทย)</label>
                       <input type="text" value={formData.services[selectedServiceIdx].titleTh || ''}
@@ -4682,136 +4686,66 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
                         onChange={e => updateService(selectedServiceIdx, 'title', e.target.value)} style={inp} />
                     </div>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
-                    <div>
-                      <label style={lbl}>ราคาเริ่มต้น (ตัวเลข ฿)</label>
-                      <input type="number" value={formData.services[selectedServiceIdx].priceFrom || 0}
-                        onChange={e => updateService(selectedServiceIdx, 'priceFrom', Number(e.target.value))} style={inp} />
-                    </div>
-                    <div>
-                      <label style={lbl}>ป้ายราคา (แสดงผล)</label>
-                      <input type="text" value={formData.services[selectedServiceIdx].priceLabel || ''}
-                        onChange={e => updateService(selectedServiceIdx, 'priceLabel', e.target.value)} style={inp} placeholder="From ฿ 35,000" />
-                    </div>
-                    <div>
-                      <label style={lbl}>ระยะเวลา</label>
-                      <input type="text" value={formData.services[selectedServiceIdx].duration || ''}
-                        onChange={e => updateService(selectedServiceIdx, 'duration', e.target.value)} style={inp} placeholder="12 — 30 months" />
-                    </div>
+
+                  {/* Price label */}
+                  <div style={{ marginBottom:18 }}>
+                    <label style={lbl}>ราคา / ช่วงราคา (แสดงบนการ์ด)</label>
+                    <input type="text" value={formData.services[selectedServiceIdx].priceLabel || ''}
+                      onChange={e => updateService(selectedServiceIdx, 'priceLabel', e.target.value)}
+                      style={inp} placeholder="From ฿ 35,000" />
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-                    <div>
-                      <label style={lbl}>คำอธิบายสั้น (ภาษาไทย)</label>
-                      <textarea rows={2} value={formData.services[selectedServiceIdx].blurbTh || ''}
-                        onChange={e => updateService(selectedServiceIdx, 'blurbTh', e.target.value)} style={{ ...inp, resize: 'vertical' }} />
-                    </div>
-                    <div>
-                      <label style={lbl}>คำอธิบายสั้น (English)</label>
-                      <textarea rows={2} value={formData.services[selectedServiceIdx].blurb || ''}
-                        onChange={e => updateService(selectedServiceIdx, 'blurb', e.target.value)} style={{ ...inp, resize: 'vertical' }} />
-                    </div>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-                    <div>
-                      <label style={lbl}>คำอธิบายยาว (ภาษาไทย)</label>
-                      <textarea rows={3} value={formData.services[selectedServiceIdx].longTh || ''}
-                        onChange={e => updateService(selectedServiceIdx, 'longTh', e.target.value)} style={{ ...inp, resize: 'vertical' }} />
-                    </div>
-                    <div>
-                      <label style={lbl}>คำอธิบายยาว (English)</label>
-                      <textarea rows={3} value={formData.services[selectedServiceIdx].long || ''}
-                        onChange={e => updateService(selectedServiceIdx, 'long', e.target.value)} style={{ ...inp, resize: 'vertical' }} />
-                    </div>
+
+                  {/* Description */}
+                  <div>
+                    <label style={lbl}>คำอธิบายบริการ (ภาษาไทย)</label>
+                    <textarea rows={3} value={formData.services[selectedServiceIdx].blurbTh || ''}
+                      onChange={e => updateService(selectedServiceIdx, 'blurbTh', e.target.value)}
+                      style={{ ...inp, resize:'vertical' }}
+                      placeholder="อธิบายบริการนี้ให้คนไข้เข้าใจ..." />
                   </div>
                 </div>
 
-                {/* Banner Image Upload */}
-                <div style={{ background: '#fff', border: '1.5px solid #e8edf5', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(15,23,42,0.06)' }}>
-                  <div style={{ fontSize: 10, color: '#f59e0b', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 }}>
-                    รูปภาพปกบริการ (Banner Image)
+                {/* ── Banner Image ── */}
+                <div style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:24, boxShadow:'0 1px 4px rgba(15,23,42,0.06)' }}>
+                  <div style={{ fontSize:10, color:'#f59e0b', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:18 }}>
+                    รูปภาพปกบริการ (Supabase Storage)
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, alignItems: 'start' }}>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, alignItems:'start' }}>
                     <div>
-                      <label style={lbl}>อัปโหลดรูปภาพปก (แสดงบนการ์ดบริการ)</label>
+                      <label style={lbl}>อัปโหลดรูปภาพ (อัตโนมัติบันทึกเป็น URL สาธารณะ)</label>
                       <input type="file" accept="image/*"
                         onChange={e => handleServiceImageUpload(e, selectedServiceIdx)}
                         style={{ display:'block', width:'100%', marginBottom:10, font:'13px var(--ws-font-sans)', color:'#334155' }} />
-                      <p style={{ margin:0, fontSize:11, color:'#94a3b8', lineHeight:1.5 }}>
-                        แนะนำ: ภาพแนวนอน สัดส่วน 3:2 หรือกว้างกว่า ความละเอียดขั้นต่ำ 1200x800px<br/>
-                        รองรับ JPG, PNG, WEBP — บันทึกเป็น Base64 อัตโนมัติ
+                      <p style={{ margin:0, fontSize:11, color:'#94a3b8', lineHeight:1.6 }}>
+                        แนะนำสัดส่วน 3:2 หรือกว้างกว่า ความละเอียดขั้นต่ำ 1200×800 px<br/>
+                        รองรับ JPG, PNG, WEBP — อัปโหลดไปยัง clinic-images โดยตรง
                       </p>
+                      {formData.services[selectedServiceIdx].image && (
+                        <div style={{ marginTop:10, padding:'8px 12px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:8, fontSize:11, color:'#15803d', wordBreak:'break-all', fontFamily:'monospace' }}>
+                          {formData.services[selectedServiceIdx].image}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label style={lbl}>ตัวอย่างรูปภาพ (16:9)</label>
-                      {formData.services[selectedServiceIdx].image
-                        ? (
-                          <div style={{ position:'relative', width:'100%', paddingTop:'56.25%', borderRadius:10, overflow:'hidden', border:'1.5px solid #e2e8f0' }}>
-                            <img src={formData.services[selectedServiceIdx].image}
-                              alt="preview"
-                              style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
-                            <button onClick={() => updateService(selectedServiceIdx, 'image', '')}
-                              style={{ position:'absolute', top:8, right:8, background:'rgba(0,0,0,0.55)', border:'none', borderRadius:6, color:'#fff', fontSize:11, fontWeight:700, padding:'4px 9px', cursor:'pointer', backdropFilter:'blur(4px)' }}>
-                              ลบรูป
-                            </button>
+                      {formData.services[selectedServiceIdx].image ? (
+                        <div style={{ position:'relative', width:'100%', paddingTop:'56.25%', borderRadius:10, overflow:'hidden', border:'1.5px solid #e2e8f0' }}>
+                          <img src={formData.services[selectedServiceIdx].image} alt="preview"
+                            style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+                          <button onClick={() => updateService(selectedServiceIdx, 'image', '')}
+                            style={{ position:'absolute', top:8, right:8, background:'rgba(0,0,0,0.55)', border:'none', borderRadius:6, color:'#fff', fontSize:11, fontWeight:700, padding:'4px 9px', cursor:'pointer', backdropFilter:'blur(4px)' }}>
+                            ลบรูป
+                          </button>
+                        </div>
+                      ) : (
+                        <div style={{ width:'100%', paddingTop:'56.25%', position:'relative', borderRadius:10, border:'1.5px dashed #cbd5e1', background:'#f8fafc' }}>
+                          <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6 }}>
+                            <i data-lucide="image" style={{ width:28, height:28, color:'#94a3b8' }}></i>
+                            <span style={{ fontSize:11, color:'#94a3b8', fontWeight:600 }}>ยังไม่มีรูปภาพ</span>
                           </div>
-                        ) : (
-                          <div style={{ width:'100%', paddingTop:'56.25%', position:'relative', borderRadius:10, border:'1.5px dashed #cbd5e1', background:'#f8fafc', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                            <div style={{ position:'absolute', inset:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:6 }}>
-                              <i data-lucide="image" style={{ width:28, height:28, color:'#94a3b8' }}></i>
-                              <span style={{ fontSize:11, color:'#94a3b8', fontWeight:600 }}>ยังไม่มีรูปภาพ</span>
-                            </div>
-                          </div>
-                        )
-                      }
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </div>
-
-                {/* บริการย่อย */}
-                <div>
-                  <div style={{ fontSize: 12, color: '#38bdf8', fontWeight: 700, marginBottom: 12 }}>
-                    บริการย่อย — {(formData.services[selectedServiceIdx].subServices || []).length} รายการ
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    {(formData.services[selectedServiceIdx].subServices || []).map((sub, subIdx) => (
-                      <div key={sub.id} style={{ background: '#fff', border: '1.5px solid #e8edf5', borderRadius: 12, padding: 16, boxShadow: '0 1px 3px rgba(15,23,42,0.05)' }}>
-                        <div style={{ marginBottom: 12 }}>
-                          <span style={{ display: 'inline-block', background: '#1e293b', borderRadius: 6, padding: '3px 9px', fontSize: 10, fontWeight: 700, color: '#475569', fontFamily: 'monospace' }}>
-                            [{sub.id}]
-                          </span>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-                          <div>
-                            <label style={lbl}>ชื่อบริการย่อย (ภาษาไทย)</label>
-                            <input type="text" value={sub.titleTh || ''} onChange={e => updateSubService(selectedServiceIdx, subIdx, 'titleTh', e.target.value)} style={inp} />
-                          </div>
-                          <div>
-                            <label style={lbl}>ชื่อบริการย่อย (English)</label>
-                            <input type="text" value={sub.title || ''} onChange={e => updateSubService(selectedServiceIdx, subIdx, 'title', e.target.value)} style={inp} />
-                          </div>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
-                          <div>
-                            <label style={lbl}>ป้ายราคา</label>
-                            <input type="text" value={sub.priceLabel || ''} onChange={e => updateSubService(selectedServiceIdx, subIdx, 'priceLabel', e.target.value)} style={inp} placeholder="From ฿ 95,000" />
-                          </div>
-                          <div>
-                            <label style={lbl}>ระยะเวลา</label>
-                            <input type="text" value={sub.duration || ''} onChange={e => updateSubService(selectedServiceIdx, subIdx, 'duration', e.target.value)} style={inp} placeholder="12 — 18 months" />
-                          </div>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                          <div>
-                            <label style={lbl}>คำอธิบาย (ภาษาไทย)</label>
-                            <textarea rows={2} value={sub.blurbTh || ''} onChange={e => updateSubService(selectedServiceIdx, subIdx, 'blurbTh', e.target.value)} style={{ ...inp, resize: 'vertical' }} />
-                          </div>
-                          <div>
-                            <label style={lbl}>คำอธิบาย (English)</label>
-                            <textarea rows={2} value={sub.blurb || ''} onChange={e => updateSubService(selectedServiceIdx, subIdx, 'blurb', e.target.value)} style={{ ...inp, resize: 'vertical' }} />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>
