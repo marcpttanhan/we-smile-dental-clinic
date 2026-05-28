@@ -4882,15 +4882,25 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
                 </div>
 
                 <div style={{ background: '#fff', border: '1.5px solid #e8edf5', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(15,23,42,0.06)' }}>
-                  <div style={{ fontSize: 10, color: '#0d9488', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 }}>ระบบล็อก (อ่านอย่างเดียว)</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                  <div style={{ fontSize: 10, color: '#0d9488', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 }}>รหัสและพิกัดสาขา</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
                     <div>
-                      <label style={lbl}>รหัสสาขา</label>
-                      <span style={slate}>{formData.branches[selectedBranchIdx].id}</span>
+                      <label style={lbl}>รหัสสาขา (Branch ID)</label>
+                      <input type="text" value={formData.branches[selectedBranchIdx].id || ''}
+                        onChange={e => updateBranch(selectedBranchIdx, 'id', e.target.value)}
+                        style={inp} placeholder="เช่น ladkrabang" />
                     </div>
                     <div>
-                      <label style={lbl}>พิกัดแผนที่ SVG</label>
-                      <span style={slate}>x: {formData.branches[selectedBranchIdx].pin.x} · y: {formData.branches[selectedBranchIdx].pin.y}</span>
+                      <label style={lbl}>พิกัด X (แผนที่ SVG)</label>
+                      <input type="number" value={formData.branches[selectedBranchIdx].pin?.x || 0}
+                        onChange={e => updateBranch(selectedBranchIdx, 'pin', { ...formData.branches[selectedBranchIdx].pin, x: Number(e.target.value) })}
+                        style={inp} />
+                    </div>
+                    <div>
+                      <label style={lbl}>พิกัด Y (แผนที่ SVG)</label>
+                      <input type="number" value={formData.branches[selectedBranchIdx].pin?.y || 0}
+                        onChange={e => updateBranch(selectedBranchIdx, 'pin', { ...formData.branches[selectedBranchIdx].pin, y: Number(e.target.value) })}
+                        style={inp} />
                     </div>
                   </div>
                 </div>
