@@ -2865,9 +2865,9 @@ function FloatingBadge({ top, bottom, left, right, icon, title, sub, delay }) {
   );
 }
 
-function ServicesPreview({ onNav }) {
-  const cfg = window.CLINIC_CONFIG || {};
-  const allSvcs = window.SERVICES || SERVICES;
+function ServicesPreview({ onNav, services, config }) {
+  const cfg     = config   || window.CLINIC_CONFIG || {};
+  const allSvcs = services || window.SERVICES      || SERVICES;
   const features = allSvcs.filter(s => s.feature);
   const others   = allSvcs.filter(s => !s.feature);
   const featureWithSeq = features.map((s, i) => ({ s, seq: i + 1 }));
@@ -3105,11 +3105,11 @@ function CTABand({ onNav }) {
   );
 }
 
-function HomeScreen({ onNav, photoFilter }) {
+function HomeScreen({ onNav, photoFilter, services, config }) {
   return (
     <div data-screen-label="01 Home">
       <Hero onNav={onNav} photoFilter={photoFilter} />
-      <ServicesPreview onNav={onNav} />
+      <ServicesPreview onNav={onNav} services={services} config={config} />
       <DoctorsPreview onNav={onNav} photoFilter={photoFilter} />
       <PortfolioShowcase num={4} />
       <Testimonials />
@@ -5316,7 +5316,7 @@ function App() {
   return (
     <div data-emphasis={tweaks.emphasis} className={densityClass}>
       <Navbar active={navActive} onNav={onNav} />
-      {route.kind === 'home'       && <HomeScreen {...props} />}
+      {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} />}
       {route.kind === 'services'   && <ServicesScreen {...props} />}
       {route.kind === 'doctors'    && <DoctorsScreen {...props} />}
       {route.kind === 'branches'   && <BranchesScreen {...props} />}
