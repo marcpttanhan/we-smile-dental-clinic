@@ -97,6 +97,53 @@ async function uploadToSupabase(file, folder) {
   return data.publicUrl;
 }
 
+// ── Supabase CMS sync — site_config table ──────────────────────────────────
+// Table DDL (run once in Supabase SQL editor):
+//
+//   CREATE TABLE IF NOT EXISTS site_config (
+//     id         TEXT PRIMARY KEY DEFAULT 'main',
+//     payload    JSONB            NOT NULL,
+//     updated_at TIMESTAMPTZ      DEFAULT NOW()
+//   );
+//   ALTER TABLE site_config ENABLE ROW LEVEL SECURITY;
+//   CREATE POLICY "public_read"   ON site_config FOR SELECT USING (true);
+//   CREATE POLICY "public_insert" ON site_config FOR INSERT WITH CHECK (true);
+//   CREATE POLICY "public_update" ON site_config FOR UPDATE USING (true);
+//
+const _SB_CONFIG_TABLE = 'site_config';
+const _SB_CONFIG_ID    = 'main';
+
+async function loadSiteConfigFromSupabase() {
+  try {
+    const { data, error } = await supabaseClient
+      .from(_SB_CONFIG_TABLE)
+      .select('payload')
+      .eq('id', _SB_CONFIG_ID)
+      .maybeSingle();
+    if (error) { console.warn('[Supabase load]', error.message); return null; }
+    return data ? data.payload : null;
+  } catch (e) {
+    console.warn('[Supabase load]', e.message);
+    return null;
+  }
+}
+
+async function saveSiteConfigToSupabase(payload) {
+  try {
+    const { error } = await supabaseClient
+      .from(_SB_CONFIG_TABLE)
+      .upsert(
+        { id: _SB_CONFIG_ID, payload, updated_at: new Date().toISOString() },
+        { onConflict: 'id' }
+      );
+    if (error) { console.error('[Supabase save]', error.message); return false; }
+    return true;
+  } catch (e) {
+    console.error('[Supabase save]', e.message);
+    return false;
+  }
+}
+
 // ── XSS sanitizer (security-hardening v1.0.0) ──────────────────
 // Strips script injection patterns from any string value before it
 // reaches React state or localStorage.
@@ -4829,6 +4876,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
   const [selectedServiceIdx, setSelectedServiceIdx] = useState(0);
   // Debounce flag — prevents rapid-fire multi-save spam (security-hardening v1.0.0)
   const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'ok' | 'error'
   const [isUploading, setIsUploading] = useState(false);
 
   // ── Login gatekeeper state ──────────────────────────────────────────────
@@ -4848,11 +4896,21 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (isSaving) return;
     setIsSaving(true);
-    onSave(formData);
-    setTimeout(() => setIsSaving(false), 500);
+    setSaveStatus('saving');
+    try {
+      await onSave(formData);
+      setSaveStatus('ok');
+      setTimeout(() => setSaveStatus('idle'), 2500);
+    } catch (_e) {
+      console.error('[Admin handleSave]', _e);
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 4000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // ── ฟังก์ชันอัปเดตข้อมูลทั่วไป (XSS-sanitized) ──
@@ -5305,7 +5363,9 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
               <span style={{ fontSize:11, fontWeight:600, color:'#059669' }}>Live Sync</span>
             </div>
             <button type="button" onClick={onClose} style={cancelBtnStyle}>ยกเลิก</button>
-            <button type="button" onClick={handleSave} disabled={isSaving} style={{ ...saveBtnStyle, opacity: isSaving ? 0.65 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}>{isSaving ? '⏳ กำลังบันทึก…' : '💾 บันทึกข้อมูล'}</button>
+            <button type="button" onClick={handleSave} disabled={isSaving} style={{ ...saveBtnStyle, opacity: isSaving ? 0.65 : 1, cursor: isSaving ? 'not-allowed' : 'pointer', background: saveStatus === 'ok' ? '#10b981' : saveStatus === 'error' ? '#ef4444' : undefined }}>
+              {saveStatus === 'saving' ? '⏳ กำลังบันทึก…' : saveStatus === 'ok' ? '✅ บันทึกแล้ว!' : saveStatus === 'error' ? '❌ บันทึกไม่สำเร็จ' : '💾 บันทึกข้อมูล'}
+            </button>
             <button type="button" onClick={onClose} style={{ background:'#f1f5f9', border:0, color:'#64748b', borderRadius:10, width:36, height:36, fontSize:20, cursor:'pointer', display:'grid', placeItems:'center', lineHeight:1 }}>×</button>
           </div>
         </div>
@@ -6387,6 +6447,25 @@ function App() {
   React.useEffect(() => {
     try { localStorage.setItem('wsdc_webdata', JSON.stringify(webData)); } catch (_e) {}
   }, [webData]);
+
+  // ── Remote hydration — pull canonical config from Supabase on every fresh page load.
+  // localStorage is used only as an instant first-paint cache; Supabase is the
+  // single source of truth so desktop, mobile, and iPad all see the same data.
+  React.useEffect(() => {
+    loadSiteConfigFromSupabase().then(remote => {
+      if (!remote) return; // table empty or unreachable — localStorage fallback stays
+      setWebData(prev => {
+        const _docDefaults = { specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '' };
+        const docs = (remote.doctors || prev.doctors || []).map(d => ({ ..._docDefaults, ...d }));
+        return {
+          ...prev,
+          ...remote,
+          doctors: docs,
+          config: { ...(prev.config || {}), ...(remote.config || {}) },
+        };
+      });
+    });
+  }, []); // runs once on mount — empty dep array is intentional
   const photoFilter = 'photo-' + tweaks.photoTreatment;
   const densityClass = 'density-' + tweaks.density;
   const props = { onNav, photoFilter };
@@ -6438,7 +6517,12 @@ function App() {
           isOpen={isAdminOpen}
           onClose={() => setIsAdminOpen(false)}
           webData={webData}
-          onSave={(newData) => { setWebData(newData); setIsAdminOpen(false); }}
+          onSave={async (newData) => {
+            setWebData(newData);                       // update React state + triggers localStorage cache
+            const ok = await saveSiteConfigToSupabase(newData);  // push to Supabase
+            if (!ok) throw new Error('Supabase write failed');    // surface error to handleSave
+            setIsAdminOpen(false);
+          }}
           onPreview={(doctorId, savedData) => {
             setWebData(savedData);
             setIsAdminOpen(false);

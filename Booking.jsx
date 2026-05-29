@@ -85,6 +85,8 @@ function Calendar({ value, onChange, lang }) {
 
 function BookingScreen({ onNav, lang }) {
   const isThai = lang === 'th';
+  const isMobile = useIsMobile();       // ≤ 640 px
+  const isTablet = useIsMobile(900);    // ≤ 900 px
   const [step, setStep] = useState(1);
   const [service, setService] = useState(null);
   const [doctor, setDoctor] = useState(null);
@@ -111,14 +113,14 @@ function BookingScreen({ onNav, lang }) {
 
       <section className="ws-section" style={{ paddingTop: 24, paddingBottom: 64 }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '0.7fr 1.3fr', gap: 32 }} className="grid-2-md-1">
-            {/* Sidebar — progress */}
+          <div style={{ display: 'grid', gridTemplateColumns: isTablet ? '1fr' : '0.7fr 1.3fr', gap: isMobile ? 16 : 32 }}>
+            {/* Sidebar — progress (hidden on mobile, shown above panel) */}
             <div>
               <div style={{
                 background: '#fff', border: '1px solid var(--ws-line)',
-                borderRadius: 24, padding: 24, position: 'sticky', top: 88,
+                borderRadius: 20, padding: isMobile ? 16 : 24, position: isTablet ? 'static' : 'sticky', top: 88,
               }}>
-                <div className="ws-eyebrow" style={{ marginBottom: 16 }}>
+                <div className="ws-eyebrow" style={{ marginBottom: 14 }}>
                   {isThai ? 'ขั้นตอน' : 'Your booking'}
                 </div>
                 <Step n={1} active={step === 1} done={step > 1}
@@ -134,9 +136,9 @@ function BookingScreen({ onNav, lang }) {
                   label={isThai ? 'ข้อมูลคุณ' : 'Your details'}
                   detail={info.name || (isThai ? 'ยังไม่ได้กรอก' : 'Not filled')} last />
 
-                <div style={{ marginTop: 24, padding: 18, borderRadius: 16, background: 'var(--ws-orange-50)' }}>
+                <div style={{ marginTop: 20, padding: 16, borderRadius: 14, background: 'var(--ws-orange-50)' }}>
                   <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <i data-lucide="phone" style={{ width: 18, height: 18, color: 'var(--ws-primary)', flex: 'none', marginTop: 2 }}></i>
+                    <i data-lucide="phone" style={{ width: 16, height: 16, color: 'var(--ws-primary)', flex: 'none', marginTop: 2 }}></i>
                     <div>
                       <div style={{ font: '600 13px/1.2 var(--ws-font-sans)', color: 'var(--ws-fg-1)' }}>
                         {isThai ? 'นัดทางโทรศัพท์ก็ได้' : 'Or call us directly'}
@@ -151,9 +153,11 @@ function BookingScreen({ onNav, lang }) {
             </div>
 
             {/* Main panel */}
-            <div className="booking-panel" style={{
+            <div style={{
               background: '#fff', border: '1px solid var(--ws-line)',
-              borderRadius: 32, padding: 40, minHeight: 540,
+              borderRadius: isMobile ? 20 : 32,
+              padding: isMobile ? '22px 16px' : 40,
+              minHeight: isMobile ? 'auto' : 540,
               boxShadow: 'var(--ws-shadow-md)',
             }}>
               {step === 1 && (
@@ -161,17 +165,17 @@ function BookingScreen({ onNav, lang }) {
                   <div className="ws-num" style={{ marginBottom: 14 }}>
                     01 / 04 — {isThai ? 'เลือกบริการ' : 'Choose service'}
                   </div>
-                  <h2 style={{ font: '500 28px/1.2 var(--ws-font-display)', margin: 0, color: 'var(--ws-fg-1)' }}>
+                  <h2 style={{ font: `500 ${isMobile ? '22px' : '28px'}/1.2 var(--ws-font-display)`, margin: 0, color: 'var(--ws-fg-1)' }}>
                     {isThai ? 'มาวันนี้เพื่ออะไร?' : 'What brings you in?'}
                   </h2>
-                  <div className="booking-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 32 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: isMobile ? 10 : 12, marginTop: isMobile ? 20 : 32 }}>
                     {SERVICES.map(s => (
                       <button key={s.id} onClick={() => { setService(s); setStep(2); }}
                         style={{
                           background: service?.id === s.id ? 'var(--ws-orange-50)' : '#fff',
                           border: service?.id === s.id ? '1.5px solid var(--ws-primary)' : '1.5px solid var(--ws-line)',
-                          borderRadius: 16, padding: 20, textAlign: 'left', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: 14,
+                          borderRadius: 16, padding: isMobile ? '14px 12px' : 20, textAlign: 'left', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 14,
                           transition: 'all var(--ws-dur-fast) var(--ws-ease)',
                         }}>
                         <div style={{
@@ -215,16 +219,17 @@ function BookingScreen({ onNav, lang }) {
                   <div className="ws-num" style={{ marginBottom: 14 }}>
                     02 / 04 — {isThai ? 'เลือกหมอ' : 'Choose doctor'}
                   </div>
-                  <h2 style={{ font: '500 28px/1.2 var(--ws-font-display)', margin: 0, color: 'var(--ws-fg-1)' }}>
+                  <h2 style={{ font: `500 ${isMobile ? '22px' : '28px'}/1.2 var(--ws-font-display)`, margin: 0, color: 'var(--ws-fg-1)' }}>
                     {isThai ? 'ต้องการพบหมอท่านใด?' : 'Any preference for doctor?'}
                   </h2>
-                  <div className="booking-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 32 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: isMobile ? 10 : 12, marginTop: isMobile ? 20 : 32 }}>
                     <button onClick={() => { setDoctor(null); setStep(3); }}
                       style={{
                         background: !doctor ? 'var(--ws-orange-50)' : '#fff',
                         border: '1.5px solid var(--ws-line)',
-                        borderRadius: 16, padding: 20, textAlign: 'left', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: 14, gridColumn: 'span 2',
+                        borderRadius: 16, padding: isMobile ? '14px 12px' : 20, textAlign: 'left', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: 14,
+                        gridColumn: isMobile ? 'auto' : 'span 2',
                       }}>
                       <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--ws-navy-50)', color: 'var(--ws-navy-800)', display: 'grid', placeItems: 'center', flex: 'none' }}>
                         <i data-lucide="users" style={{ width: 20, height: 20 }}></i>
@@ -243,7 +248,7 @@ function BookingScreen({ onNav, lang }) {
                         style={{
                           background: doctor?.name === d.name ? 'var(--ws-orange-50)' : '#fff',
                           border: doctor?.name === d.name ? '1.5px solid var(--ws-primary)' : '1.5px solid var(--ws-line)',
-                          borderRadius: 16, padding: 16, textAlign: 'left', cursor: 'pointer',
+                          borderRadius: 16, padding: isMobile ? '14px 12px' : 16, textAlign: 'left', cursor: 'pointer',
                           display: 'flex', alignItems: 'center', gap: 12,
                         }}>
                         <div style={{

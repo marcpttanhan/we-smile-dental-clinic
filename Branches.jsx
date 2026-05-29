@@ -2,6 +2,8 @@
 
 function BranchesScreen({ onNav, lang, photoFilter }) {
   const isThai = lang === 'th';
+  const isMobile = useIsMobile();       // ≤ 640 px
+  const isTablet = useIsMobile(900);    // ≤ 900 px
   const [activeBranch, setActiveBranch] = useState(BRANCHES[0].id);
 
   return (
@@ -16,17 +18,20 @@ function BranchesScreen({ onNav, lang, photoFilter }) {
         lead={isThai ? 'เลือกสาขาที่สะดวกที่สุดสำหรับคุณ — ทุกสาขาให้บริการมาตรฐานเดียวกัน' : 'Pick the branch that\'s easiest to reach. Every We Smile clinic delivers the same standard of care.'}
       />
 
-      {/* Map + branch selector — Dermapride-inspired split */}
-      <section className="ws-section" style={{ paddingTop: 32 }}>
+      {/* Map + branch selector */}
+      <section className="ws-section" style={{ paddingTop: isTablet ? 20 : 32 }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 32, alignItems: 'stretch' }} className="grid-2-md-1">
-            {/* Big shared map — moves below branch list on mobile via CSS order */}
-            <div className="map-frame map-order-mobile" style={{ aspectRatio: '4/3', minHeight: 480 }}>
-              <BranchesMap branches={BRANCHES} activeId={activeBranch} onPick={setActiveBranch} />
-            </div>
-
-            {/* Branch list — comes first on mobile */}
-            <div className="list-order-mobile" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isTablet ? '1fr' : '1.2fr 1fr',
+            gap: isMobile ? 20 : 32,
+            alignItems: 'stretch',
+          }}>
+            {/* Branch list — always first on mobile via JS order */}
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: 10,
+              order: isTablet ? 1 : 2,
+            }}>
               {BRANCHES.map((b, i) => (
                 <BranchListItem
                   key={b.id}
@@ -38,6 +43,15 @@ function BranchesScreen({ onNav, lang, photoFilter }) {
                   index={i + 1}
                 />
               ))}
+            </div>
+
+            {/* Big shared map — below list on mobile */}
+            <div className="map-frame" style={{
+              aspectRatio: isMobile ? '16/9' : '4/3',
+              minHeight: isMobile ? 220 : 480,
+              order: isTablet ? 2 : 1,
+            }}>
+              <BranchesMap branches={BRANCHES} activeId={activeBranch} onPick={setActiveBranch} />
             </div>
           </div>
         </div>

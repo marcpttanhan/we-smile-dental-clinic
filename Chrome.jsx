@@ -260,4 +260,16 @@ function LineBubble() {
   );
 }
 
-Object.assign(window, { Navbar, Footer, SectionHead, Stat, LineBubble, NAV_LINKS });
+// Reactive hook — returns true whenever viewport width ≤ bp (default 640px).
+// Works across all JSX files because it's exported to window.
+function useIsMobile(bp = 640) {
+  const [is, setIs] = useState(() => window.innerWidth <= bp);
+  useEffect(() => {
+    const h = () => setIs(window.innerWidth <= bp);
+    window.addEventListener('resize', h, { passive: true });
+    return () => window.removeEventListener('resize', h);
+  }, [bp]);
+  return is;
+}
+
+Object.assign(window, { Navbar, Footer, SectionHead, Stat, LineBubble, NAV_LINKS, useIsMobile });
