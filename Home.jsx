@@ -3,7 +3,7 @@
 function Hero({ onNav, lang, photoFilter }) {
   const isThai = lang === 'th';
   return (
-    <section style={{ padding: '32px 32px 64px', position: 'relative' }}>
+    <section className="hero-section" style={{ padding: '32px 32px 64px', position: 'relative' }}>
       <div style={{
         maxWidth: 1200, margin: '0 auto',
         display: 'grid', gridTemplateColumns: '1.05fr 1fr', gap: 64, alignItems: 'center',
@@ -34,7 +34,7 @@ function Hero({ onNav, lang, photoFilter }) {
               063-879-8448
             </a>
           </div>
-          <div className="rise rise-4" style={{ display: 'flex', gap: 56, marginTop: 64, paddingTop: 32, borderTop: '1px solid var(--ws-line)' }}>
+          <div className="rise rise-4 hero-stat-strip" style={{ display: 'flex', gap: 56, marginTop: 64, paddingTop: 32, borderTop: '1px solid var(--ws-line)' }}>
             <Stat n="12+" label={isThai ? 'ปีที่ดูแล' : 'Years caring'} />
             <Stat n="8,400" label={isThai ? 'รอยยิ้ม' : 'Smiles given'} />
             <Stat n="4.9★" label={isThai ? 'คะแนนกูเกิล' : 'Google rating'} />
@@ -42,18 +42,18 @@ function Hero({ onNav, lang, photoFilter }) {
         </div>
 
         <div style={{ position: 'relative' }}>
-          <div className={photoFilter} style={{
+          <div className={`${photoFilter} hero-img-wrap`} style={{
             borderRadius: 32, overflow: 'hidden', boxShadow: 'var(--ws-shadow-xl)',
             aspectRatio: '4/5', backgroundImage: 'url(assets/hero.webp)',
             backgroundSize: 'cover', backgroundPosition: 'center',
           }} />
-          <FloatingBadge top={32} right={-24} icon="shield-check"
+          <FloatingBadge className="hero-badge" top={32} right={-24} icon="shield-check"
             title={isThai ? 'ทันตแพทย์เฉพาะทาง' : 'Specialists'}
             sub={isThai ? 'รับรองโดยสมาคม' : 'Board-certified'} />
-          <FloatingBadge bottom={56} left={-32} icon="message-circle"
+          <FloatingBadge className="hero-badge" bottom={56} left={-32} icon="message-circle"
             title="LINE @wesmiledc1"
             sub={isThai ? 'ตอบภายใน 1 ชม.' : 'Reply within 1h'} />
-          <FloatingBadge bottom={-12} right={36} icon="sparkles"
+          <FloatingBadge className="hero-badge" bottom={-12} right={36} icon="sparkles"
             title="From ฿ 35,000"
             sub={isThai ? 'จัดฟันแบบใส' : 'Clear aligners'} />
         </div>
@@ -62,9 +62,9 @@ function Hero({ onNav, lang, photoFilter }) {
   );
 }
 
-function FloatingBadge({ top, bottom, left, right, icon, title, sub }) {
+function FloatingBadge({ top, bottom, left, right, icon, title, sub, className }) {
   return (
-    <div style={{
+    <div className={className || ''} style={{
       position: 'absolute',
       top: top ?? 'auto', bottom: bottom ?? 'auto',
       left: left ?? 'auto', right: right ?? 'auto',
@@ -94,10 +94,22 @@ function ServicesPreview({ onNav, lang }) {
   return (
     <section className="ws-section" style={{ background: 'transparent' }}>
       <div className="container">
-        <SectionHead num={1}
+        <SectionHead num={1} align="stacked"
           eyebrow={isThai ? WHAT_WE_DO.eyebrowTh : WHAT_WE_DO.eyebrow}
-          title={isThai ? WHAT_WE_DO.titleTh : WHAT_WE_DO.title}
-          lead={isThai ? WHAT_WE_DO.leadTh : WHAT_WE_DO.lead} />
+          title={isThai ? WHAT_WE_DO.titleTh : WHAT_WE_DO.title} />
+        <p className="services-premium-lead" style={{
+          font: '500 clamp(16px, 2.2vw, 22px)/1.65 var(--ws-font-display)',
+          color: 'var(--ws-fg-2)',
+          letterSpacing: '-0.01em',
+          margin: '-24px 0 48px',
+          maxWidth: 680,
+          borderLeft: '3px solid var(--ws-primary)',
+          paddingLeft: 20,
+        }}>
+          {isThai
+            ? 'บริการของเรา ปลอดภัย สะอาด ถูกหลัก โดยทันตแพทย์เฉพาะทาง'
+            : WHAT_WE_DO.lead}
+        </p>
 
         {/* Feature row: 3 large tiles */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 20 }} className="grid-3-md-1">
@@ -204,29 +216,34 @@ function DoctorCardSmall({ d, i, lang, photoFilter, onClick }) {
 function Testimonials({ lang }) {
   const isThai = lang === 'th';
   return (
-    <section className="ws-section">
+    <section className="ws-section dot-grid-bg">
       <div className="container">
-        <SectionHead num={3} eyebrow={isThai ? 'เสียงจากคนไข้' : 'Patient stories'}
+        <SectionHead num={3} align="stacked" eyebrow={isThai ? 'เสียงจากคนไข้' : 'Patient stories'}
           title={isThai ? 'สิ่งที่คนไข้ของเราพูดถึงเรา' : 'What our patients are saying.'} />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24 }} className="grid-3-md-1">
+        <div className="testimonials-grid grid-3-md-1" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
           {TESTIMONIALS.map((t, i) => (
-            <div key={i} className="card-hover" style={{
-              background: '#fff', borderRadius: 24, padding: 32,
+            <div key={i} className={`card-hover testimonial-card testimonial-card-mobile${i === 1 ? ' testimonial-card-accent' : ''}`} style={{
+              background: '#fff', borderRadius: 24, padding: 28,
               border: '1px solid var(--ws-line)', boxShadow: 'var(--ws-shadow-sm)',
-              display: 'flex', flexDirection: 'column', gap: 18,
+              display: 'flex', flexDirection: 'column', gap: 16,
             }}>
               <div style={{ display: 'flex', gap: 3, color: 'var(--ws-primary)' }}>
                 {Array.from({ length: t.rating }).map((_, j) => (
-                  <i key={j} data-lucide="star" style={{ width: 18, height: 18, fill: 'currentColor' }}></i>
+                  <i key={j} data-lucide="star" style={{ width: 16, height: 16, fill: 'currentColor' }}></i>
                 ))}
               </div>
               <p style={{
                 margin: 0,
-                font: `500 ${i === 1 ? '17px' : '17px'}/1.6 var(--ws-font-display)`,
-                color: 'var(--ws-fg-2)', textWrap: 'pretty', flex: 1,
+                font: '500 16px/1.7 var(--ws-font-display)',
+                color: i === 1 ? 'rgba(255,255,255,0.9)' : 'var(--ws-fg-2)',
+                textWrap: 'pretty', flex: 1,
                 fontStyle: 'italic',
-              }}>"{t.q}"</p>
-              <div style={{ font: '600 13px/1 var(--ws-font-sans)', color: 'var(--ws-fg-1)' }}>{t.a}</div>
+              }}>"{isThai ? t.qTh ?? t.q : t.q}"</p>
+              <div style={{
+                font: '600 12px/1 var(--ws-font-sans)',
+                color: i === 1 ? 'rgba(255,255,255,0.7)' : 'var(--ws-fg-1)',
+                paddingTop: 12, borderTop: `1px solid ${i === 1 ? 'rgba(255,255,255,0.15)' : 'var(--ws-line)'}`,
+              }}>{t.a}</div>
             </div>
           ))}
         </div>
@@ -282,7 +299,7 @@ function FAQPreview({ onNav, lang }) {
 function CTABand({ onNav, lang }) {
   const isThai = lang === 'th';
   return (
-    <section style={{ padding: '0 32px 96px' }}>
+    <section className="cta-band-section" style={{ padding: '0 32px 96px' }}>
       <div className="container">
         <div style={{
           borderRadius: 40,
@@ -290,7 +307,7 @@ function CTABand({ onNav, lang }) {
           color: '#fff', padding: '80px 64px',
           display: 'grid', gridTemplateColumns: '1.3fr 1fr', alignItems: 'center', gap: 56,
           position: 'relative', overflow: 'hidden',
-        }} className="grid-2-md-1">
+        }} className="grid-2-md-1 cta-band-inner">
           {/* Glowing blob */}
           <div style={{
             position: 'absolute', right: -100, top: -100,
@@ -320,17 +337,17 @@ function CTABand({ onNav, lang }) {
               {isThai ? 'บอกเป้าหมายรอยยิ้มของคุณ — เราจะอธิบายตัวเลือกทุกแบบ พร้อมราคา' : 'Tell us about your smile goals. We\'ll walk through every option, costs included.'}
             </p>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'relative' }}>
-            <button onClick={() => onNav('booking')} className="btn btn-primary" style={{ padding: '20px 28px', fontSize: 16 }}>
+          <div className="cta-actions" style={{ display: 'flex', flexDirection: 'column', gap: 12, position: 'relative' }}>
+            <button onClick={() => onNav('booking')} className="btn btn-primary" style={{ padding: '18px 24px', fontSize: 15 }}>
               <i data-lucide="calendar-check" style={{ width: 18, height: 18 }}></i>
               {isThai ? 'นัดหมายเลย' : 'Book Appointment'}
             </button>
-            <button className="btn btn-line" style={{ padding: '19px 28px', fontSize: 16, borderRadius: 14 }}>
+            <button className="btn btn-line" style={{ padding: '17px 24px', fontSize: 15, borderRadius: 14 }}>
               <i data-lucide="message-circle" style={{ width: 18, height: 18 }}></i>
               {isThai ? 'แชต LINE @wesmiledc1' : 'Chat on LINE @wesmiledc1'}
             </button>
             <a href="tel:0638798448" className="btn" style={{
-              padding: '19px 28px', fontSize: 16, borderRadius: 14,
+              padding: '17px 24px', fontSize: 15, borderRadius: 14,
               background: 'rgba(255,255,255,.08)', color: '#fff',
               border: '1px solid rgba(255,255,255,.2)', textDecoration: 'none',
             }}>

@@ -404,6 +404,69 @@ body {
   .grid-3-md-1 { grid-template-columns: 1fr !important; }
   .grid-2-md-1 { grid-template-columns: 1fr !important; }
   .grid-4-md-2 { grid-template-columns: repeat(2, 1fr) !important; }
+  .container, .container-narrow { padding: 0 20px !important; }
+  .ws-section { padding: 72px 20px !important; }
+  .section-head { gap: 16px; margin-bottom: 48px; }
+}
+
+/* ============================================================
+   Mobile-First Overrides — ≤640px (phones)
+   ============================================================ */
+@media (max-width: 640px) {
+  /* Global spacing */
+  .container, .container-narrow { padding: 0 16px !important; }
+  .ws-section { padding: 56px 16px !important; }
+  .section-head { gap: 10px; margin-bottom: 36px; }
+
+  /* Hero */
+  .hero-section { padding: 20px 16px 40px !important; }
+  .hero-img-wrap { aspect-ratio: 4/3 !important; max-height: 280px !important; border-radius: 20px !important; }
+  .hero-badge { display: none !important; }
+  .hero-stat-strip { gap: 24px !important; margin-top: 36px !important; }
+
+  /* Services premium lead text */
+  .services-premium-lead {
+    font-size: 18px !important;
+    line-height: 1.6 !important;
+    padding: 16px 0 0 !important;
+    letter-spacing: 0 !important;
+  }
+
+  /* Testimonials stacked cards */
+  .testimonial-card-mobile { padding: 22px 18px !important; }
+
+  /* CTA Band */
+  .cta-band-inner {
+    padding: 40px 20px !important;
+    border-radius: 24px !important;
+  }
+
+  /* Branches: map stacks below branch list */
+  .map-order-mobile { order: 2 !important; min-height: 240px !important; aspect-ratio: 16/9 !important; }
+  .list-order-mobile { order: 1 !important; }
+
+  /* Booking modal grids → 1 col, reset any span overrides */
+  .booking-grid { grid-template-columns: 1fr !important; }
+  .booking-grid > * { grid-column: auto !important; }
+  .booking-panel { padding: 22px 16px !important; border-radius: 20px !important; }
+
+  /* Doctor cards on small phones */
+  .grid-4-md-2 { grid-template-columns: 1fr !important; }
+
+  /* CTA section outer padding */
+  .cta-band-section { padding: 0 16px 64px !important; }
+
+  /* CTA heading scale */
+  .cta-band-inner h2 { font-size: clamp(26px, 7vw, 40px) !important; }
+
+  /* CTA sub-text */
+  .cta-band-inner p { font-size: 14px !important; }
+
+  /* FAQ */
+  .faq-q { font-size: 16px !important; }
+
+  /* DoctorsPreview section head */
+  .doctors-preview-section .section-head-stacked { margin-bottom: 28px; }
 }
 
 /* ============================================================

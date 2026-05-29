@@ -8,7 +8,11 @@ function BranchesScreen({ onNav, lang, photoFilter }) {
     <div data-screen-label="04 Branches">
       <PageHeader
         eyebrow={isThai ? 'สี่สาขาทั่วกรุงเทพฯ' : 'Four locations across Bangkok'}
-        title={isThai ? <>คลินิกที่ <em className="accent-fg">ใกล้คุณ</em> เสมอ</> : <>A clinic that's <em className="accent-fg">always close</em>.</>}
+        title={isThai
+          ? <span style={{ fontSize: 'clamp(26px, 5vw, 72px)', display: 'block', lineHeight: 1.1 }}>
+              4 สาขา <em className="accent-fg" style={{ fontStyle: 'normal' }}>มาตรฐาน เดียว</em>
+            </span>
+          : <>A clinic that's <em className="accent-fg">always close</em>.</>}
         lead={isThai ? 'เลือกสาขาที่สะดวกที่สุดสำหรับคุณ — ทุกสาขาให้บริการมาตรฐานเดียวกัน' : 'Pick the branch that\'s easiest to reach. Every We Smile clinic delivers the same standard of care.'}
       />
 
@@ -16,13 +20,13 @@ function BranchesScreen({ onNav, lang, photoFilter }) {
       <section className="ws-section" style={{ paddingTop: 32 }}>
         <div className="container">
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 32, alignItems: 'stretch' }} className="grid-2-md-1">
-            {/* Big shared map showing all branches */}
-            <div className="map-frame" style={{ aspectRatio: '4/3', minHeight: 480 }}>
+            {/* Big shared map — moves below branch list on mobile via CSS order */}
+            <div className="map-frame map-order-mobile" style={{ aspectRatio: '4/3', minHeight: 480 }}>
               <BranchesMap branches={BRANCHES} activeId={activeBranch} onPick={setActiveBranch} />
             </div>
 
-            {/* Branch list */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {/* Branch list — comes first on mobile */}
+            <div className="list-order-mobile" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {BRANCHES.map((b, i) => (
                 <BranchListItem
                   key={b.id}

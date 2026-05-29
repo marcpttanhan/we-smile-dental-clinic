@@ -116,7 +116,7 @@ function BookingScreen({ onNav, lang }) {
             <div>
               <div style={{
                 background: '#fff', border: '1px solid var(--ws-line)',
-                borderRadius: 24, padding: 24, position: 'sticky', top: 100,
+                borderRadius: 24, padding: 24, position: 'sticky', top: 88,
               }}>
                 <div className="ws-eyebrow" style={{ marginBottom: 16 }}>
                   {isThai ? 'ขั้นตอน' : 'Your booking'}
@@ -151,7 +151,7 @@ function BookingScreen({ onNav, lang }) {
             </div>
 
             {/* Main panel */}
-            <div style={{
+            <div className="booking-panel" style={{
               background: '#fff', border: '1px solid var(--ws-line)',
               borderRadius: 32, padding: 40, minHeight: 540,
               boxShadow: 'var(--ws-shadow-md)',
@@ -164,7 +164,7 @@ function BookingScreen({ onNav, lang }) {
                   <h2 style={{ font: '500 28px/1.2 var(--ws-font-display)', margin: 0, color: 'var(--ws-fg-1)' }}>
                     {isThai ? 'มาวันนี้เพื่ออะไร?' : 'What brings you in?'}
                   </h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 32 }}>
+                  <div className="booking-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 32 }}>
                     {SERVICES.map(s => (
                       <button key={s.id} onClick={() => { setService(s); setStep(2); }}
                         style={{
@@ -218,7 +218,7 @@ function BookingScreen({ onNav, lang }) {
                   <h2 style={{ font: '500 28px/1.2 var(--ws-font-display)', margin: 0, color: 'var(--ws-fg-1)' }}>
                     {isThai ? 'ต้องการพบหมอท่านใด?' : 'Any preference for doctor?'}
                   </h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 32 }}>
+                  <div className="booking-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 32 }}>
                     <button onClick={() => { setDoctor(null); setStep(3); }}
                       style={{
                         background: !doctor ? 'var(--ws-orange-50)' : '#fff',
