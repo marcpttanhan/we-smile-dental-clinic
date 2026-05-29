@@ -543,6 +543,20 @@ Object.assign(window, {
 // ============================================================
 
 // ---------- Branches ----------
+function makeDefaultDailyHours(hoursStr) {
+  const times = (hoursStr || '').match(/\d{1,2}:\d{2}/g) || ['09:00', '20:00'];
+  const o = times[0] || '09:00', c = times[1] || '20:00';
+  return [
+    { day:'mon', label:'จ',  full:'จันทร์',   open:o, close:c, isSplit:false, open2:'', close2:'' },
+    { day:'tue', label:'อ',  full:'อังคาร',   open:o, close:c, isSplit:false, open2:'', close2:'' },
+    { day:'wed', label:'พ',  full:'พุธ',      open:o, close:c, isSplit:false, open2:'', close2:'' },
+    { day:'thu', label:'พฤ', full:'พฤหัส',   open:o, close:c, isSplit:false, open2:'', close2:'' },
+    { day:'fri', label:'ศ',  full:'ศุกร์',    open:o, close:c, isSplit:false, open2:'', close2:'' },
+    { day:'sat', label:'ส',  full:'เสาร์',    open:o, close:c, isSplit:false, open2:'', close2:'' },
+    { day:'sun', label:'อา', full:'อาทิตย์', open:o, close:c, isSplit:false, open2:'', close2:'' },
+  ];
+}
+
 const BRANCHES = [
   {
     id: 'ladkrabang',
@@ -553,6 +567,7 @@ const BRANCHES = [
     address: '222/15 ถนนหลวงแพ่ง แขวงทับยาว เขตลาดกระบัง กรุงเทพฯ 10520',
     addressEn: '222/15 Luang Phaeng Rd., Lat Krabang, Bangkok 10520',
     phone: '063-879-8448',
+    lineId: '@wesmiledc1',
     hours: '09:00 — 20:00',
     hoursTh: 'เปิดทุกวัน · 09:00 — 20:00',
     landmarks: ['Near Lat Krabang ARL', '8 min to Suvarnabhumi'],
@@ -560,6 +575,7 @@ const BRANCHES = [
     // pin coords on faux 600×400 svg
     pin: { x: 0.52, y: 0.48 },
     rooms: 8,
+    dailyHours: makeDefaultDailyHours('09:00 — 20:00'),
   },
   {
     id: 'suvarnabhumi',
@@ -570,12 +586,14 @@ const BRANCHES = [
     address: '88/2 ถนนกิ่งแก้ว แขวงราชาเทวะ อ.บางพลี สมุทรปราการ 10540',
     addressEn: '88/2 King Kaeo Rd., Racha Thewa, Bang Phli, Samut Prakan 10540',
     phone: '063-879-8449',
+    lineId: '@wesmile-sv',
     hours: '10:00 — 21:00',
     hoursTh: 'เปิดทุกวัน · 10:00 — 21:00',
     landmarks: ['5 min from Suvarnabhumi terminals', 'Free valet parking'],
     landmarksTh: ['5 นาทีจากสนามบินสุวรรณภูมิ', 'มีบริการรับรถวีไอพี'],
     pin: { x: 0.66, y: 0.42 },
     rooms: 6,
+    dailyHours: makeDefaultDailyHours('10:00 — 21:00'),
   },
   {
     id: 'romklao',
@@ -586,12 +604,14 @@ const BRANCHES = [
     address: '45 ถนนร่มเกล้า แขวงคลองสามประเวศ เขตลาดกระบัง กรุงเทพฯ 10520',
     addressEn: '45 Romklao Rd., Khlong Sam Prawet, Lat Krabang, Bangkok 10520',
     phone: '063-879-8450',
+    lineId: '@wesmile-rk',
     hours: '09:00 — 19:00',
     hoursTh: 'เปิดทุกวัน · 09:00 — 19:00',
     landmarks: ['Inside Mega Lifestyle Plaza', 'BTS shuttle every 20 min'],
     landmarksTh: ['ในศูนย์ Mega Lifestyle Plaza', 'มีรถรับ-ส่ง BTS ทุก 20 นาที'],
     pin: { x: 0.36, y: 0.34 },
     rooms: 5,
+    dailyHours: makeDefaultDailyHours('09:00 — 19:00'),
   },
   {
     id: 'onnut',
@@ -602,12 +622,14 @@ const BRANCHES = [
     address: '1199 ถนนสุขุมวิท 77 แขวงพระโขนงเหนือ เขตวัฒนา กรุงเทพฯ 10110',
     addressEn: '1199 Sukhumvit 77, Phra Khanong Nuea, Watthana, Bangkok 10110',
     phone: '063-879-8451',
+    lineId: '@wesmile-on',
     hours: '11:00 — 21:00',
     hoursTh: 'เปิดทุกวัน · 11:00 — 21:00',
     landmarks: ['Connected to On Nut BTS exit 2', '24-hr secure parking'],
     landmarksTh: ['เชื่อม BTS อ่อนนุช ทางออก 2', 'ที่จอดรถปลอดภัย 24 ชม.'],
     pin: { x: 0.22, y: 0.62 },
     rooms: 4,
+    dailyHours: makeDefaultDailyHours('11:00 — 21:00'),
   },
 ];
 
@@ -2753,6 +2775,212 @@ Object.assign(window, { BranchesScreen, BranchCard, BranchesMap });
 
 
 // ==========================================
+// HomeBranchTabs — inline SPA branch viewer
+// ==========================================
+// Renders directly on the home page (Section 04/06) right after the
+// PortfolioShowcase. Replaces the separate BranchesScreen route.
+// Supports per-day hours with optional split-shift (isSplit).
+
+function HomeBranchTabs({ branches, onNav }) {
+  const liveBranches = branches && branches.length > 0 ? branches : (window.BRANCHES || BRANCHES);
+  const [activeId, setActiveId] = useState(liveBranches[0]?.id || '');
+
+  const b = liveBranches.find(br => br.id === activeId) || liveBranches[0];
+  if (!b) return null;
+
+  const dayHours = b.dailyHours && b.dailyHours.length === 7
+    ? b.dailyHours
+    : makeDefaultDailyHours(b.hours);
+
+  return (
+    <section id="section-branches" style={{
+      background: 'linear-gradient(180deg, #F8F7F4 0%, #FAFAF8 100%)',
+      paddingTop: 'clamp(64px,8vw,96px)',
+      paddingBottom: 'clamp(64px,8vw,96px)',
+      paddingLeft: 24,
+      paddingRight: 24,
+    }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+
+        {/* ── Section header ── */}
+        <div style={{ marginBottom: 40 }}>
+          <div className="ws-num" style={{ marginBottom: 14 }}>{'04 / 06 — สาขาของเรา'}</div>
+          <h2 className="ws-h2" style={{ margin: '0 0 12px' }}>
+            {'คลินิกที่ '}<em className="accent-fg" style={{ fontStyle: 'italic' }}>{'ใกล้คุณ'}</em>{' เสมอ'}
+          </h2>
+          <p style={{ margin: 0, font: '400 15px/1.65 var(--ws-font-sans)', color: 'var(--ws-fg-3)', maxWidth: 560 }}>
+            {'เลือกสาขาที่สะดวกที่สุดสำหรับคุณ — ทุกสาขาให้บริการมาตรฐานเดียวกัน'}
+          </p>
+        </div>
+
+        {/* ── Branch tab row ── */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 36 }}>
+          {liveBranches.map(br => {
+            const isActive = activeId === br.id;
+            return (
+              <button key={br.id} onClick={() => setActiveId(br.id)} style={{
+                background: isActive ? 'var(--ws-primary)' : '#fff',
+                color: isActive ? '#fff' : 'var(--ws-fg-2)',
+                border: isActive ? '1.5px solid var(--ws-primary)' : '1.5px solid var(--ws-line)',
+                borderRadius: 999,
+                padding: '10px 22px',
+                font: `${isActive ? 700 : 500} 14px/1 var(--ws-font-sans)`,
+                cursor: 'pointer',
+                transition: 'all 0.22s ease',
+                boxShadow: isActive ? '0 4px 18px rgba(232,90,20,0.28)' : 'var(--ws-shadow-sm)',
+                whiteSpace: 'nowrap',
+              }}>
+                {'สาขา'}{br.nameTh}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Content grid: left info card + right map ── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.15fr', gap: 28, alignItems: 'start' }} className="grid-2-md-1">
+
+          {/* Left: branch detail card */}
+          <div style={{
+            background: '#fff', borderRadius: 28, padding: 32,
+            boxShadow: 'var(--ws-shadow-md)', border: '1px solid var(--ws-line)',
+            display: 'flex', flexDirection: 'column', gap: 0,
+          }}>
+            {/* Branch title */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 26 }}>
+              <div style={{
+                width: 50, height: 50, borderRadius: 16, flexShrink: 0,
+                background: 'var(--ws-orange-100)', color: 'var(--ws-primary)',
+                display: 'grid', placeItems: 'center',
+              }}>
+                <i data-lucide="map-pin" style={{ width: 22, height: 22 }}></i>
+              </div>
+              <div>
+                <h3 style={{ margin: 0, font: '700 20px/1.15 var(--ws-font-display)', color: 'var(--ws-fg-1)', letterSpacing: '-0.01em' }}>
+                  {'We Smile · '}{b.nameTh}
+                </h3>
+                <span style={{
+                  display: 'inline-block', marginTop: 4,
+                  font: '600 10px/1 var(--ws-font-sans)', color: 'var(--ws-primary)',
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                }}>
+                  {b.labelTh}
+                </span>
+              </div>
+            </div>
+
+            {/* Contact info rows */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 13, marginBottom: 26 }}>
+              <BranchRow icon="map-pin">{b.address}</BranchRow>
+              <BranchRow icon="phone">
+                <a href={`tel:${(b.phone || '').replace(/-/g, '')}`}
+                  style={{ color: 'var(--ws-fg-1)', textDecoration: 'none', fontWeight: 700 }}>
+                  {b.phone}
+                </a>
+              </BranchRow>
+              {b.lineId && (
+                <BranchRow icon="message-circle">
+                  <span style={{ fontWeight: 600 }}>{'LINE: '}{b.lineId}</span>
+                </BranchRow>
+              )}
+            </div>
+
+            {/* Daily hours grid with split-shift support */}
+            <div style={{ borderTop: '1px solid var(--ws-line)', paddingTop: 22, marginBottom: 26 }}>
+              <div style={{
+                font: '700 10px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)',
+                letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14,
+              }}>
+                {'เวลาทำการรายวัน'}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 5 }}>
+                {dayHours.map((h) => (
+                  <div key={h.day} style={{
+                    background: 'var(--ws-orange-50)', borderRadius: 10,
+                    padding: '9px 4px', textAlign: 'center', minHeight: 54,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4,
+                  }}>
+                    <div style={{
+                      font: '700 10px/1 var(--ws-font-sans)', color: 'var(--ws-primary)',
+                      textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 3,
+                    }}>
+                      {h.label}
+                    </div>
+                    {h.isSplit ? (
+                      <>
+                        <div style={{ font: '600 9px/1.3 var(--ws-font-sans)', color: 'var(--ws-fg-1)' }}>
+                          {h.open}{'–'}{h.close}
+                        </div>
+                        <div style={{ width: '55%', height: 1, background: 'rgba(242,107,31,0.25)' }} />
+                        <div style={{ font: '600 9px/1.3 var(--ws-font-sans)', color: 'var(--ws-fg-1)' }}>
+                          {h.open2}{'–'}{h.close2}
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ font: '500 9px/1.4 var(--ws-font-sans)', color: 'var(--ws-fg-2)' }}>
+                        {h.open}{'–'}{h.close}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Landmark chips */}
+            {b.landmarksTh && b.landmarksTh.length > 0 && (
+              <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 24 }}>
+                {b.landmarksTh.map(l => (
+                  <span key={l} className="chip chip-navy">{l}</span>
+                ))}
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div style={{ display: 'flex', gap: 10, marginTop: 'auto' }}>
+              <button onClick={() => onNav('booking')} className="btn btn-primary"
+                style={{ flex: 1, padding: '14px 20px', fontSize: 14 }}>
+                <i data-lucide="calendar-check" style={{ width: 16, height: 16 }}></i>
+                {'นัดที่สาขา'}{b.nameTh}
+              </button>
+              <button
+                onClick={() => window.open(b.mapsUrl || `https://maps.google.com/?q=We+Smile+Dental+Clinic+${b.name}`, '_blank')}
+                className="btn btn-ghost"
+                style={{ padding: '14px 16px', fontSize: 14 }}
+                aria-label="Directions">
+                <i data-lucide="navigation" style={{ width: 16, height: 16 }}></i>
+              </button>
+            </div>
+          </div>
+
+          {/* Right: map embed or SVG fallback */}
+          <div style={{
+            borderRadius: 28, overflow: 'hidden',
+            border: '1px solid var(--ws-line)',
+            height: 520, position: 'relative',
+            boxShadow: 'var(--ws-shadow-md)',
+            background: 'var(--ws-cloud)',
+          }}>
+            {b.mapEmbed ? (
+              <iframe
+                src={b.mapEmbed}
+                width="100%" height="520"
+                style={{ border: 0, display: 'block', position: 'absolute', inset: 0 }}
+                allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"
+              />
+            ) : (
+              <SingleBranchMap b={b} />
+            )}
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+}
+
+Object.assign(window, { HomeBranchTabs, makeDefaultDailyHours });
+
+
+// ==========================================
 // Home Screen (Home.jsx)
 // ==========================================
 // Home page — hero + service preview + doctors preview + testimonials + FAQ + CTA
@@ -3093,13 +3321,14 @@ function CTABand({ onNav, config }) {
   );
 }
 
-function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonials, portfolioImages }) {
+function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonials, portfolioImages, branches }) {
   return (
     <div data-screen-label="01 Home">
       <Hero onNav={onNav} photoFilter={photoFilter} config={config} />
       <ServicesPreview onNav={onNav} services={services} config={config} />
       <DoctorsPreview onNav={onNav} photoFilter={photoFilter} config={config} doctors={doctors} />
       <PortfolioShowcase num={3} portfolioImages={portfolioImages} />
+      <HomeBranchTabs branches={branches} onNav={onNav} />
       <Testimonials config={config} testimonials={testimonials} />
       <FAQPreview onNav={onNav} />
       <CTABand onNav={onNav} config={config} />
@@ -4242,6 +4471,18 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
     });
   };
 
+  const updateBranchDayHour = (branchIdx, dayIdx, key, val) => {
+    setFormData(prev => {
+      const branches = [...prev.branches];
+      const existing = branches[branchIdx].dailyHours && branches[branchIdx].dailyHours.length === 7
+        ? branches[branchIdx].dailyHours
+        : makeDefaultDailyHours(branches[branchIdx].hours);
+      const dailyHours = existing.map((h, i) => i === dayIdx ? { ...h, [key]: val } : h);
+      branches[branchIdx] = { ...branches[branchIdx], dailyHours };
+      return { ...prev, branches };
+    });
+  };
+
   // ── ฟังก์ชันอัปเดตบริการหลัก (XSS-sanitized) ──
   const updateService = (svcIdx, key, val) => {
     setFormData(prev => {
@@ -4782,11 +5023,16 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
                     <input type="text" value={formData.branches[selectedBranchIdx].address || ''}
                       onChange={e => updateBranch(selectedBranchIdx, 'address', e.target.value)} style={inp} />
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14, marginBottom: 14 }}>
                     <div>
                       <label style={lbl}>เบอร์โทรศัพท์สาขา</label>
                       <input type="text" value={formData.branches[selectedBranchIdx].phone || ''}
                         onChange={e => updateBranch(selectedBranchIdx, 'phone', e.target.value)} style={inp} />
+                    </div>
+                    <div>
+                      <label style={lbl}>LINE ID สาขา</label>
+                      <input type="text" value={formData.branches[selectedBranchIdx].lineId || ''}
+                        onChange={e => updateBranch(selectedBranchIdx, 'lineId', e.target.value)} style={inp} placeholder="@wesmile-lk" />
                     </div>
                     <div>
                       <label style={lbl}>เวลาทำการ (ภาษาไทย)</label>
@@ -4841,6 +5087,47 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
                     </div>
                   </div>
                 </div>
+
+                {/* ── Per-day hours editor with split-shift ── */}
+                <div style={{ background: '#fff', border: '1.5px solid #e8edf5', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(15,23,42,0.06)' }}>
+                  <div style={{ fontSize: 10, color: '#ef4444', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 16 }}>⏰ เวลาทำการรายวัน (รองรับแบ่งกะ)</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {(formData.branches[selectedBranchIdx].dailyHours && formData.branches[selectedBranchIdx].dailyHours.length === 7
+                      ? formData.branches[selectedBranchIdx].dailyHours
+                      : makeDefaultDailyHours(formData.branches[selectedBranchIdx].hours)
+                    ).map((h, dayIdx) => (
+                      <div key={h.day} style={{ display: 'grid', gridTemplateColumns: '64px 1fr', gap: 12, alignItems: 'flex-start', padding: '10px 14px', background: '#f8fafc', borderRadius: 10, border: '1px solid #e2e8f0' }}>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: '#0f172a', paddingTop: 6 }}>{h.full || h.label}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, minWidth: 38 }}>กะ 1</span>
+                            <input type="time" value={h.open} onChange={e => updateBranchDayHour(selectedBranchIdx, dayIdx, 'open', e.target.value)}
+                              style={{ ...inp, width: 110, padding: '7px 10px', fontSize: 13 }} />
+                            <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>
+                            <input type="time" value={h.close} onChange={e => updateBranchDayHour(selectedBranchIdx, dayIdx, 'close', e.target.value)}
+                              style={{ ...inp, width: 110, padding: '7px 10px', fontSize: 13 }} />
+                            <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer', marginLeft: 8 }}>
+                              <input type="checkbox" checked={!!h.isSplit} onChange={e => updateBranchDayHour(selectedBranchIdx, dayIdx, 'isSplit', e.target.checked)}
+                                style={{ width: 16, height: 16, cursor: 'pointer' }} />
+                              <span style={{ fontSize: 11, fontWeight: 600, color: h.isSplit ? '#ef4444' : '#94a3b8' }}>แบ่งกะ</span>
+                            </label>
+                          </div>
+                          {h.isSplit && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: 11, color: '#ef4444', fontWeight: 600, minWidth: 38 }}>กะ 2</span>
+                              <input type="time" value={h.open2 || ''} onChange={e => updateBranchDayHour(selectedBranchIdx, dayIdx, 'open2', e.target.value)}
+                                style={{ ...inp, width: 110, padding: '7px 10px', fontSize: 13, borderColor: '#fca5a5' }} />
+                              <span style={{ color: '#94a3b8', fontSize: 12 }}>—</span>
+                              <input type="time" value={h.close2 || ''} onChange={e => updateBranchDayHour(selectedBranchIdx, dayIdx, 'close2', e.target.value)}
+                                style={{ ...inp, width: 110, padding: '7px 10px', fontSize: 13, borderColor: '#fca5a5' }} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             )}
 
@@ -5183,7 +5470,9 @@ function App() {
       portfolioImages: [...(window.PORTFOLIO_IMAGES || PORTFOLIO_IMAGES)],
     branches: window.BRANCHES.map(b => ({
       ...b,
-      mapsUrl: b.mapsUrl || ('https://maps.google.com/?q=We+Smile+Dental+Clinic+' + b.name)
+      mapsUrl: b.mapsUrl || ('https://maps.google.com/?q=We+Smile+Dental+Clinic+' + b.name),
+      lineId: b.lineId || '@wesmiledc1',
+      dailyHours: (b.dailyHours && b.dailyHours.length === 7) ? b.dailyHours : makeDefaultDailyHours(b.hours),
     })),
     services: window.SERVICES,
     doctors: window.DOCTORS,
@@ -5270,7 +5559,7 @@ function App() {
   const [pendingScroll, setPendingScroll] = React.useState(null);
 
   // Map nav ids that should smooth-scroll to home-page anchors instead of routing
-  const SCROLL_MAP = { services: 'section-services', doctors: 'section-doctors', cases: 'section-cases' };
+  const SCROLL_MAP = { services: 'section-services', doctors: 'section-doctors', cases: 'section-cases', branches: 'section-branches' };
 
   const onNav = (id) => {
     const anchorId = SCROLL_MAP[id];
@@ -5352,8 +5641,7 @@ function App() {
   return (
     <div data-emphasis={tweaks.emphasis} className={densityClass}>
       <Navbar active={navActive} onNav={onNav} />
-      {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} doctors={webData.doctors} testimonials={webData.testimonials} portfolioImages={webData.portfolioImages} />}
-      {route.kind === 'branches'   && <BranchesScreen {...props} />}
+      {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} doctors={webData.doctors} testimonials={webData.testimonials} portfolioImages={webData.portfolioImages} branches={webData.branches} />}
       {route.kind === 'booking'    && <BookingScreen {...props} />}
       {route.kind === 'contact'    && <ContactScreen {...props} config={webData.config} />}
       {route.kind === 'servicecat' && <ServiceCategoryScreen {...props} serviceId={route.categoryId} />}
