@@ -2088,7 +2088,15 @@ Object.assign(window, {
 
 function DoctorProfileScreen({ onNav, photoFilter, doctorId, doctors }) {
   const allDoctors = (doctors && doctors.length > 0) ? doctors : (window.DOCTORS || DOCTORS);
-  const d = allDoctors.find(doc => doc.id === doctorId);
+  // Routes from DoctorCardSmall use "@i" (array position) — guaranteed unique even when
+  // multiple doctors share the same custom id. Legacy named routes fall back to find().
+  let d;
+  if (typeof doctorId === 'string' && doctorId.startsWith('@')) {
+    const idx = parseInt(doctorId.slice(1), 10);
+    d = (!isNaN(idx) && idx >= 0 && idx < allDoctors.length) ? allDoctors[idx] : null;
+  } else {
+    d = allDoctors.find(doc => doc.id === doctorId) || null;
+  }
   if (!d) return null;
   const specialties = (d.specialties || []).map(id => getService(id)).filter(Boolean);
 
@@ -3179,7 +3187,11 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
           lead={cfg.doctorsLead || 'ทีมหมอทุกคนได้รับการรับรอง และอบรมเฉพาะทาง คุณจะพบหมอคนเดิมในทุกครั้งที่มา'} />
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:20 }} className="grid-4-md-2">
           {allDocs.map((d,i) => (
-            <DoctorCardSmall key={d.id || d.name} d={d} i={i} photoFilter={photoFilter} onClick={() => onNav(`doctor:${d.id}`)} />
+            <DoctorCardSmall
+              key={`doc-card-${i}`}
+              d={d} i={i} photoFilter={photoFilter}
+              onClick={() => onNav(`doctor:@${i}`)}
+            />
           ))}
         </div>
       </div>
@@ -3551,9 +3563,9 @@ function DoctorsScreen({ onNav, photoFilter, doctors }) {
           {/* Big doctor cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {liveDoctors.map((d, i) => (
-              <DoctorBigCard key={d.id || d.name || i} d={d} i={i} photoFilter={photoFilter}
+              <DoctorBigCard key={`doc-big-${i}`} d={d} i={i} photoFilter={photoFilter}
                 onBook={() => onNav('booking')}
-                onView={() => onNav(`doctor:${d.id}`)} />
+                onView={() => onNav(`doctor:@${i}`)} />
             ))}
           </div>
 
