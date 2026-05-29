@@ -3536,7 +3536,8 @@ function PageHeader({ eyebrow, title, lead }) {
   );
 }
 
-function DoctorsScreen({ onNav, photoFilter }) {
+function DoctorsScreen({ onNav, photoFilter, doctors }) {
+  const liveDoctors = (doctors && doctors.length > 0) ? doctors : (window.DOCTORS || DOCTORS);
   return (
     <div data-screen-label="03 Doctors">
       <PageHeader
@@ -3549,8 +3550,8 @@ function DoctorsScreen({ onNav, photoFilter }) {
         <div className="container">
           {/* Big doctor cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-            {DOCTORS.map((d, i) => (
-              <DoctorBigCard key={d.name} d={d} i={i} photoFilter={photoFilter}
+            {liveDoctors.map((d, i) => (
+              <DoctorBigCard key={d.id || d.name || i} d={d} i={i} photoFilter={photoFilter}
                 onBook={() => onNav('booking')}
                 onView={() => onNav(`doctor:${d.id}`)} />
             ))}
@@ -3746,7 +3747,7 @@ function AboutScreen({ onNav, photoFilter }) {
   );
 }
 
-Object.assign(window, { ServicesScreen, DoctorsScreen, AboutScreen, PageHeader });
+Object.assign(window, { ServicesScreen, DoctorsScreen, AboutScreen, PageHeader, DoctorBigCard });
 
 
 // ==========================================
@@ -4182,159 +4183,313 @@ function Field({ label, children }) {
   );
 }
 
-function ContactScreen({ onNav, config }) {
-  const [openIdx, setOpenIdx] = useState(0);
-  const cfg = config || {};
-  const phone = cfg.clinicPhone || '063-879-8448';
-  const line  = cfg.clinicLine  || '@wesmiledc1';
+function ContactScreen({ onNav, config, branches }) {
+  const cfg         = config || {};
+  const liveBranches = (branches && branches.length > 0) ? branches : (window.BRANCHES || BRANCHES);
+  const [activeId, setActiveId] = useState(liveBranches[0]?.id || '');
+  const [openIdx,  setOpenIdx]  = useState(0);
+
+  const b = liveBranches.find(br => br.id === activeId) || liveBranches[0];
+  const dayHours = b
+    ? (b.dailyHours && b.dailyHours.length === 7 ? b.dailyHours : makeDefaultDailyHours(b.hours))
+    : [];
+  const hasSplit = dayHours.some(h => h.isSplit);
 
   return (
     <div data-screen-label="06 Contact">
-      <PageHeader
-        eyebrow={'ติดต่อเรา'}
-        title={<>มาเจอเราที่ <em className="accent-fg">{cfg.contactBranchName || 'ลาดกระบัง'}</em></>}
-        lead={`${cfg.contactHours || 'เปิดทุกวัน 09:00 — 20:00'} ${cfg.contactSubtext ? '— ' + cfg.contactSubtext : ''}`}
-      />
 
-      <section className="ws-section" style={{ paddingTop: 32 }}>
-        <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }} className="grid-2-md-1">
-            {/* Contact card */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <ContactRow icon="map-pin"
-                label={'ที่อยู่'}
-                value={cfg.contactAddress || '222/15 ถนนหลวงแพ่ง แขวงทับยาว เขตลาดกระบัง กรุงเทพฯ 10520'}
-                action={'ดูแผนที่'} />
-              <ContactRow icon="clock"
-                label={'เวลาทำการ'}
-                value={cfg.contactHours || 'เปิดทุกวัน · 09:00 — 20:00'}
-                sub={cfg.contactHoursNote || 'รวมวันหยุดราชการส่วนใหญ่'} />
-              <ContactRow icon="phone"
-                label={'โทรศัพท์'}
-                value={phone}
-                action={'โทรเลย'}
-                href={`tel:${phone.replace(/-/g, '')}`} />
-              <ContactRow icon="message-circle"
-                label="LINE Official"
-                value={line}
-                action={'แชต LINE'}
-                accent="line" />
+      {/* ═══ HERO ═══════════════════════════════════════════════════════════ */}
+      <section style={{
+        padding: 'clamp(64px,8vw,104px) 32px clamp(48px,6vw,72px)',
+        background: 'linear-gradient(140deg, #FFF9F5 0%, #F4F6FF 55%, #FFF0E8 100%)',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {/* ambient glow */}
+        <div style={{
+          position: 'absolute', top: -100, right: -80, width: 520, height: 520,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(232,90,20,0.13), transparent 65%)',
+          filter: 'blur(72px)', pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: -60, left: -40, width: 380, height: 380,
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(33,53,133,0.10), transparent 65%)',
+          filter: 'blur(60px)', pointerEvents: 'none',
+        }} />
 
-              {/* Socials */}
-              <div style={{ background: '#fff', border: '1px solid var(--ws-line)', borderRadius: 24, padding: 24 }}>
-                <div className="ws-eyebrow" style={{ marginBottom: 16 }}>
-                  {'ตามเรา'}
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <SocialLink href={cfg.socialFacebook || '#'} platform="facebook" handle="Facebook" color="#1877F2" />
-                  <SocialLink href={cfg.socialInstagram || '#'} platform="instagram" handle="Instagram" color="#E4405F" />
-                  <SocialLink href={cfg.socialTikTok || '#'} platform="music-2" handle="TikTok" label="TikTok" color="#000" />
-                  <SocialLink href={cfg.socialLine || '#'} platform="message-circle" handle={line} label="LINE" color="#06C755" />
-                </div>
-              </div>
-            </div>
+        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: 'rgba(232,90,20,0.08)', borderRadius: 999,
+            padding: '6px 14px', marginBottom: 24,
+            border: '1px solid rgba(232,90,20,0.16)',
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--ws-primary)', display: 'inline-block', animation: 'ws-pulse-dot 2.2s ease-in-out infinite' }} />
+            <span style={{ font: '600 11px/1 var(--ws-font-sans)', color: 'var(--ws-primary)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              {'ติดต่อเรา'}
+            </span>
+          </div>
 
-            {/* Map */}
-            <div>
-              <div className="map-frame">
-                {/* Faux map markings */}
-                <svg viewBox="0 0 600 400" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} preserveAspectRatio="xMidYMid slice">
-                  {/* Roads */}
-                  <path d="M -50 150 Q 100 130, 250 200 T 650 280" stroke="rgba(33,53,133,0.18)" strokeWidth="14" fill="none" strokeLinecap="round" />
-                  <path d="M -50 150 Q 100 130, 250 200 T 650 280" stroke="#fff" strokeWidth="6" fill="none" strokeLinecap="round" />
-                  <path d="M 200 -50 Q 250 100, 320 220 T 400 460" stroke="rgba(33,53,133,0.12)" strokeWidth="10" fill="none" strokeLinecap="round" />
-                  <path d="M 200 -50 Q 250 100, 320 220 T 400 460" stroke="#fff" strokeWidth="4" fill="none" strokeLinecap="round" />
-                  <path d="M 400 0 L 380 400" stroke="rgba(33,53,133,0.10)" strokeWidth="8" fill="none" />
-                  <path d="M 400 0 L 380 400" stroke="#fff" strokeWidth="3" fill="none" />
-                  <path d="M 0 320 L 600 340" stroke="rgba(33,53,133,0.10)" strokeWidth="8" fill="none" />
-                  <path d="M 0 320 L 600 340" stroke="#fff" strokeWidth="3" fill="none" />
-                  {/* Building blocks */}
-                  <rect x="60" y="60" width="80" height="50" rx="6" fill="rgba(33,53,133,0.08)" />
-                  <rect x="450" y="80" width="90" height="60" rx="6" fill="rgba(33,53,133,0.08)" />
-                  <rect x="80" y="240" width="70" height="40" rx="6" fill="rgba(33,53,133,0.08)" />
-                  <rect x="500" y="350" width="80" height="50" rx="6" fill="rgba(33,53,133,0.08)" />
-                  {/* Park */}
-                  <circle cx="180" cy="320" r="40" fill="rgba(46,168,201,0.10)" />
-                </svg>
+          <h1 className="ws-h1" style={{ margin: '0 0 18px', fontSize: 'clamp(42px,5.5vw,76px)', letterSpacing: '-0.03em', lineHeight: 1.08 }}>
+            {'คลินิกที่ '}<em className="accent-fg" style={{ fontStyle: 'italic' }}>{'ใกล้คุณ'}</em>{' เสมอ'}
+          </h1>
+          <p style={{ margin: '0 0 36px', font: '400 16px/1.7 var(--ws-font-sans)', color: 'var(--ws-fg-3)', maxWidth: 540 }}>
+            {liveBranches.length}{' สาขาทั่วกรุงเทพฯ — ทุกสาขาให้บริการมาตรฐานเดียวกัน พร้อมทีมหมอเฉพาะทาง'}
+          </p>
 
-                {/* Pin */}
-                <div style={{
-                  position: 'absolute', left: '50%', top: '46%',
-                  transform: 'translate(-50%, -100%)',
+          {/* ── Branch pill tabs ── */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {liveBranches.map(br => {
+              const on = activeId === br.id;
+              return (
+                <button key={br.id} onClick={() => setActiveId(br.id)} style={{
+                  background:   on ? 'var(--ws-primary)' : 'rgba(255,255,255,0.82)',
+                  color:        on ? '#fff' : 'var(--ws-fg-2)',
+                  border:       on ? '1.5px solid var(--ws-primary)' : '1.5px solid rgba(33,53,133,0.13)',
+                  borderRadius: 999, padding: '11px 24px',
+                  font: `${on ? 700 : 500} 14px/1 var(--ws-font-sans)`,
+                  cursor: 'pointer', whiteSpace: 'nowrap',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: on
+                    ? '0 4px 20px rgba(232,90,20,0.32)'
+                    : '0 1px 6px rgba(0,0,0,0.06)',
+                  transition: 'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
                 }}>
-                  <div style={{
-                    background: 'var(--ws-primary)', color: '#fff',
-                    padding: '14px 18px', borderRadius: 16,
-                    boxShadow: 'var(--ws-shadow-lg)',
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    whiteSpace: 'nowrap',
-                  }}>
-                    <img src="assets/logo.png" alt="" style={{ width: 24, height: 24, background: '#fff', borderRadius: 6, padding: 2 }} />
-                    <div>
-                      <div style={{ font: '700 13px/1.2 var(--ws-font-sans)' }}>We Smile Dental</div>
-                      <div style={{ font: '500 11px/1 var(--ws-font-sans)', opacity: 0.9, marginTop: 3 }}>Ladkrabang Branch</div>
-                    </div>
-                  </div>
-                  <div style={{
-                    width: 14, height: 14, background: 'var(--ws-primary)',
-                    transform: 'translate(50%, -8px) rotate(45deg)',
-                    margin: '0 auto', borderBottomRightRadius: 3,
-                  }} />
-                </div>
-
-                {/* Map controls */}
-                <div style={{
-                  position: 'absolute', right: 14, top: 14,
-                  background: '#fff', borderRadius: 10,
-                  boxShadow: 'var(--ws-shadow-sm)',
-                  display: 'flex', flexDirection: 'column',
-                }}>
-                  <button style={{ width: 36, height: 36, background: 'transparent', border: 0, borderBottom: '1px solid var(--ws-line)', cursor: 'pointer', color: 'var(--ws-fg-2)' }}>
-                    <i data-lucide="plus" style={{ width: 16, height: 16 }}></i>
-                  </button>
-                  <button style={{ width: 36, height: 36, background: 'transparent', border: 0, cursor: 'pointer', color: 'var(--ws-fg-2)' }}>
-                    <i data-lucide="minus" style={{ width: 16, height: 16 }}></i>
-                  </button>
-                </div>
-
-                <div style={{
-                  position: 'absolute', left: 14, bottom: 14,
-                  background: 'rgba(255,255,255,0.92)',
-                  backdropFilter: 'blur(8px)',
-                  borderRadius: 12, padding: '10px 14px',
-                  font: '500 11px/1 var(--ws-font-sans)', color: 'var(--ws-fg-3)',
-                }}>
-                  Lat Krabang · Bangkok
-                </div>
-              </div>
-
-              <div style={{ marginTop: 16, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                <button onClick={() => {
-                  const lb = getBranch('ladkrabang');
-                  window.open(lb?.mapsUrl || 'https://maps.google.com/?q=We+Smile+Dental+Clinic+Ladkrabang', '_blank');
-                }} className="btn btn-ghost" style={{ padding: '12px 16px', fontSize: 13 }}>
-                  <i data-lucide="navigation" style={{ width: 14, height: 14 }}></i>
-                  {'นำทาง'}
+                  {'สาขา'}{br.nameTh}
                 </button>
-                <button onClick={() => onNav('booking')} className="btn btn-primary" style={{ padding: '12px 16px', fontSize: 13 }}>
-                  <i data-lucide="calendar-check" style={{ width: 14, height: 14 }}></i>
-                  {'นัดหมาย'}
-                </button>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Full FAQ */}
+      {/* ═══ BRANCH DETAIL ══════════════════════════════════════════════════ */}
+      {b && (
+        <section style={{
+          background: '#F8F7F4',
+          padding: 'clamp(44px,5.5vw,72px) 32px',
+        }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <div style={{
+              display: 'grid', gridTemplateColumns: '1fr 1.18fr',
+              gap: 28, alignItems: 'start',
+            }} className="grid-2-md-1">
+
+              {/* ── LEFT column ── */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+                {/* Identity card */}
+                <div style={{
+                  background: '#fff', borderRadius: 28, padding: '28px 32px',
+                  boxShadow: '0 2px 28px rgba(15,23,42,0.08), 0 0 0 1px rgba(15,23,42,0.04)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 26 }}>
+                    <div style={{
+                      width: 52, height: 52, borderRadius: 16, flexShrink: 0,
+                      background: 'var(--ws-orange-100)', color: 'var(--ws-primary)',
+                      display: 'grid', placeItems: 'center',
+                    }}>
+                      <i data-lucide="map-pin" style={{ width: 22, height: 22 }}></i>
+                    </div>
+                    <div>
+                      <div style={{ font: '700 21px/1.2 var(--ws-font-display)', color: 'var(--ws-fg-1)', letterSpacing: '-0.01em' }}>
+                        {'We Smile · '}{b.nameTh}
+                      </div>
+                      <span style={{
+                        display: 'inline-block', marginTop: 7,
+                        background: 'var(--ws-orange-50)', color: 'var(--ws-primary)',
+                        font: '600 10px/1 var(--ws-font-sans)', letterSpacing: '0.1em',
+                        textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999,
+                        border: '1px solid rgba(232,90,20,0.18)',
+                      }}>
+                        {b.labelTh}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <ContactInfoRow icon="map-pin" label="ที่อยู่">{b.address}</ContactInfoRow>
+                    <ContactInfoRow icon="phone" label="โทรศัพท์">
+                      <a href={`tel:${(b.phone || '').replace(/-/g,'')}`}
+                        style={{ color: 'var(--ws-fg-1)', fontWeight: 700, textDecoration: 'none',
+                                 borderBottom: '1.5px solid var(--ws-orange-200)', paddingBottom: 1 }}>
+                        {b.phone}
+                      </a>
+                    </ContactInfoRow>
+                    {b.lineId && (
+                      <ContactInfoRow icon="message-circle" label="LINE Official" last>
+                        <span style={{ fontWeight: 700, color: '#06C755' }}>{b.lineId}</span>
+                      </ContactInfoRow>
+                    )}
+                  </div>
+                </div>
+
+                {/* Hours grid card */}
+                <div style={{
+                  background: '#fff', borderRadius: 24, padding: '22px 28px',
+                  boxShadow: '0 2px 28px rgba(15,23,42,0.08), 0 0 0 1px rgba(15,23,42,0.04)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <div style={{ font: '700 11px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                      {'เวลาทำการรายวัน'}
+                    </div>
+                    {hasSplit && (
+                      <div style={{
+                        font: '600 9px/1 var(--ws-font-sans)', color: 'var(--ws-primary)',
+                        background: 'var(--ws-orange-50)', padding: '4px 10px', borderRadius: 999,
+                        border: '1px solid rgba(232,90,20,0.18)', letterSpacing: '0.06em', textTransform: 'uppercase',
+                      }}>
+                        {'แบ่งกะ'}
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 5 }}>
+                    {dayHours.map(h => (
+                      <div key={h.day} style={{
+                        background: 'linear-gradient(160deg, var(--ws-orange-50) 0%, rgba(255,248,242,0.6) 100%)',
+                        borderRadius: 11, padding: '10px 4px',
+                        textAlign: 'center', minHeight: 54,
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center', gap: 3,
+                        border: '1px solid rgba(232,90,20,0.08)',
+                      }}>
+                        <div style={{ font: '800 10px/1 var(--ws-font-sans)', color: 'var(--ws-primary)', letterSpacing: '0.04em', marginBottom: 3 }}>
+                          {h.label}
+                        </div>
+                        {h.isSplit ? (
+                          <>
+                            <div style={{ font: '600 8.5px/1.3 var(--ws-font-sans)', color: 'var(--ws-fg-1)' }}>{h.open}{'–'}{h.close}</div>
+                            <div style={{ width: '52%', height: '1px', background: 'rgba(232,90,20,0.22)' }} />
+                            <div style={{ font: '600 8.5px/1.3 var(--ws-font-sans)', color: 'var(--ws-fg-1)' }}>{h.open2}{'–'}{h.close2}</div>
+                          </>
+                        ) : (
+                          <div style={{ font: '500 9px/1.45 var(--ws-font-sans)', color: 'var(--ws-fg-2)' }}>{h.open}{'–'}{h.close}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dark social + CTA strip */}
+                <div style={{
+                  background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+                  borderRadius: 24, padding: '24px 26px',
+                  boxShadow: '0 8px 40px rgba(15,23,42,0.22)',
+                }}>
+                  <div style={{ font: '600 10px/1 var(--ws-font-sans)', color: 'rgba(255,255,255,0.38)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 14 }}>
+                    {'ช่องทางการติดต่อ'}
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
+                    <BranchSocialBtn
+                      href={cfg.socialLine || '#'}
+                      bg="#06C755" icon="message-circle"
+                      title="LINE Official"
+                      sub={b.lineId || cfg.clinicLine || '@wesmiledc1'}
+                    />
+                    <BranchSocialBtn
+                      href={cfg.socialFacebook || '#'}
+                      bg="#1877F2" icon="facebook"
+                      title="Facebook"
+                      sub={'We Smile Dental Clinic'}
+                    />
+                    <BranchSocialBtn
+                      href={cfg.socialInstagram || '#'}
+                      bg="linear-gradient(45deg,#f09433,#dc2743,#bc1888)"
+                      icon="instagram"
+                      title="Instagram"
+                      sub={'@wesmiledentalclinic'}
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                    <BranchActionBtn
+                      onClick={() => window.open(b.mapsUrl || `https://maps.google.com/?q=We+Smile+Dental+Clinic+${b.name}`, '_blank')}
+                      icon="navigation" label="นำทาง" ghost
+                    />
+                    <BranchActionBtn
+                      onClick={() => onNav('booking')}
+                      icon="calendar-check" label="นัดหมาย"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* ── RIGHT column: map + landmarks ── */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{
+                  borderRadius: 28, overflow: 'hidden', height: 520, position: 'relative',
+                  boxShadow: '0 8px 56px rgba(15,23,42,0.16), 0 0 0 1px rgba(15,23,42,0.06)',
+                  background: 'var(--ws-cloud)',
+                }}>
+                  {b.mapEmbed ? (
+                    <iframe
+                      src={b.mapEmbed}
+                      width="100%" height="520"
+                      style={{ border: 0, display: 'block', position: 'absolute', inset: 0 }}
+                      allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"
+                    />
+                  ) : (
+                    <SingleBranchMap b={b} />
+                  )}
+                </div>
+
+                {b.landmarksTh && b.landmarksTh.filter(Boolean).length > 0 && (
+                  <div style={{
+                    background: '#fff', borderRadius: 20, padding: '20px 24px',
+                    boxShadow: '0 2px 28px rgba(15,23,42,0.07), 0 0 0 1px rgba(15,23,42,0.04)',
+                  }}>
+                    <div style={{ font: '700 10px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 12 }}>
+                      {'จุดสังเกต'}
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                      {b.landmarksTh.filter(Boolean).map(l => (
+                        <span key={l} className="chip chip-navy">{l}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mini branch switcher — desktop only */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {liveBranches.filter(br => br.id !== b.id).map(br => (
+                    <button key={br.id} onClick={() => setActiveId(br.id)} style={{
+                      background: '#fff', border: '1px solid var(--ws-line)', borderRadius: 16,
+                      padding: '14px 20px', cursor: 'pointer', textAlign: 'left',
+                      display: 'flex', alignItems: 'center', gap: 14,
+                      boxShadow: '0 1px 8px rgba(15,23,42,0.05)',
+                      transition: 'all 0.2s ease',
+                    }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--ws-primary)'; e.currentTarget.style.boxShadow = '0 4px 18px rgba(232,90,20,0.14)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--ws-line)'; e.currentTarget.style.boxShadow = '0 1px 8px rgba(15,23,42,0.05)'; }}
+                    >
+                      <div style={{
+                        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                        background: 'var(--ws-orange-50)', color: 'var(--ws-primary)',
+                        display: 'grid', placeItems: 'center',
+                      }}>
+                        <i data-lucide="map-pin" style={{ width: 15, height: 15 }}></i>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ font: '600 14px/1.2 var(--ws-font-sans)', color: 'var(--ws-fg-1)' }}>{br.nameTh}</div>
+                        <div style={{ font: '500 11px/1.3 var(--ws-font-sans)', color: 'var(--ws-fg-4)', marginTop: 3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{br.address}</div>
+                      </div>
+                      <i data-lucide="arrow-right" style={{ width: 14, height: 14, color: 'var(--ws-fg-4)', flexShrink: 0 }}></i>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══ FAQ ════════════════════════════════════════════════════════════ */}
       <section className="ws-section" style={{ background: 'var(--ws-orange-50)' }}>
         <div className="container-narrow">
-          <div className="ws-num" style={{ marginBottom: 16 }}>
-            {'คำถามที่พบบ่อย'}
-          </div>
-          <h2 className="ws-h2" style={{ margin: 0, marginBottom: 32 }}>
-            {'อะไรที่คนไข้ถามเราบ่อยที่สุด'}
-          </h2>
+          <div className="ws-num" style={{ marginBottom: 16 }}>{'คำถามที่พบบ่อย'}</div>
+          <h2 className="ws-h2" style={{ margin: 0, marginBottom: 32 }}>{'อะไรที่คนไข้ถามเราบ่อยที่สุด'}</h2>
           <div>
             {FAQS.map((f, i) => (
               <div key={i} className={`faq-item ${openIdx === i ? 'open' : ''}`}>
@@ -4344,9 +4499,7 @@ function ContactScreen({ onNav, config }) {
                     <i data-lucide="plus" style={{ width: 16, height: 16 }}></i>
                   </span>
                 </button>
-                {openIdx === i && (
-                  <div className="faq-a">{f.aTh}</div>
-                )}
+                {openIdx === i && <div className="faq-a">{f.aTh}</div>}
               </div>
             ))}
           </div>
@@ -4356,58 +4509,106 @@ function ContactScreen({ onNav, config }) {
   );
 }
 
-function ContactRow({ icon, label, value, sub, action, href, accent }) {
+// ── ContactInfoRow ────────────────────────────────────────────────────────────
+function ContactInfoRow({ icon, label, children, last }) {
   return (
     <div style={{
-      background: '#fff', border: '1px solid var(--ws-line)',
-      borderRadius: 20, padding: 24,
-      display: 'flex', alignItems: 'center', gap: 18,
+      display: 'flex', alignItems: 'flex-start', gap: 14,
+      padding: '14px 0',
+      borderBottom: last ? 'none' : '1px solid var(--ws-line)',
     }}>
       <div style={{
-        width: 52, height: 52, borderRadius: 14,
-        background: accent === 'line' ? 'rgba(6,199,85,0.1)' : 'var(--ws-orange-100)',
-        color: accent === 'line' ? '#06C755' : 'var(--ws-primary)',
-        display: 'grid', placeItems: 'center', flex: 'none',
+        width: 32, height: 32, borderRadius: 9, flexShrink: 0, marginTop: 2,
+        background: 'var(--ws-orange-50)', color: 'var(--ws-primary)',
+        display: 'grid', placeItems: 'center',
       }}>
-        <i data-lucide={icon} style={{ width: 24, height: 24 }}></i>
+        <i data-lucide={icon} style={{ width: 14, height: 14 }}></i>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ font: '500 11px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>{label}</div>
-        <div style={{ font: '600 15px/1.4 var(--ws-font-sans)', color: 'var(--ws-fg-1)', textWrap: 'pretty' }}>{value}</div>
-        {sub && <div style={{ font: '500 13px/1.4 var(--ws-font-sans)', color: 'var(--ws-fg-3)', marginTop: 4 }}>{sub}</div>}
+        <div style={{
+          font: '500 10px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)',
+          letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 5,
+        }}>{label}</div>
+        <div style={{ font: '500 14px/1.6 var(--ws-font-sans)', color: 'var(--ws-fg-2)', textWrap: 'pretty' }}>
+          {children}
+        </div>
       </div>
-      {action && (
-        href ? <a href={href} className="btn btn-ghost" style={{ padding: '10px 16px', fontSize: 13, textDecoration: 'none' }}>{action}</a>
-        : <button className="btn btn-ghost" style={{ padding: '10px 16px', fontSize: 13 }}>{action}</button>
-      )}
     </div>
   );
 }
 
-function SocialLink({ href, platform, handle, label, color }) {
+// ── BranchSocialBtn ───────────────────────────────────────────────────────────
+function BranchSocialBtn({ href, bg, icon, title, sub }) {
+  const isExternal = href && !href.startsWith('tel');
   return (
-    <a href={href || '#'} target="_blank" rel="noopener noreferrer" style={{
-      display: 'flex', alignItems: 'center', gap: 10,
-      padding: '12px 14px', borderRadius: 12,
-      border: '1px solid var(--ws-line)',
-      textDecoration: 'none', color: 'var(--ws-fg-2)',
-      cursor: 'pointer',
-      transition: 'all var(--ws-dur-fast) var(--ws-ease)',
-    }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = color; e.currentTarget.style.color = color; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--ws-line)'; e.currentTarget.style.color = 'var(--ws-fg-2)'; }}>
-      <div style={{ width: 32, height: 32, borderRadius: 8, background: color, color: '#fff', display: 'grid', placeItems: 'center', flex: 'none' }}>
-        <i data-lucide={platform} style={{ width: 16, height: 16 }}></i>
+    <a
+      href={href || '#'}
+      target={isExternal ? '_blank' : '_self'}
+      rel={isExternal ? 'noopener noreferrer' : undefined}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        background: 'rgba(255,255,255,0.055)',
+        border: '1px solid rgba(255,255,255,0.09)',
+        borderRadius: 14, padding: '12px 16px',
+        textDecoration: 'none', color: '#fff',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease',
+      }}
+      onMouseEnter={e => {
+        e.currentTarget.style.background = 'rgba(255,255,255,0.115)';
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.20)';
+        e.currentTarget.style.transform = 'translateX(3px)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.background = 'rgba(255,255,255,0.055)';
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)';
+        e.currentTarget.style.transform = 'none';
+      }}
+    >
+      <div style={{
+        width: 38, height: 38, borderRadius: 10, background: bg,
+        display: 'grid', placeItems: 'center', flexShrink: 0,
+        boxShadow: '0 3px 12px rgba(0,0,0,0.28)',
+      }}>
+        <i data-lucide={icon} style={{ width: 17, height: 17, color: '#fff' }}></i>
       </div>
-      <div style={{ minWidth: 0 }}>
-        {label && <div style={{ font: '500 11px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', marginBottom: 3, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{label}</div>}
-        <div style={{ font: '600 13px/1 var(--ws-font-sans)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{handle}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ font: '700 13px/1.2 var(--ws-font-sans)', color: '#fff', marginBottom: 3 }}>{title}</div>
+        <div style={{ font: '500 11px/1 var(--ws-font-sans)', color: 'rgba(255,255,255,0.50)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</div>
       </div>
+      <i data-lucide="arrow-right" style={{ width: 13, height: 13, color: 'rgba(255,255,255,0.30)', flexShrink: 0 }}></i>
     </a>
   );
 }
 
-Object.assign(window, { BookingScreen, ContactScreen });
+// ── BranchActionBtn ───────────────────────────────────────────────────────────
+function BranchActionBtn({ onClick, icon, label, ghost }) {
+  return (
+    <button onClick={onClick} style={{
+      background: ghost ? 'rgba(255,255,255,0.08)' : 'var(--ws-primary)',
+      border: ghost ? '1px solid rgba(255,255,255,0.16)' : 'none',
+      color: '#fff', borderRadius: 12, padding: '13px 16px',
+      font: '700 13px/1 var(--ws-font-sans)', cursor: 'pointer',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+      boxShadow: ghost ? 'none' : '0 4px 18px rgba(232,90,20,0.38)',
+      transition: 'all 0.22s ease',
+    }}
+      onMouseEnter={e => {
+        e.currentTarget.style.transform = 'translateY(-2px)';
+        e.currentTarget.style.boxShadow = ghost ? '0 4px 16px rgba(0,0,0,0.18)' : '0 8px 28px rgba(232,90,20,0.52)';
+      }}
+      onMouseLeave={e => {
+        e.currentTarget.style.transform = 'none';
+        e.currentTarget.style.boxShadow = ghost ? 'none' : '0 4px 18px rgba(232,90,20,0.38)';
+      }}
+    >
+      <i data-lucide={icon} style={{ width: 14, height: 14 }}></i>
+      {label}
+    </button>
+  );
+}
+
+Object.assign(window, { BookingScreen, ContactScreen, ContactInfoRow, BranchSocialBtn, BranchActionBtn });
 
 
 // ==========================================
@@ -4451,7 +4652,7 @@ function navActiveId(screen) {
 // ==========================================
 // แดชบอร์ดผู้ดูแลระบบ (CMS Panel - ภาษาไทย)
 // ==========================================
-function AdminDashboard({ isOpen, onClose, webData, onSave }) {
+function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [formData, setFormData] = useState(() => JSON.parse(JSON.stringify(webData)));
   const [selectedBranchIdx, setSelectedBranchIdx] = useState(0);
@@ -4618,7 +4819,8 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
       const doctors = [...prev.doctors, newDoc];
       return { ...prev, doctors };
     });
-    setSelectedDoctorIdx(formData.doctors.length);
+    // Use functional form so the index is always derived from the latest state
+    setSelectedDoctorIdx(() => formData.doctors.length);
   };
   const removeDoctor = (idx) => {
     if (formData.doctors.length <= 1) return;
@@ -5156,13 +5358,19 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
                     <select value={selectedDoctorIdx} onChange={e => setSelectedDoctorIdx(Number(e.target.value))}
                       style={{ ...inp, width: 'auto', padding: '8px 14px' }}>
                       {formData.doctors.map((d, i) => (
-                        <option key={d.id} value={i}>{d.nameTh || d.name}</option>
+                        <option key={`doctor-opt-${i}`} value={i}>{d.nameTh || d.name || `แพทย์ #${i + 1}`}</option>
                       ))}
                     </select>
                     <button type="button" onClick={addDoctor} style={{
                       background: 'linear-gradient(135deg,#0d9488,#0891b2)', border: 0, color: '#fff',
                       padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
                     }}>+ เพิ่มแพทย์</button>
+                    {onPreview && formData.doctors[selectedDoctorIdx]?.id && (
+                      <button type="button" onClick={() => onPreview(formData.doctors[selectedDoctorIdx].id, formData)} style={{
+                        background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 0, color: '#fff',
+                        padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
+                      }}>👁 ดูโปรไฟล์</button>
+                    )}
                     <button type="button" onClick={() => removeDoctor(selectedDoctorIdx)} style={{
                       background: '#7f1d1d', border: 0, color: '#fca5a5',
                       padding: '9px 12px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
@@ -5659,7 +5867,7 @@ function App() {
       <Navbar active={navActive} onNav={onNav} />
       {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} doctors={webData.doctors} testimonials={webData.testimonials} portfolioImages={webData.portfolioImages} branches={webData.branches} />}
       {route.kind === 'booking'    && <BookingScreen {...props} />}
-      {route.kind === 'contact'    && <ContactScreen {...props} config={webData.config} />}
+      {route.kind === 'contact'    && <ContactScreen {...props} config={webData.config} branches={webData.branches} />}
       {route.kind === 'servicecat' && <ServiceCategoryScreen {...props} serviceId={route.categoryId} />}
       {route.kind === 'subservice' && <SubServiceScreen {...props} categoryId={route.categoryId} subId={route.subId} />}
       {route.kind === 'doctor'     && <DoctorProfileScreen {...props} doctorId={route.doctorId} doctors={webData.doctors} />}
@@ -5701,6 +5909,11 @@ function App() {
           onClose={() => setIsAdminOpen(false)}
           webData={webData}
           onSave={(newData) => { setWebData(newData); setIsAdminOpen(false); }}
+          onPreview={(doctorId, savedData) => {
+            setWebData(savedData);
+            setIsAdminOpen(false);
+            setScreen('doctor:' + doctorId);
+          }}
         />
       )}
     </div>
