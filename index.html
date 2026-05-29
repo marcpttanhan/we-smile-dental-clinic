@@ -83,63 +83,109 @@ html { scroll-behavior: smooth; }
 const { useState, useEffect, useRef, useCallback, useMemo, Fragment } = React;
 Object.assign(window, { useState, useEffect, useRef, useCallback, useMemo, Fragment });
 
-// 2. Supabase client — images stored in "clinic-images" public bucket
-const SUPABASE_URL = 'https://fessufmggqdpfatoibrp.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_Uj7973Ys4iFzqDig_08LBQ_9XQkM2ka';
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// ── Responsive breakpoint hook ────────────────────────────────────────────────
+// Returns true when viewport width ≤ bp. Reactive: updates on window resize.
+// Used in all sections to bake mobile logic directly into style={{}} props,
+// bypassing CSS specificity / Tailwind CDN interference entirely.
+function useIsMobile(bp = 640) {
+  const [is, setIs] = useState(() => window.innerWidth <= bp);
+  useEffect(() => {
+    const h = () => setIs(window.innerWidth <= bp);
+    window.addEventListener('resize', h, { passive: true });
+    return () => window.removeEventListener('resize', h);
+  }, [bp]);
+  return is;
+}
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 2. Supabase — production client (We Smile Dental Clinic)
+//    Project : fessufmggqdpfatoibrp.supabase.co
+//    Storage : "clinic-images" bucket (public)  ← image uploads
+//    Database: "site_config" table (JSONB)      ← canonical CMS config
+//
+//  One-time DDL — run once in Supabase SQL Editor:
+//
+//    CREATE TABLE IF NOT EXISTS site_config (
+//      id         TEXT PRIMARY KEY DEFAULT 'main',
+//      payload    JSONB            NOT NULL,
+//      updated_at TIMESTAMPTZ      DEFAULT NOW()
+//    );
+//    ALTER TABLE site_config ENABLE ROW LEVEL SECURITY;
+//    CREATE POLICY "public_read"   ON site_config FOR SELECT USING (true);
+//    CREATE POLICY "public_insert" ON site_config FOR INSERT WITH CHECK (true);
+//    CREATE POLICY "public_update" ON site_config FOR UPDATE USING (true);
+//
+// ─────────────────────────────────────────────────────────────────────────────
+const SUPABASE_URL      = 'https://fessufmggqdpfatoibrp.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_Uj7973Ys4iFzqDig_08LBQ_9XQkM2ka';
+const supabaseClient    = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const _SB_TABLE = 'site_config';
+const _SB_ROW   = 'main';
+
+// ── Storage: image upload ─────────────────────────────────────────────────────
 async function uploadToSupabase(file, folder) {
-  const ext = file.name.split('.').pop().toLowerCase();
+  const ext      = file.name.split('.').pop().toLowerCase();
   const filePath = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { error } = await supabaseClient.storage.from('clinic-images').upload(filePath, file, { upsert: false });
+  const { error } = await supabaseClient.storage
+    .from('clinic-images')
+    .upload(filePath, file, { upsert: false });
   if (error) { console.error('[Supabase upload]', error.message); return null; }
   const { data } = supabaseClient.storage.from('clinic-images').getPublicUrl(filePath);
   return data.publicUrl;
 }
 
-// ── Supabase CMS sync — site_config table ──────────────────────────────────
-// Table DDL (run once in Supabase SQL editor):
-//
-//   CREATE TABLE IF NOT EXISTS site_config (
-//     id         TEXT PRIMARY KEY DEFAULT 'main',
-//     payload    JSONB            NOT NULL,
-//     updated_at TIMESTAMPTZ      DEFAULT NOW()
-//   );
-//   ALTER TABLE site_config ENABLE ROW LEVEL SECURITY;
-//   CREATE POLICY "public_read"   ON site_config FOR SELECT USING (true);
-//   CREATE POLICY "public_insert" ON site_config FOR INSERT WITH CHECK (true);
-//   CREATE POLICY "public_update" ON site_config FOR UPDATE USING (true);
-//
-const _SB_CONFIG_TABLE = 'site_config';
-const _SB_CONFIG_ID    = 'main';
-
+// ── Database: read config ─────────────────────────────────────────────────────
+// Returns the parsed payload object on success, or null when:
+//   • the table row does not exist yet (first-run before any admin save)
+//   • network is unreachable
+//   • RLS blocks the read
+// In all null cases the caller falls back to its localStorage cache — this is
+// logged explicitly so there is no silent fallback.
 async function loadSiteConfigFromSupabase() {
   try {
     const { data, error } = await supabaseClient
-      .from(_SB_CONFIG_TABLE)
+      .from(_SB_TABLE)
       .select('payload')
-      .eq('id', _SB_CONFIG_ID)
+      .eq('id', _SB_ROW)
       .maybeSingle();
-    if (error) { console.warn('[Supabase load]', error.message); return null; }
-    return data ? data.payload : null;
+    if (error) {
+      console.warn('[We Smile sync] Supabase read error — falling back to localStorage:', error.message);
+      return null;
+    }
+    if (!data) {
+      console.info('[We Smile sync] site_config row absent — using localStorage cache until first admin save.');
+      return null;
+    }
+    console.info('[We Smile sync] Remote config loaded from Supabase ✓');
+    return data.payload;
   } catch (e) {
-    console.warn('[Supabase load]', e.message);
+    console.warn('[We Smile sync] Network exception on read — falling back to localStorage:', e.message);
     return null;
   }
 }
 
+// ── Database: write config ────────────────────────────────────────────────────
+// Upserts the full webData payload into site_config id='main'.
+// Returns true on success, false on any error.
+// The caller (onSave in App) is responsible for throwing when false is returned
+// so that AdminDashboard.handleSave can surface the error to the admin UI.
 async function saveSiteConfigToSupabase(payload) {
   try {
     const { error } = await supabaseClient
-      .from(_SB_CONFIG_TABLE)
+      .from(_SB_TABLE)
       .upsert(
-        { id: _SB_CONFIG_ID, payload, updated_at: new Date().toISOString() },
+        { id: _SB_ROW, payload, updated_at: new Date().toISOString() },
         { onConflict: 'id' }
       );
-    if (error) { console.error('[Supabase save]', error.message); return false; }
+    if (error) {
+      console.error('[We Smile sync] Supabase write error:', error.message);
+      return false;
+    }
+    console.info('[We Smile sync] Config saved to Supabase ✓');
     return true;
   } catch (e) {
-    console.error('[Supabase save]', e.message);
+    console.error('[We Smile sync] Network exception on write:', e.message);
     return false;
   }
 }
@@ -2665,27 +2711,36 @@ Object.assign(window, { DoctorProfileScreen, ScheduleMatrix });
 
 function BranchesScreen({ onNav, photoFilter }) {
   const liveBranches = window.BRANCHES || BRANCHES;
+  const isMobile     = useIsMobile();        // ≤ 640 px
+  const isTablet     = useIsMobile(1024);    // ≤ 1024 px — user-requested breakpoint
   const [activeBranch, setActiveBranch] = useState(liveBranches[0].id);
 
   return (
     <div data-screen-label="04 Branches">
       <PageHeader
         eyebrow={'สี่สาขาทั่วกรุงเทพฯ'}
-        title={<>คลินิกที่ <em className="accent-fg">ใกล้คุณ</em> เสมอ</>}
+        title={
+          <span style={{ fontSize: 'clamp(24px,5vw,72px)', display:'block', lineHeight:1.1 }}>
+            4 สาขา <em className="accent-fg" style={{ fontStyle:'normal' }}>มาตรฐาน เดียว</em>
+          </span>
+        }
         lead={'เลือกสาขาที่สะดวกที่สุดสำหรับคุณ — ทุกสาขาให้บริการมาตรฐานเดียวกัน'}
       />
 
-      {/* Map + branch selector — Dermapride-inspired split */}
-      <section className="ws-section" style={{ paddingTop: 32 }}>
+      {/* Map + branch selector */}
+      <section className="ws-section" style={{ paddingTop: isTablet ? 20 : 32 }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 32, alignItems: 'start' }} className="grid-2-md-1">
-            {/* Left column: map — fixed height, self-contained */}
-            <div style={{ position: 'relative', height: 480, borderRadius: 24, overflow: 'hidden', border: '1px solid var(--ws-line)', background: 'linear-gradient(180deg,#EFF2F7 0%,#E4E8EF 100%)', flexShrink: 0 }}>
-              <BranchesMap branches={liveBranches} activeId={activeBranch} onPick={setActiveBranch} />
-            </div>
-
-            {/* Right column: branch list — independent, no stretching */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isTablet ? '1fr' : '1.2fr 1fr',
+            gap: isMobile ? 20 : 32,
+            alignItems: 'start',
+          }}>
+            {/* Branch list — order: 1 on tablet/mobile so it appears ABOVE the map */}
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: 10,
+              order: isTablet ? 1 : 2,
+            }}>
               {liveBranches.map((b, i) => (
                 <BranchListItem
                   key={b.id}
@@ -2696,6 +2751,21 @@ function BranchesScreen({ onNav, photoFilter }) {
                   index={i + 1}
                 />
               ))}
+            </div>
+
+            {/* Map — order: 2 on tablet/mobile so it appears BELOW the branch list */}
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              aspectRatio: isMobile ? '16/9' : '4/3',
+              minHeight: isMobile ? 220 : 480,
+              maxHeight: isMobile ? 260 : 'none',
+              borderRadius: 24, overflow: 'hidden',
+              border: '1px solid var(--ws-line)',
+              background: 'linear-gradient(180deg,#EFF2F7 0%,#E4E8EF 100%)',
+              order: isTablet ? 2 : 1,
+            }}>
+              <BranchesMap branches={liveBranches} activeId={activeBranch} onPick={setActiveBranch} />
             </div>
           </div>
         </div>
@@ -3201,43 +3271,55 @@ Object.assign(window, { HomeBranchTabs, makeDefaultDailyHours });
 // Home page — hero + service preview + doctors preview + testimonials + FAQ + CTA
 
 function Hero({ onNav, photoFilter, config }) {
-  const cfg = config || {};
+  const cfg      = config || {};
+  const isMobile = useIsMobile();      // ≤ 640 px
+  const isTablet = useIsMobile(900);   // ≤ 900 px
   return (
-    <section style={{ padding:'clamp(48px,8vh,112px) 32px clamp(64px,10vh,136px)', position:'relative', overflow:'hidden', background:'linear-gradient(150deg,#FFF8F2 0%,#F4F6FF 60%,#FFF0E8 100%)' }}>
+    <section style={{
+      padding: isMobile ? '20px 16px 40px' : 'clamp(48px,8vh,112px) 32px clamp(64px,10vh,136px)',
+      position:'relative', overflow:'hidden',
+      background:'linear-gradient(150deg,#FFF8F2 0%,#F4F6FF 60%,#FFF0E8 100%)',
+    }}>
       <div style={{ position:'absolute', top:-160, left:-120, width:640, height:640, borderRadius:'50%', background:'radial-gradient(circle,rgba(232,90,20,0.22),transparent 65%)', filter:'blur(80px)', pointerEvents:'none', animation:'ws-orb-drift 18s ease-in-out infinite' }} />
       <div style={{ position:'absolute', bottom:-100, right:-80, width:460, height:460, borderRadius:'50%', background:'radial-gradient(circle,rgba(33,53,133,0.18),transparent 65%)', filter:'blur(70px)', pointerEvents:'none', animation:'ws-orb-drift 22s ease-in-out infinite reverse' }} />
-      <div style={{ maxWidth:1200, margin:'0 auto', display:'grid', gridTemplateColumns:'1.05fr 1fr', gap:64, alignItems:'center', position:'relative' }} className="grid-2-md-1">
+      <div style={{
+        maxWidth:1200, margin:'0 auto', position:'relative',
+        display:'grid',
+        gridTemplateColumns: isTablet ? '1fr' : '1.05fr 1fr',
+        gap: isMobile ? 24 : 64,
+        alignItems:'center',
+      }}>
         <div className="page-enter">
           <div className="ws-eyebrow rise rise-1" style={{ marginBottom:26, display:'flex', alignItems:'center' }}>
             <span style={{ display:'inline-block', width:7, height:7, borderRadius:'50%', background:'var(--ws-primary)', marginRight:10, flexShrink:0, animation:'ws-pulse-dot 2.2s ease-in-out infinite' }} />
             {cfg.heroEyebrow || 'คลินิกทันตกรรมครบวงจร · สาขาลาดกระบัง'}
           </div>
-          <h1 className="ws-h1 rise rise-2" style={{ margin:'0 0 28px', fontSize:'clamp(44px,5.8vw,80px)', letterSpacing:'-0.03em', lineHeight:1.08 }}>
+          <h1 className="ws-h1 rise rise-2" style={{ margin:'0 0 28px', fontSize: isMobile ? 'clamp(34px,9vw,46px)' : 'clamp(44px,5.8vw,80px)', letterSpacing:'-0.03em', lineHeight:1.08 }}>
             {cfg.heroTitleLine1 || 'รอยยิ้มของคุณ'}<br/>
             {cfg.heroTitleLine2 || 'คือ'}<span className="accent-fg" style={{ fontStyle:'italic' }}> {cfg.heroTitleAccent || 'ความสุข'}</span> {cfg.heroTitleLine3 || 'ของเรา'}
           </h1>
-          <p className="ws-lead rise rise-3" style={{ margin:'0 0 40px', maxWidth:520, lineHeight:1.75, fontSize:18 }}>
+          <p className="ws-lead rise rise-3" style={{ margin:'0 0 32px', maxWidth:520, lineHeight:1.75, fontSize: isMobile ? 15 : 18 }}>
             {cfg.heroLead || 'ทันตกรรมครบวงจรในที่เดียว — จัดฟัน จัดฟันแบบใส รากฟันเทียม วีเนียร์ ดูแลโดยทีมหมอเฉพาะทาง'}
           </p>
-          <div className="rise rise-4" style={{ display:'flex', gap:14, alignItems:'center', flexWrap:'wrap' }}>
+          <div className="rise rise-4" style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
             <button onClick={() => onNav('booking')} className="btn btn-primary"
-              style={{ padding:'20px 32px', fontSize:16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 10px 32px rgba(232,90,20,0.35)' }}>
-              <i data-lucide="calendar-check" style={{ width:18, height:18 }}></i>
+              style={{ padding: isMobile ? '14px 20px' : '20px 32px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 10px 32px rgba(232,90,20,0.35)' }}>
+              <i data-lucide="calendar-check" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
               {cfg.heroCta1 || 'นัดหมายตรวจฟัน'}
             </button>
             <a href={`tel:${(cfg.clinicPhone || '063-879-8448').replace(/-/g,'')}`}
-              className="btn btn-ghost" style={{ padding:'19px 28px', fontSize:16, textDecoration:'none' }}>
-              <i data-lucide="phone" style={{ width:18, height:18 }}></i>
+              className="btn btn-ghost" style={{ padding: isMobile ? '13px 18px' : '19px 28px', fontSize: isMobile ? 14 : 16, textDecoration:'none' }}>
+              <i data-lucide="phone" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
               {cfg.clinicPhone || '063-879-8448'}
             </a>
           </div>
-          <div className="rise rise-4" style={{ display:'flex', marginTop:56, paddingTop:32, borderTop:'1px solid var(--ws-line)' }}>
+          <div className="rise rise-4" style={{ display:'flex', gap: isMobile ? 20 : 0, marginTop: isMobile ? 28 : 56, paddingTop: isMobile ? 20 : 32, borderTop:'1px solid var(--ws-line)' }}>
             {[
               { n: cfg.heroStat1Num||'12+',   label: cfg.heroStat1Label||'ปีที่ดูแล' },
               { n: cfg.heroStat2Num||'8,400', label: cfg.heroStat2Label||'รอยยิ้ม' },
               { n: cfg.heroStat3Num||'4.9★',  label: cfg.heroStat3Label||'คะแนนกูเกิล' },
             ].map((s,i) => (
-              <div key={i} style={{ flex:1, paddingRight:i<2?32:0, marginRight:i<2?32:0, borderRight:i<2?'1px solid var(--ws-line)':'none', transition:'transform 220ms ease' }}
+              <div key={i} style={{ flex:1, paddingRight: isMobile ? 0 : (i<2?32:0), marginRight: isMobile ? 0 : (i<2?32:0), borderRight: isMobile ? 'none' : (i<2?'1px solid var(--ws-line)':'none'), transition:'transform 220ms ease' }}
                 onMouseEnter={e=>e.currentTarget.style.transform='translateY(-3px)'}
                 onMouseLeave={e=>e.currentTarget.style.transform=''}>
                 <Stat n={s.n} label={s.label} />
@@ -3246,10 +3328,23 @@ function Hero({ onNav, photoFilter, config }) {
           </div>
         </div>
         <div style={{ position:'relative' }}>
-          <div className={photoFilter} style={{ borderRadius:36, overflow:'hidden', boxShadow:'0 32px 80px rgba(33,53,133,0.18)', aspectRatio:'4/5', backgroundImage:`url(${cfg.heroImage||'assets/hero.webp'})`, backgroundSize:'cover', backgroundPosition:'center' }} />
-          <FloatingBadge top={28}  right={-20} icon={cfg.badge1Icon||'shield-check'} title={cfg.badge1Title||'ทันตแพทย์เฉพาะทาง'} sub={cfg.badge1Sub||'รับรองโดยสมาคม'} delay={0} />
-          <FloatingBadge bottom={64} left={-28} icon={cfg.badge2Icon||'message-circle'} title={cfg.badge2Title||'LINE @wesmiledc1'} sub={cfg.badge2Sub||'ตอบภายใน 1 ชม.'} delay={1400} />
-          <FloatingBadge bottom={-8} right={32} icon={cfg.badge3Icon||'sparkles'} title={cfg.badge3Title||'From ฿ 35,000'} sub={cfg.badge3Sub||'จัดฟันแบบใส'} delay={2800} />
+          <div className={photoFilter} style={{
+            borderRadius: isMobile ? 20 : 36,
+            overflow:'hidden',
+            boxShadow:'0 32px 80px rgba(33,53,133,0.18)',
+            aspectRatio: isMobile ? '4/3' : '4/5',
+            maxHeight: isMobile ? '280px' : 'none',
+            backgroundImage:`url(${cfg.heroImage||'assets/hero.webp'})`,
+            backgroundSize:'cover',
+            backgroundPosition:'center',
+          }} />
+          {!isMobile && (
+            <>
+              <FloatingBadge top={28}  right={-20} icon={cfg.badge1Icon||'shield-check'} title={cfg.badge1Title||'ทันตแพทย์เฉพาะทาง'} sub={cfg.badge1Sub||'รับรองโดยสมาคม'} delay={0} />
+              <FloatingBadge bottom={64} left={-28} icon={cfg.badge2Icon||'message-circle'} title={cfg.badge2Title||'LINE @wesmiledc1'} sub={cfg.badge2Sub||'ตอบภายใน 1 ชม.'} delay={1400} />
+              <FloatingBadge bottom={-8} right={32} icon={cfg.badge3Icon||'sparkles'} title={cfg.badge3Title||'From ฿ 35,000'} sub={cfg.badge3Sub||'จัดฟันแบบใส'} delay={2800} />
+            </>
+          )}
         </div>
       </div>
     </section>
@@ -3283,8 +3378,12 @@ function FloatingBadge({ top, bottom, left, right, icon, title, sub, delay }) {
 }
 
 function ServicesPreview({ onNav, services, config }) {
-  const cfg     = config   || {};
-  const allSvcs = services || [];
+  const cfg      = config   || {};
+  const allSvcs  = services || [];
+  const isMobile = useIsMobile();
+  const isTablet = useIsMobile(900);
+  const cols     = isMobile ? '1fr' : isTablet ? 'repeat(2,1fr)' : 'repeat(3,1fr)';
+  const gap      = isMobile ? 14 : 20;
   const features = allSvcs.filter(s => s.feature);
   const others   = allSvcs.filter(s => !s.feature);
   const featureWithSeq = features.map((s, i) => ({ s, seq: i + 1 }));
@@ -3292,17 +3391,27 @@ function ServicesPreview({ onNav, services, config }) {
   return (
     <section id="section-services" className="ws-section" style={{ background:'transparent' }}>
       <div className="container">
-        <SectionHead num={1}
+        <SectionHead num={1} align="stacked"
           eyebrow={cfg.servicesEyebrow || 'บริการของเรา'}
-          title={cfg.servicesTitle || 'การดูแลทุกขั้นตอน ภายใต้หลังคาเดียว'}
-          lead={cfg.servicesLead || 'หกสาขาความเชี่ยวชาญหลัก ครอบคลุมทุกขั้นตอนของการดูแลรอยยิ้มคุณ โดยทันตแพทย์เฉพาะทางที่อธิบายเข้าใจง่าย'} />
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20, marginBottom:20 }} className="grid-3-md-1">
+          title={cfg.servicesTitle || 'การดูแลทุกขั้นตอน ภายใต้หลังคาเดียว'} />
+        <p style={{
+          font: `500 ${isMobile ? '17px' : 'clamp(16px,2.2vw,22px)'}/1.65 var(--ws-font-display)`,
+          color: 'var(--ws-fg-2)',
+          letterSpacing: '-0.01em',
+          margin: isMobile ? '0 0 28px' : '-16px 0 44px',
+          maxWidth: 680,
+          borderLeft: '4px solid #ff6b00',
+          paddingLeft: isMobile ? 12 : 18,
+        }}>
+          {cfg.servicesLead || 'บริการของเรา ปลอดภัย สะอาด ถูกหลัก โดยทันตแพทย์เฉพาะทาง'}
+        </p>
+        <div style={{ display:'grid', gridTemplateColumns: cols, gap, marginBottom: gap }}>
           {featureWithSeq.map(({ s, seq }) => <ServiceCard key={s.id} s={s} large seqNum={seq} onClick={() => onNav(`service:${s.id}`)} />)}
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:20 }} className="grid-3-md-1">
+        <div style={{ display:'grid', gridTemplateColumns: cols, gap }}>
           {otherWithSeq.map(({ s, seq }) => <ServiceCard key={s.id} s={s} seqNum={seq} onClick={() => onNav(`service:${s.id}`)} />)}
         </div>
-        <div style={{ marginTop:48, display:'flex', justifyContent:'center' }}>
+        <div style={{ marginTop: isMobile ? 32 : 48, display:'flex', justifyContent:'center' }}>
           <button onClick={() => onNav('services')} className="btn btn-ghost">
             {cfg.servicesCtaLabel || 'ดูบริการทั้งหมด'}
             <i data-lucide="arrow-right" style={{ width:16, height:16 }}></i>
@@ -3413,42 +3522,50 @@ function DoctorCardSmall({ d, i, photoFilter, onClick }) {
 }
 
 function Testimonials({ config, testimonials }) {
-  const cfg   = config || {};
-  const items = testimonials || [];
+  const cfg      = config || {};
+  const items    = testimonials || [];
+  const isMobile = useIsMobile();
+  const isTablet = useIsMobile(900);
+  const cols     = isMobile ? '1fr' : isTablet ? 'repeat(2,1fr)' : 'repeat(3,1fr)';
   return (
     <section className="ws-section" style={{ background:'#EEF1FB', backgroundImage:'radial-gradient(circle,#B8C3EC 1.5px,transparent 1.5px)', backgroundSize:'24px 24px' }}>
       <div className="container">
         {/* Section header */}
-        <div className="section-head" style={{ marginBottom:56 }}>
-          <div>
-            <div className="ws-num">{'03 / 06 — เสียงจากคนไข้'}</div>
-          </div>
-          <div>
-            <h2 className="ws-h2" style={{ margin:'0 0 24px', lineHeight:1.15 }}>
-              {'ความประทับใจ'}<br />{'จากลูกค้าของเรา.'}
-            </h2>
-            <p className="ws-lead" style={{ margin:0, maxWidth:640 }}>
-              {'จากคนไข้ที่เคยได้รับการบริการที่ We Smile Dental Clinic — เรื่องราวเล็ก ๆ ที่บอกเล่าความรู้สึก หลังจบการทันตกรรม'}
-            </p>
-          </div>
+        <div className="section-head-stacked" style={{ marginBottom: isMobile ? 32 : 56 }}>
+          <div className="ws-num" style={{ marginBottom:16 }}>{'03 / 06 — เสียงจากคนไข้'}</div>
+          <h2 className="ws-h2" style={{ margin:'0 0 16px', lineHeight:1.15 }}>
+            {'ความประทับใจ'}{isMobile ? ' ' : <br />}{'จากลูกค้าของเรา.'}
+          </h2>
+          <p className="ws-lead" style={{ margin:0, maxWidth:640, fontSize: isMobile ? 15 : undefined }}>
+            {'จากคนไข้ที่เคยได้รับการบริการที่ We Smile Dental Clinic — เรื่องราวเล็ก ๆ ที่บอกเล่าความรู้สึก หลังจบการทันตกรรม'}
+          </p>
         </div>
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:24, alignItems:'start' }} className="grid-3-md-1">
+        <div style={{ display:'grid', gridTemplateColumns: cols, gap: isMobile ? 14 : 24, alignItems:'start' }}>
           {items.map((t,i) => {
             const accent = i===1;
             return (
-              <div key={i} className="card-hover" style={{ background:accent?'var(--ws-navy-800)':'#fff', borderRadius:28, padding:36, border:accent?'none':'1px solid var(--ws-line)', boxShadow:accent?'0 20px 60px rgba(33,53,133,0.22)':'var(--ws-shadow-sm)', display:'flex', flexDirection:'column', gap:20, marginTop:accent?0:24, position:'relative', overflow:'hidden' }}>
-                <div style={{ position:'absolute', top:-8, left:20, font:'700 110px/1 var(--ws-font-display)', color:accent?'rgba(255,255,255,0.07)':'var(--ws-orange-100)', pointerEvents:'none', userSelect:'none', lineHeight:1 }}>"</div>
+              <div key={i} className="card-hover" style={{
+                background: accent ? 'var(--ws-navy-800)' : '#fff',
+                borderRadius: isMobile ? 20 : 28,
+                padding: isMobile ? '22px 18px' : 36,
+                border: accent ? 'none' : '1px solid var(--ws-line)',
+                boxShadow: accent ? '0 20px 60px rgba(33,53,133,0.22)' : 'var(--ws-shadow-sm)',
+                display:'flex', flexDirection:'column', gap: isMobile ? 14 : 20,
+                marginTop: (accent && !isMobile) ? 0 : (isMobile ? 0 : 24),
+                position:'relative', overflow:'hidden',
+              }}>
+                {!isMobile && <div style={{ position:'absolute', top:-8, left:20, font:'700 110px/1 var(--ws-font-display)', color:accent?'rgba(255,255,255,0.07)':'var(--ws-orange-100)', pointerEvents:'none', userSelect:'none', lineHeight:1 }}>"</div>}
                 <div style={{ display:'flex', gap:3, position:'relative', zIndex:1 }}>
                   {Array.from({length:t.rating}).map((_,j)=>(
-                    <i key={j} data-lucide="star" style={{ width:18, height:18, fill:'currentColor', color:accent?'#FFD166':'var(--ws-primary)' }}></i>
+                    <i key={j} data-lucide="star" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18, fill:'currentColor', color:accent?'#FFD166':'var(--ws-primary)' }}></i>
                   ))}
                 </div>
-                <p style={{ margin:0, font:'500 17px/1.65 var(--ws-font-display)', color:accent?'rgba(255,255,255,0.92)':'var(--ws-fg-2)', textWrap:'pretty', flex:1, fontStyle:'italic', position:'relative', zIndex:1 }}>"{t.qTh||t.q}"</p>
-                <div style={{ display:'flex', alignItems:'center', gap:12, position:'relative', zIndex:1 }}>
-                  <div style={{ width:40, height:40, borderRadius:'50%', flex:'none', background:accent?'rgba(255,255,255,0.14)':'var(--ws-orange-100)', color:accent?'#fff':'var(--ws-primary)', display:'grid', placeItems:'center', font:'700 16px/1 var(--ws-font-sans)' }}>
+                <p style={{ margin:0, font:`500 ${isMobile ? '15px' : '17px'}/1.65 var(--ws-font-display)`, color:accent?'rgba(255,255,255,0.92)':'var(--ws-fg-2)', textWrap:'pretty', flex:1, fontStyle:'italic', position:'relative', zIndex:1 }}>"{t.qTh||t.q}"</p>
+                <div style={{ display:'flex', alignItems:'center', gap:12, position:'relative', zIndex:1, paddingTop: isMobile ? 10 : 0, borderTop: isMobile ? `1px solid ${accent ? 'rgba(255,255,255,0.15)' : 'var(--ws-line)'}` : 'none' }}>
+                  <div style={{ width:36, height:36, borderRadius:'50%', flex:'none', background:accent?'rgba(255,255,255,0.14)':'var(--ws-orange-100)', color:accent?'#fff':'var(--ws-primary)', display:'grid', placeItems:'center', font:'700 15px/1 var(--ws-font-sans)' }}>
                     {(t.aTh||t.a).charAt(0)}
                   </div>
-                  <div style={{ font:'600 14px/1.3 var(--ws-font-sans)', color:accent?'rgba(255,255,255,0.95)':'var(--ws-fg-1)' }}>{t.aTh||t.a}</div>
+                  <div style={{ font:'600 13px/1.3 var(--ws-font-sans)', color:accent?'rgba(255,255,255,0.95)':'var(--ws-fg-1)' }}>{t.aTh||t.a}</div>
                 </div>
               </div>
             );
@@ -3503,41 +3620,51 @@ function FAQPreview({ onNav }) {
 }
 
 function CTABand({ onNav, config }) {
-  // Fall back to the global CLINIC_CONFIG so every CTABand instance (not just HomeScreen)
-  // picks up admin edits without needing config prop drilling to every caller.
-  const cfg = config || window.CLINIC_CONFIG || {};
+  const cfg      = config || window.CLINIC_CONFIG || {};
+  const isMobile = useIsMobile();
   return (
-    <section style={{ padding:'0 32px 96px' }}>
+    <section style={{ padding: isMobile ? '0 16px 64px' : '0 32px 96px' }}>
       <div className="container">
-        <div style={{ borderRadius:44, background:'linear-gradient(135deg,#0F1E5C 0%,#1A2A6C 45%,#1E3580 100%)', color:'#fff', padding:'clamp(56px,8vw,88px) clamp(32px,6vw,72px)', display:'grid', gridTemplateColumns:'1.3fr 1fr', alignItems:'center', gap:56, position:'relative', overflow:'hidden' }} className="grid-2-md-1">
+        <div style={{
+          borderRadius: isMobile ? 24 : 44,
+          background:'linear-gradient(135deg,#0F1E5C 0%,#1A2A6C 45%,#1E3580 100%)',
+          color:'#fff',
+          padding: isMobile ? '40px 24px' : 'clamp(56px,8vw,88px) clamp(32px,6vw,72px)',
+          display:'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1.3fr 1fr',
+          alignItems:'center',
+          gap: isMobile ? 28 : 56,
+          position:'relative',
+          overflow:'hidden',
+        }}>
           <div style={{ position:'absolute', right:-80, top:-80, width:440, height:440, borderRadius:'50%', background:'radial-gradient(circle,rgba(242,107,31,0.32),transparent 65%)', filter:'blur(40px)', animation:'ws-orb-drift 18s ease-in-out infinite', pointerEvents:'none' }} />
           <div style={{ position:'absolute', left:-60, bottom:-60, width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle,rgba(74,99,214,0.25),transparent 70%)', filter:'blur(28px)', animation:'ws-orb-drift 24s ease-in-out infinite reverse', pointerEvents:'none' }} />
           <div style={{ position:'absolute', right:'34%', bottom:-40, width:180, height:180, borderRadius:'50%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', pointerEvents:'none' }} />
           <div style={{ position:'relative', zIndex:1 }}>
-            <div className="ws-eyebrow" style={{ color:'var(--ws-orange-300)', marginBottom:18 }}>{cfg.ctaEyebrow||'เริ่มเมื่อไหร่ก็ได้'}</div>
-            <h2 style={{ font:'500 clamp(32px,4.4vw,56px)/1.05 var(--ws-font-display)', margin:0, letterSpacing:'-.025em' }}>
+            <div className="ws-eyebrow" style={{ color:'var(--ws-orange-300)', marginBottom: isMobile ? 14 : 18 }}>{cfg.ctaEyebrow||'เริ่มเมื่อไหร่ก็ได้'}</div>
+            <h2 style={{ font:`500 ${isMobile ? 'clamp(26px,7vw,36px)' : 'clamp(32px,4.4vw,56px)'}/1.05 var(--ws-font-display)`, margin:0, letterSpacing:'-.025em' }}>
               {cfg.ctaTitle1||'ติดต่อกลับภายใน 15 นาที (ในเวลาทำการ)'}
               {cfg.ctaTitle2 ? <><br/>{cfg.ctaTitle2}</> : null}
             </h2>
-            <p style={{ font:'500 17px/1.75 var(--ws-font-sans)', color:'rgba(255,255,255,.72)', margin:'24px 0 0', maxWidth:480 }}>
+            <p style={{ font:`500 ${isMobile ? '14px' : '17px'}/1.75 var(--ws-font-sans)`, color:'rgba(255,255,255,.72)', margin: `${isMobile ? 16 : 24}px 0 0`, maxWidth:480 }}>
               {cfg.ctaLead||'ปรึกษาฟรีไม่มีค่าใช้จ่าย'}
             </p>
           </div>
-          <div style={{ display:'flex', flexDirection:'column', gap:12, position:'relative', zIndex:1 }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:10, position:'relative', zIndex:1 }}>
             <button onClick={() => onNav('booking')} className="btn btn-primary"
-              style={{ padding:'20px 28px', fontSize:16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 12px 36px rgba(232,90,20,0.40)' }}>
-              <i data-lucide="calendar-check" style={{ width:18, height:18 }}></i>{cfg.ctaCta1||'นัดหมายเลย'}
+              style={{ padding: isMobile ? '14px 20px' : '20px 28px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 12px 36px rgba(232,90,20,0.40)' }}>
+              <i data-lucide="calendar-check" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>{cfg.ctaCta1||'นัดหมายเลย'}
             </button>
             <a href={cfg.ctaLineHref || cfg.socialLine || '#'}
               target="_blank" rel="noopener noreferrer"
               className="btn btn-line"
-              style={{ padding:'19px 28px', fontSize:16, borderRadius:14, textDecoration:'none', display:'flex', alignItems:'center', gap:10 }}>
-              <i data-lucide="message-circle" style={{ width:18, height:18 }}></i>
+              style={{ padding: isMobile ? '13px 18px' : '19px 28px', fontSize: isMobile ? 14 : 16, borderRadius:14, textDecoration:'none', display:'flex', alignItems:'center', gap:10 }}>
+              <i data-lucide="message-circle" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
               {cfg.ctaLineText || `แชต LINE ${cfg.clinicLine||'@wesmiledc1'}`}
             </a>
             <a href={`tel:${(cfg.clinicPhone||'063-879-8448').replace(/-/g,'')}`} className="btn"
-              style={{ padding:'19px 28px', fontSize:16, borderRadius:14, background:'rgba(255,255,255,.09)', color:'#fff', border:'1px solid rgba(255,255,255,.22)', textDecoration:'none' }}>
-              <i data-lucide="phone" style={{ width:18, height:18 }}></i>{cfg.clinicPhone||'063-879-8448'}
+              style={{ padding: isMobile ? '13px 18px' : '19px 28px', fontSize: isMobile ? 14 : 16, borderRadius:14, background:'rgba(255,255,255,.09)', color:'#fff', border:'1px solid rgba(255,255,255,.22)', textDecoration:'none' }}>
+              <i data-lucide="phone" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>{cfg.clinicPhone||'063-879-8448'}
             </a>
           </div>
         </div>
@@ -4054,6 +4181,8 @@ function Calendar({ value, onChange }) {
 }
 
 function BookingScreen({ onNav }) {
+  const isMobile = useIsMobile();      // ≤ 640 px
+  const isTablet = useIsMobile(900);   // ≤ 900 px
   const [step, setStep] = useState(1);
   const [service, setService] = useState(null);
   const [doctor, setDoctor] = useState(null);
@@ -4080,12 +4209,12 @@ function BookingScreen({ onNav }) {
 
       <section className="ws-section" style={{ paddingTop: 24, paddingBottom: 64 }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '0.7fr 1.3fr', gap: 32 }} className="grid-2-md-1">
+          <div style={{ display: 'grid', gridTemplateColumns: isTablet ? '1fr' : '0.7fr 1.3fr', gap: isMobile ? 16 : 32 }}>
             {/* Sidebar — progress */}
             <div>
               <div style={{
                 background: '#fff', border: '1px solid var(--ws-line)',
-                borderRadius: 24, padding: 24, position: 'sticky', top: 100,
+                borderRadius: 20, padding: isMobile ? 16 : 24, position: isTablet ? 'static' : 'sticky', top: 100,
               }}>
                 <div className="ws-eyebrow" style={{ marginBottom: 16 }}>
                   {'ขั้นตอน'}
@@ -4122,7 +4251,9 @@ function BookingScreen({ onNav }) {
             {/* Main panel */}
             <div style={{
               background: '#fff', border: '1px solid var(--ws-line)',
-              borderRadius: 32, padding: 40, minHeight: 540,
+              borderRadius: isMobile ? 20 : 32,
+              padding: isMobile ? '22px 16px' : 40,
+              minHeight: isMobile ? 'auto' : 540,
               boxShadow: 'var(--ws-shadow-md)',
             }}>
               {step === 1 && (
@@ -4130,17 +4261,17 @@ function BookingScreen({ onNav }) {
                   <div className="ws-num" style={{ marginBottom: 14 }}>
                     01 / 04 — {'เลือกบริการ'}
                   </div>
-                  <h2 style={{ font: '500 28px/1.2 var(--ws-font-display)', margin: 0, color: 'var(--ws-fg-1)' }}>
+                  <h2 style={{ font: `500 ${isMobile ? '22px' : '28px'}/1.2 var(--ws-font-display)`, margin: 0, color: 'var(--ws-fg-1)' }}>
                     {'มาวันนี้เพื่ออะไร?'}
                   </h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 32 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: isMobile ? 10 : 12, marginTop: isMobile ? 20 : 32 }}>
                     {SERVICES.map(s => (
                       <button key={s.id} onClick={() => { setService(s); setStep(2); }}
                         style={{
                           background: service?.id === s.id ? 'var(--ws-orange-50)' : '#fff',
                           border: service?.id === s.id ? '1.5px solid var(--ws-primary)' : '1.5px solid var(--ws-line)',
-                          borderRadius: 16, padding: 20, textAlign: 'left', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', gap: 14,
+                          borderRadius: 16, padding: isMobile ? '14px 12px' : 20, textAlign: 'left', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 14,
                           transition: 'all var(--ws-dur-fast) var(--ws-ease)',
                         }}>
                         <div style={{
@@ -4184,16 +4315,17 @@ function BookingScreen({ onNav }) {
                   <div className="ws-num" style={{ marginBottom: 14 }}>
                     02 / 04 — {'เลือกหมอ'}
                   </div>
-                  <h2 style={{ font: '500 28px/1.2 var(--ws-font-display)', margin: 0, color: 'var(--ws-fg-1)' }}>
+                  <h2 style={{ font: `500 ${isMobile ? '22px' : '28px'}/1.2 var(--ws-font-display)`, margin: 0, color: 'var(--ws-fg-1)' }}>
                     {'ต้องการพบหมอท่านใด?'}
                   </h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, marginTop: 32 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: isMobile ? 10 : 12, marginTop: isMobile ? 20 : 32 }}>
                     <button onClick={() => { setDoctor(null); setStep(3); }}
                       style={{
                         background: !doctor ? 'var(--ws-orange-50)' : '#fff',
                         border: '1.5px solid var(--ws-line)',
-                        borderRadius: 16, padding: 20, textAlign: 'left', cursor: 'pointer',
-                        display: 'flex', alignItems: 'center', gap: 14, gridColumn: 'span 2',
+                        borderRadius: 16, padding: isMobile ? '14px 12px' : 20, textAlign: 'left', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', gap: 14,
+                        gridColumn: isMobile ? 'auto' : 'span 2',
                       }}>
                       <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--ws-navy-50)', color: 'var(--ws-navy-800)', display: 'grid', placeItems: 'center', flex: 'none' }}>
                         <i data-lucide="users" style={{ width: 20, height: 20 }}></i>
@@ -4901,15 +5033,15 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     setIsSaving(true);
     setSaveStatus('saving');
     try {
-      await onSave(formData);
+      await onSave(formData);           // throws if Supabase write fails
       setSaveStatus('ok');
-      setTimeout(() => setSaveStatus('idle'), 2500);
+      setTimeout(onClose, 1400);        // show ✅ tick for 1.4 s then close — do NOT reset isSaving
+                                        // here because the component unmounts on onClose anyway
     } catch (_e) {
-      console.error('[Admin handleSave]', _e);
+      console.error('[Admin handleSave]', _e.message);
       setSaveStatus('error');
+      setIsSaving(false);               // re-enable so admin can retry without reloading
       setTimeout(() => setSaveStatus('idle'), 4000);
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -6448,24 +6580,28 @@ function App() {
     try { localStorage.setItem('wsdc_webdata', JSON.stringify(webData)); } catch (_e) {}
   }, [webData]);
 
-  // ── Remote hydration — pull canonical config from Supabase on every fresh page load.
-  // localStorage is used only as an instant first-paint cache; Supabase is the
-  // single source of truth so desktop, mobile, and iPad all see the same data.
+  // ── Remote hydration ────────────────────────────────────────────────────────
+  // Supabase site_config is the canonical data store.
+  // localStorage is only a fast first-paint cache for the current device.
+  // This effect pulls the remote row on every fresh page load so that desktop,
+  // mobile, and iPad all render the exact same admin-saved configuration.
+  // loadSiteConfigFromSupabase() logs explicitly on every code path — there is
+  // no silent fallback; open DevTools console to verify sync status.
   React.useEffect(() => {
     loadSiteConfigFromSupabase().then(remote => {
-      if (!remote) return; // table empty or unreachable — localStorage fallback stays
+      if (!remote) return; // null = empty table or network error (already logged inside helper)
       setWebData(prev => {
-        const _docDefaults = { specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '' };
-        const docs = (remote.doctors || prev.doctors || []).map(d => ({ ..._docDefaults, ...d }));
+        const _docDef = { specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '' };
+        const docs    = (remote.doctors || prev.doctors || []).map(d => ({ ..._docDef, ...d }));
         return {
           ...prev,
           ...remote,
           doctors: docs,
-          config: { ...(prev.config || {}), ...(remote.config || {}) },
+          config:  { ...(prev.config || {}), ...(remote.config || {}) },
         };
       });
     });
-  }, []); // runs once on mount — empty dep array is intentional
+  }, []); // intentional empty dep — runs exactly once on mount
   const photoFilter = 'photo-' + tweaks.photoTreatment;
   const densityClass = 'density-' + tweaks.density;
   const props = { onNav, photoFilter };
@@ -6518,10 +6654,11 @@ function App() {
           onClose={() => setIsAdminOpen(false)}
           webData={webData}
           onSave={async (newData) => {
-            setWebData(newData);                       // update React state + triggers localStorage cache
-            const ok = await saveSiteConfigToSupabase(newData);  // push to Supabase
-            if (!ok) throw new Error('Supabase write failed');    // surface error to handleSave
-            setIsAdminOpen(false);
+            setWebData(newData);                                   // update in-memory state → triggers localStorage write
+            const ok = await saveSiteConfigToSupabase(newData);   // push canonical copy to Supabase
+            if (!ok) throw new Error('Supabase write failed');     // propagates to handleSave catch block
+            // ↑ intentionally no setIsAdminOpen(false) here —
+            //   handleSave calls onClose after showing the ✅ success tick
           }}
           onPreview={(doctorId, savedData) => {
             setWebData(savedData);
