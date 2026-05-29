@@ -1606,8 +1606,6 @@ function SubServiceScreen({ onNav, photoFilter, categoryId, subId }) {
   const cat = getService(categoryId);
   const sub = getSubService(categoryId, subId);
   if (!sub || !cat) return null;
-  const doctors = getDoctorsForSpecialty(categoryId);
-  const stories = getStoriesForSubService(subId);
 
   return (
     <div data-screen-label={`02 Services / ${cat.title} / ${sub.title}`}>
@@ -1666,66 +1664,6 @@ function SubServiceScreen({ onNav, photoFilter, categoryId, subId }) {
         </div>
       </section>
 
-      {/* Before/After patient review gallery */}
-      <SuccessStoriesSection
-        stories={stories}
-        title={<>ผลลัพธ์จริงจาก <em className="accent-fg">คนไข้ของเรา</em></>}
-        eyebrow={'ผลงานคนไข้'}
-        num={2}
-      />
-
-      {/* What to expect — process steps */}
-      <section className="ws-section" style={{ background: 'var(--ws-navy-50)' }}>
-        <div className="container">
-          <SectionHead num={3} eyebrow={'ขั้นตอนการรักษา'}
-            title={'จากปรึกษาฟรี ถึงรอยยิ้มใหม่'}
-            total={6}
-          />
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }} className="grid-4-md-2">
-            {[
-              { n: 1, t: 'ปรึกษาฟรี 15 นาที', d: 'พูดคุยกับหมอ ฟังเป้าหมายของคุณ ไม่มีข้อผูกมัด' },
-              { n: 2, t: 'วางแผนและสแกน', d: 'CT 3 มิติ สแกนช่องปากดิจิทัล และวางแผนล่วงหน้า' },
-              { n: 3, t: 'เริ่มการรักษา', d: 'ทุกขั้นตอนอธิบายล่วงหน้า ไม่มีค่าใช้จ่ายเซอร์ไพรส์' },
-              { n: 4, t: 'ติดตามผล 1 ปี', d: 'นัดติดตามรายไตรมาส ฟรีเป็นเวลา 12 เดือน' },
-            ].map(step => (
-              <div key={step.n} style={{
-                background: '#fff', borderRadius: 24, padding: 28,
-                border: '1px solid var(--ws-line)',
-              }}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: 12,
-                  background: 'var(--ws-primary)', color: '#fff',
-                  display: 'grid', placeItems: 'center',
-                  font: '500 18px/1 var(--ws-font-display)',
-                  marginBottom: 18,
-                }}>{step.n}</div>
-                <h4 style={{ margin: 0, font: '700 17px/1.3 var(--ws-font-sans)', color: 'var(--ws-fg-1)', marginBottom: 10 }}>{step.t}</h4>
-                <p style={{ margin: 0, font: '500 14px/1.6 var(--ws-font-sans)', color: 'var(--ws-fg-3)' }}>{step.d}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Doctors who do this */}
-      {doctors.length > 0 && (
-        <section className="ws-section">
-          <div className="container">
-            <SectionHead num={4} eyebrow={'ทีมเฉพาะทาง'}
-              title={'หมอที่ทำ' + (sub.titleTh)}
-              total={6}
-            />
-            <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(4, doctors.length)}, 1fr)`, gap: 20 }} className="grid-4-md-2">
-              {doctors.map((d, i) => (
-                <DoctorMiniCard key={d.id} d={d} i={i} photoFilter={photoFilter}
-                  onClick={() => onNav(`doctor:${d.id}`)} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      <CTABand onNav={onNav} />
     </div>
   );
 }
@@ -1791,15 +1729,12 @@ function PortfolioShowcase({ num }) {
           <div>
             {num != null && (
               <div className="ws-num" style={{ marginBottom:16 }}>
-                {String(num).padStart(2,'0')} / 06 {'—'} ผลงานคนไข้
+                {String(num).padStart(2,'0')} / 06 {'—'} Real Results
               </div>
             )}
             <h2 className="ws-h2" style={{ margin:0 }}>
-              {'ผลงานคนไข้'}
+              {'ผลลัพธ์ ผลงานเคสจากคลินิกของเรา'}
             </h2>
-            <p className="ws-lead" style={{ marginTop:10, marginBottom:0 }}>
-              {'ผลงานที่ พูดแทนเรา'}
-            </p>
           </div>
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
             <span style={{ font:'600 13px/1 var(--ws-font-sans)', color:'var(--ws-fg-3)', marginRight:12 }}>
@@ -1813,8 +1748,9 @@ function PortfolioShowcase({ num }) {
             </button>
           </div>
         </div>
-        {/* Full-width image frame */}
-        <div style={{ position:'relative', borderRadius:32, overflow:'hidden', width:'100%', maxWidth:896, margin:'0 auto', aspectRatio:'16/9', background:'#111', boxShadow:'var(--ws-shadow-xl)' }}>
+        {/* Tightened image frame — max-w-2xl centred, responsive padding */}
+        <div style={{ padding:'0 8px' }}>
+        <div style={{ position:'relative', borderRadius:28, overflow:'hidden', width:'100%', maxWidth:672, margin:'0 auto', aspectRatio:'4/3', background:'#111', boxShadow:'0 24px 64px rgba(15,23,42,0.22), 0 4px 16px rgba(15,23,42,0.10)' }}>
           <img key={safeIdx} src={images[safeIdx]} alt={'ผลงาน ' + (safeIdx + 1)}
             style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', animation:'ws-fadeIn 0.38s ease' }} />
           {/* Left arrow */}
@@ -1843,6 +1779,7 @@ function PortfolioShowcase({ num }) {
             ))}
           </div>
         </div>
+        </div>
       </div>
     </section>
   );
@@ -1863,11 +1800,11 @@ function SuccessStoriesSection({ stories, title, eyebrow, num, compact }) {
           <div style={{ maxWidth: 720 }}>
             {num != null ? (
               <div className="ws-num" style={{ marginBottom: 16 }}>
-                {String(num).padStart(2, '0')} / 06 — {eyebrow || 'ผลงานคนไข้'}
+                {String(num).padStart(2, '0')} / 06 — {eyebrow || 'Real Results'}
               </div>
             ) : (
               <div className="ws-eyebrow" style={{ marginBottom: 16 }}>
-                {eyebrow || 'ผลงานคนไข้'}
+                {eyebrow || 'Real Results'}
               </div>
             )}
             <h2 className="ws-h2" style={{ margin: 0 }}>
@@ -2783,8 +2720,8 @@ Object.assign(window, { BranchesScreen, BranchCard, BranchesMap });
 // ==========================================
 // Home page — hero + service preview + doctors preview + testimonials + FAQ + CTA
 
-function Hero({ onNav, photoFilter }) {
-  const cfg = window.CLINIC_CONFIG || {};
+function Hero({ onNav, photoFilter, config }) {
+  const cfg = config || {};
   return (
     <section style={{ padding:'clamp(48px,8vh,112px) 32px clamp(64px,10vh,136px)', position:'relative', overflow:'hidden', background:'linear-gradient(150deg,#FFF8F2 0%,#F4F6FF 60%,#FFF0E8 100%)' }}>
       <div style={{ position:'absolute', top:-160, left:-120, width:640, height:640, borderRadius:'50%', background:'radial-gradient(circle,rgba(232,90,20,0.22),transparent 65%)', filter:'blur(80px)', pointerEvents:'none', animation:'ws-orb-drift 18s ease-in-out infinite' }} />
@@ -2866,8 +2803,8 @@ function FloatingBadge({ top, bottom, left, right, icon, title, sub, delay }) {
 }
 
 function ServicesPreview({ onNav, services, config }) {
-  const cfg     = config   || window.CLINIC_CONFIG || {};
-  const allSvcs = services || window.SERVICES      || SERVICES;
+  const cfg     = config   || {};
+  const allSvcs = services || [];
   const features = allSvcs.filter(s => s.feature);
   const others   = allSvcs.filter(s => !s.feature);
   const featureWithSeq = features.map((s, i) => ({ s, seq: i + 1 }));
@@ -2955,8 +2892,9 @@ function ServiceCard({ s, large, seqNum, onClick }) {
   );
 }
 
-function DoctorsPreview({ onNav, photoFilter }) {
-  const cfg = window.CLINIC_CONFIG || {};
+function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
+  const cfg = config || {};
+  const allDocs = doctors || [];
   return (
     <section className="ws-section accent-bg" style={{ background:'var(--ws-navy-50)' }}>
       <div className="container">
@@ -2965,8 +2903,8 @@ function DoctorsPreview({ onNav, photoFilter }) {
           title={cfg.doctorsTitle || 'หมอเฉพาะทาง ที่คุณจะจำได้ชื่อ'}
           lead={cfg.doctorsLead || 'ทีมหมอทุกคนได้รับการรับรอง และอบรมเฉพาะทาง คุณจะพบหมอคนเดิมในทุกครั้งที่มา'} />
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:20 }} className="grid-4-md-2">
-          {(window.DOCTORS || DOCTORS).map((d,i) => (
-            <DoctorCardSmall key={d.name} d={d} i={i} photoFilter={photoFilter} onClick={() => onNav(`doctor:${d.id}`)} />
+          {allDocs.map((d,i) => (
+            <DoctorCardSmall key={d.id || d.name} d={d} i={i} photoFilter={photoFilter} onClick={() => onNav(`doctor:${d.id}`)} />
           ))}
         </div>
       </div>
@@ -2988,15 +2926,29 @@ function DoctorCardSmall({ d, i, photoFilter, onClick }) {
   );
 }
 
-function Testimonials() {
-  const cfg   = window.CLINIC_CONFIG || {};
-  const items = window.TESTIMONIALS || TESTIMONIALS;
+function Testimonials({ config, testimonials }) {
+  const cfg   = config || {};
+  const items = testimonials || [];
   return (
     <section className="ws-section" style={{ background:'#EEF1FB', backgroundImage:'radial-gradient(circle,#B8C3EC 1.5px,transparent 1.5px)', backgroundSize:'24px 24px' }}>
       <div className="container">
-        <SectionHead num={3}
-          eyebrow={cfg.testimonialsEyebrow || 'เสียงจากคนไข้'}
-          title={cfg.testimonialsTitle || 'สิ่งที่คนไข้ของเราพูดถึงเรา'} />
+        {/* Section header — 4-level hierarchy */}
+        <div className="section-head" style={{ marginBottom:56 }}>
+          <div>
+            <div className="ws-num">{'03 / 06 — เสียงจากคนไข้'}</div>
+          </div>
+          <div>
+            <div className="ws-eyebrow" style={{ marginBottom:14 }}>
+              {cfg.testimonialsEyebrow || 'สิ่งที่คนไข้ของเราพูดถึงเรา'}
+            </div>
+            <h2 className="ws-h2" style={{ margin:0 }}>
+              {cfg.testimonialsTitle || 'ความประทับใจ จากลูกค้าของเรา'}
+            </h2>
+            <p className="ws-lead" style={{ marginTop:18, maxWidth:720 }}>
+              {'เสียงจริงจากคนไข้ที่เคยได้รับการดูแลที่ We Smile Dental Clinic — เรื่องราวเล็ก ๆ ที่บอกเล่าความรู้สึก หลังจบการทันตกรรม'}
+            </p>
+          </div>
+        </div>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:24, alignItems:'start' }} className="grid-3-md-1">
           {items.map((t,i) => {
             const accent = i===1;
@@ -3067,8 +3019,8 @@ function FAQPreview({ onNav }) {
   );
 }
 
-function CTABand({ onNav }) {
-  const cfg = window.CLINIC_CONFIG || {};
+function CTABand({ onNav, config }) {
+  const cfg = config || {};
   return (
     <section style={{ padding:'0 32px 96px' }}>
       <div className="container">
@@ -3105,16 +3057,16 @@ function CTABand({ onNav }) {
   );
 }
 
-function HomeScreen({ onNav, photoFilter, services, config }) {
+function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonials }) {
   return (
     <div data-screen-label="01 Home">
-      <Hero onNav={onNav} photoFilter={photoFilter} />
+      <Hero onNav={onNav} photoFilter={photoFilter} config={config} />
       <ServicesPreview onNav={onNav} services={services} config={config} />
-      <DoctorsPreview onNav={onNav} photoFilter={photoFilter} />
-      <PortfolioShowcase num={4} />
-      <Testimonials />
+      <DoctorsPreview onNav={onNav} photoFilter={photoFilter} config={config} doctors={doctors} />
+      <PortfolioShowcase num={3} />
+      <Testimonials config={config} testimonials={testimonials} />
       <FAQPreview onNav={onNav} />
-      <CTABand onNav={onNav} />
+      <CTABand onNav={onNav} config={config} />
     </div>
   );
 }
@@ -4804,7 +4756,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
               <div style={{ display:'flex', flexDirection:'column', gap:22 }}>
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1.5px solid #e8edf5', paddingBottom:14 }}>
                   <div>
-                    <h3 style={{ margin:0, color:'#1e293b', fontSize:16, fontWeight:700 }}>🖼 ผลงานที่พูดแทนเรา — Image Showcase</h3>
+                    <h3 style={{ margin:0, color:'#1e293b', fontSize:16, fontWeight:700 }}>🖼 Real Results — Image Showcase</h3>
                     <p style={{ margin:'4px 0 0', fontSize:12, color:'#94a3b8' }}>อัปโหลดรูปผลงานเคสจริง แสดงเป็น Full-Width Slider ในหน้าแรก</p>
                   </div>
                   <button type="button" onClick={addPortfolioImage} style={{
@@ -5273,8 +5225,8 @@ function App() {
       doctorsTitle:   'หมอเฉพาะทาง ที่คุณจะจำได้ชื่อ',
       doctorsLead:    'ทีมหมอทุกคนได้รับการรับรอง และอบรมเฉพาะทาง คุณจะพบหมอคนเดิมในทุกครั้งที่มา',
       /* ── Testimonials section ── */
-      testimonialsEyebrow: 'เสียงจากคนไข้',
-      testimonialsTitle:   'สิ่งที่คนไข้ของเราพูดถึงเรา',
+      testimonialsEyebrow: 'สิ่งที่คนไข้ของเราพูดถึงเรา',
+      testimonialsTitle:   'ความประทับใจ จากลูกค้าของเรา',
       /* ── CTA Band ── */
       ctaEyebrow: 'เริ่มเมื่อไหร่ก็ได้',
       ctaTitle1:  'ปรึกษาฟรี 15 นาที',
@@ -5316,7 +5268,7 @@ function App() {
   return (
     <div data-emphasis={tweaks.emphasis} className={densityClass}>
       <Navbar active={navActive} onNav={onNav} />
-      {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} />}
+      {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} doctors={webData.doctors} testimonials={webData.testimonials} />}
       {route.kind === 'services'   && <ServicesScreen {...props} />}
       {route.kind === 'doctors'    && <DoctorsScreen {...props} />}
       {route.kind === 'branches'   && <BranchesScreen {...props} />}
