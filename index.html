@@ -1871,6 +1871,121 @@ function PortfolioShowcase({ num, portfolioImages }) {
   );
 }
 
+// ── PromotionCard ─────────────────────────────────────────────────────────
+function PromotionCard({ p, onNav }) {
+  const [hov, setHov] = React.useState(false);
+  const badgeBg = p.badgeColor || '#ef4444';
+  return (
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: '#fff', borderRadius: 24, overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+        boxShadow: hov ? '0 28px 64px rgba(0,0,0,0.28)' : '0 6px 28px rgba(0,0,0,0.14)',
+        transform: hov ? 'translateY(-6px) scale(1.01)' : 'none',
+        transition: 'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+      }}>
+      {/* Visual header */}
+      <div style={{
+        height: 190, position: 'relative', overflow: 'hidden', flexShrink: 0,
+        background: 'linear-gradient(135deg,#0F1E5C 0%,#1A2A6C 55%,#1E3580 100%)',
+      }}>
+        {p.image ? (
+          <img src={p.image} alt={p.title} loading="lazy"
+            style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />
+        ) : (
+          <>
+            <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(ellipse at 72% 30%,rgba(232,90,20,0.38) 0%,transparent 58%),radial-gradient(ellipse at 18% 78%,rgba(74,99,214,0.32) 0%,transparent 54%)' }} />
+            <div style={{ position:'absolute', right:-28, bottom:-28, width:130, height:130, borderRadius:'50%', border:'1px solid rgba(255,255,255,0.07)', background:'rgba(255,255,255,0.03)' }} />
+            <div style={{ position:'absolute', left:24, bottom:24, display:'flex', alignItems:'center', gap:8 }}>
+              <i data-lucide="tag" style={{ width:18, height:18, color:'rgba(255,255,255,0.30)' }}></i>
+            </div>
+          </>
+        )}
+        {p.badge && (
+          <span style={{
+            position:'absolute', top:16, left:16,
+            background: badgeBg, color:'#fff',
+            font:'700 10px/1 var(--ws-font-sans)', letterSpacing:'0.09em', textTransform:'uppercase',
+            padding:'6px 13px', borderRadius:999,
+            boxShadow:`0 4px 14px ${badgeBg}60`,
+          }}>{p.badge}</span>
+        )}
+      </div>
+      {/* Body */}
+      <div style={{ padding:'22px 24px 26px', flex:1, display:'flex', flexDirection:'column', gap:0 }}>
+        <h3 style={{ margin:'0 0 8px', font:'700 18px/1.3 var(--ws-font-display)', color:'var(--ws-fg-1)', letterSpacing:'-0.01em' }}>
+          {p.title}
+        </h3>
+        {p.subtitle && (
+          <p style={{ margin:'0 0 20px', font:'400 13.5px/1.65 var(--ws-font-sans)', color:'var(--ws-fg-3)', textWrap:'pretty' }}>
+            {p.subtitle}
+          </p>
+        )}
+        <button
+          onClick={() => onNav && onNav(p.ctaAction || 'booking')}
+          style={{
+            marginTop:'auto', background:'var(--ws-primary)', color:'#fff', border:0,
+            borderRadius:12, padding:'13px 20px',
+            font:'700 13.5px/1 var(--ws-font-sans)', cursor:'pointer',
+            display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+            boxShadow:'0 4px 16px rgba(232,90,20,0.28)',
+            transition:'all 0.22s ease',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.boxShadow='0 6px 22px rgba(232,90,20,0.48)'; e.currentTarget.style.transform='translateY(-1px)'; }}
+          onMouseLeave={e => { e.currentTarget.style.boxShadow='0 4px 16px rgba(232,90,20,0.28)'; e.currentTarget.style.transform='none'; }}
+        >
+          <i data-lucide="tag" style={{ width:14, height:14 }}></i>
+          {p.cta || 'ดูรายละเอียด'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── PromotionsSection ──────────────────────────────────────────────────────
+function PromotionsSection({ promotions, onNav }) {
+  const live = (promotions || []).filter(p => p.active !== false);
+  if (live.length === 0) return null;
+  const cols = live.length === 1 ? '1fr' : live.length === 2 ? 'repeat(2,1fr)' : 'repeat(auto-fill,minmax(290px,1fr))';
+  return (
+    <section style={{
+      background: 'linear-gradient(160deg,#090f28 0%,#0f1a3e 48%,#0b1530 100%)',
+      padding: 'clamp(64px,8vw,96px) 32px',
+      position: 'relative', overflow: 'hidden',
+    }}>
+      <div style={{ position:'absolute', top:-140, right:-100, width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle,rgba(232,90,20,0.17),transparent 65%)', filter:'blur(72px)', pointerEvents:'none' }} />
+      <div style={{ position:'absolute', bottom:-100, left:-60, width:380, height:380, borderRadius:'50%', background:'radial-gradient(circle,rgba(74,99,214,0.16),transparent 65%)', filter:'blur(60px)', pointerEvents:'none' }} />
+      <div style={{ maxWidth:1200, margin:'0 auto', position:'relative' }}>
+        {/* Header */}
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:44, flexWrap:'wrap', gap:20 }}>
+          <div>
+            <div style={{ font:'600 11px/1 var(--ws-font-sans)', color:'var(--ws-orange-300)', letterSpacing:'0.13em', textTransform:'uppercase', marginBottom:14, display:'flex', alignItems:'center', gap:10 }}>
+              <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--ws-orange-300)', display:'inline-block', animation:'ws-pulse-dot 2.2s ease-in-out infinite' }} />
+              {'โปรโมชั่นพิเศษ'}
+            </div>
+            <h2 className="ws-h2" style={{ color:'#fff', margin:0, letterSpacing:'-0.02em' }}>
+              {'ข้อเสนอ'}<em className="accent-fg" style={{ fontStyle:'italic', color:'var(--ws-orange-400)' }}>{' สำหรับคุณ'}</em>
+            </h2>
+          </div>
+          <span style={{ font:'500 13px/1 var(--ws-font-sans)', color:'rgba(255,255,255,0.38)' }}>
+            {live.length}{' โปรโมชั่น'}
+          </span>
+        </div>
+        {/* Card grid */}
+        <div style={{ display:'grid', gridTemplateColumns:cols, gap:22 }}>
+          {live.map((p, i) => (
+            <PromotionCard key={p.id || `promo-${i}`} p={p} onNav={onNav} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+Object.assign(window, { PromotionCard, PromotionsSection });
+
 // Patient Success Stories — horizontal slider w/ before/after
 // ============================================================
 function SuccessStoriesSection({ stories, title, eyebrow, num, compact }) {
@@ -3333,7 +3448,9 @@ function FAQPreview({ onNav }) {
 }
 
 function CTABand({ onNav, config }) {
-  const cfg = config || {};
+  // Fall back to the global CLINIC_CONFIG so every CTABand instance (not just HomeScreen)
+  // picks up admin edits without needing config prop drilling to every caller.
+  const cfg = config || window.CLINIC_CONFIG || {};
   return (
     <section style={{ padding:'0 32px 96px' }}>
       <div className="container">
@@ -3355,10 +3472,13 @@ function CTABand({ onNav, config }) {
               style={{ padding:'20px 28px', fontSize:16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 12px 36px rgba(232,90,20,0.40)' }}>
               <i data-lucide="calendar-check" style={{ width:18, height:18 }}></i>{cfg.ctaCta1||'นัดหมายเลย'}
             </button>
-            <button className="btn btn-line" style={{ padding:'19px 28px', fontSize:16, borderRadius:14 }}>
+            <a href={cfg.ctaLineHref || cfg.socialLine || '#'}
+              target="_blank" rel="noopener noreferrer"
+              className="btn btn-line"
+              style={{ padding:'19px 28px', fontSize:16, borderRadius:14, textDecoration:'none', display:'flex', alignItems:'center', gap:10 }}>
               <i data-lucide="message-circle" style={{ width:18, height:18 }}></i>
-              {`แชต LINE ${cfg.clinicLine||'@wesmiledc1'}`}
-            </button>
+              {cfg.ctaLineText || `แชต LINE ${cfg.clinicLine||'@wesmiledc1'}`}
+            </a>
             <a href={`tel:${(cfg.clinicPhone||'063-879-8448').replace(/-/g,'')}`} className="btn"
               style={{ padding:'19px 28px', fontSize:16, borderRadius:14, background:'rgba(255,255,255,.09)', color:'#fff', border:'1px solid rgba(255,255,255,.22)', textDecoration:'none' }}>
               <i data-lucide="phone" style={{ width:18, height:18 }}></i>{cfg.clinicPhone||'063-879-8448'}
@@ -3370,13 +3490,14 @@ function CTABand({ onNav, config }) {
   );
 }
 
-function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonials, portfolioImages, branches }) {
+function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonials, portfolioImages, branches, promotions }) {
   return (
     <div data-screen-label="01 Home">
       <Hero onNav={onNav} photoFilter={photoFilter} config={config} />
       <ServicesPreview onNav={onNav} services={services} config={config} />
       <DoctorsPreview onNav={onNav} photoFilter={photoFilter} config={config} doctors={doctors} />
       <PortfolioShowcase num={3} portfolioImages={portfolioImages} />
+      <PromotionsSection promotions={promotions} onNav={onNav} />
       <HomeBranchTabs branches={branches} onNav={onNav} />
       <Testimonials config={config} testimonials={testimonials} />
       <FAQPreview onNav={onNav} />
@@ -4721,6 +4842,28 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     });
   };
 
+  // ── ฟังก์ชันอัปเดตโปรโมชั่น ──
+  const updatePromotion = (idx, key, val) => {
+    setFormData(prev => {
+      const promotions = [...(prev.promotions || [])];
+      promotions[idx] = { ...promotions[idx], [key]: typeof val === 'string' ? sanitizeInput(val) : val };
+      return { ...prev, promotions };
+    });
+  };
+  const addPromotion = () => {
+    const newPromo = {
+      id: 'promo-' + Date.now(),
+      badge: 'New', badgeColor: '#8b5cf6',
+      title: 'โปรโมชั่นใหม่', subtitle: '',
+      image: '', cta: 'ดูรายละเอียด',
+      ctaAction: 'booking', active: true,
+    };
+    setFormData(prev => ({ ...prev, promotions: [...(prev.promotions || []), newPromo] }));
+  };
+  const removePromotion = (idx) => {
+    setFormData(prev => ({ ...prev, promotions: (prev.promotions || []).filter((_, i) => i !== idx) }));
+  };
+
   const updateBranchDayHour = (branchIdx, dayIdx, key, val) => {
     setFormData(prev => {
       const branches = [...prev.branches];
@@ -4938,11 +5081,12 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
   const cancelBtnStyle = { background:'transparent', border:'1.5px solid #e2e8f0', color:'#64748b', borderRadius:10, padding:'9px 18px', fontSize:13, fontWeight:600, cursor:'pointer', transition:'all 0.18s' };
 
   const TABS = [
-    { id:'dashboard', label:'แผงควบคุมหลัก',    icon:'📊', color:'#0d9488', desc:'Overview & ตั้งค่าหน้าแรก' },
-    { id:'services',  label:'จัดการบริการ',      icon:'🦷', color:'#f59e0b', desc:'Service Catalog' },
-    { id:'doctors',   label:'จัดการทีมแพทย์',   icon:'👩‍⚕️', color:'#3b82f6', desc:'Doctors Roster' },
-    { id:'branches',  label:'จัดการสาขา',        icon:'📍', color:'#ef4444', desc:'Branch Editor' },
-    { id:'contact',   label:'ติดต่อ & Footer',   icon:'⚙️', color:'#6366f1', desc:'Contact Setup' },
+    { id:'dashboard',  label:'แผงควบคุมหลัก',   icon:'📊', color:'#0d9488', desc:'Overview & ตั้งค่าหน้าแรก' },
+    { id:'services',   label:'จัดการบริการ',     icon:'🦷', color:'#f59e0b', desc:'Service Catalog' },
+    { id:'promotions', label:'โปรโมชั่น',         icon:'🎁', color:'#ec4899', desc:'Promotions Manager' },
+    { id:'doctors',    label:'จัดการทีมแพทย์',  icon:'👩‍⚕️', color:'#3b82f6', desc:'Doctors Roster' },
+    { id:'branches',   label:'จัดการสาขา',       icon:'📍', color:'#ef4444', desc:'Branch Editor' },
+    { id:'contact',    label:'ติดต่อ & Footer',  icon:'⚙️', color:'#6366f1', desc:'Contact Setup' },
   ];
 
   return (
@@ -5103,6 +5247,26 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                     </div>
                   </div>
                 </div>
+
+                {/* CTA Banner */}
+                <div style={card}>
+                  {cardTitle('#e85a14','📣','CTA Banner — ปรึกษาฟรี (บล็อกท้ายหน้า)')}
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
+                    <div><label style={lbl}>Eyebrow ("เริ่มเมื่อไหร่ก็ได้")</label><input type="text" value={formData.config.ctaEyebrow||''} onChange={e=>updateConfig('ctaEyebrow',e.target.value)} style={inp} /></div>
+                    <div><label style={lbl}>บรรทัดที่ 1 ("ปรึกษาฟรี 15 นาที")</label><input type="text" value={formData.config.ctaTitle1||''} onChange={e=>updateConfig('ctaTitle1',e.target.value)} style={inp} /></div>
+                    <div><label style={lbl}>บรรทัดที่ 2 ("ไม่มีข้อผูกมัด")</label><input type="text" value={formData.config.ctaTitle2||''} onChange={e=>updateConfig('ctaTitle2',e.target.value)} style={inp} /></div>
+                    <div><label style={lbl}>ปุ่ม CTA หลัก ("นัดหมายเลย")</label><input type="text" value={formData.config.ctaCta1||''} onChange={e=>updateConfig('ctaCta1',e.target.value)} style={inp} /></div>
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={lbl}>Lead / คำอธิบาย</label>
+                    <textarea rows={2} value={formData.config.ctaLead||''} onChange={e=>updateConfig('ctaLead',e.target.value)} style={{...inp,resize:'vertical'}} />
+                  </div>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
+                    <div><label style={lbl}>LINE Button Text (เว้นว่างใช้ค่าเริ่มต้น)</label><input type="text" value={formData.config.ctaLineText||''} onChange={e=>updateConfig('ctaLineText',e.target.value)} style={inp} placeholder={`แชต LINE ${formData.config.clinicLine||'@wesmiledc1'}`} /></div>
+                    <div><label style={lbl}>LINE URL (href — เว้นว่างใช้ socialLine)</label><input type="url" value={formData.config.ctaLineHref||''} onChange={e=>updateConfig('ctaLineHref',e.target.value)} style={inp} placeholder="https://line.me/ti/p/@..." /></div>
+                  </div>
+                </div>
+
               </div>
             )}
 
@@ -5380,6 +5544,103 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                   </div>
                 </div>
 
+              </div>
+            )}
+
+            {/* ═══════════════════════════════════════════
+                TAB — จัดการโปรโมชั่น
+            ═══════════════════════════════════════════ */}
+            {activeTab === 'promotions' && (
+              <div style={{ display:'flex', flexDirection:'column', gap:22 }}>
+                {/* Header */}
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1.5px solid #e8edf5', paddingBottom:14 }}>
+                  <div>
+                    <h3 style={{ margin:0, color:'#1e293b', fontSize:16, fontWeight:700 }}>🎁 จัดการโปรโมชั่นและแคมเปญ</h3>
+                    <p style={{ margin:'4px 0 0', fontSize:12, color:'#94a3b8' }}>โปรโมชั่นที่ Active จะแสดงบนหน้าแรกโดยอัตโนมัติ</p>
+                  </div>
+                  <button type="button" onClick={addPromotion} style={{
+                    background:'linear-gradient(135deg,#ec4899,#be185d)', border:0, color:'#fff',
+                    padding:'9px 16px', borderRadius:9, fontSize:13, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap',
+                    boxShadow:'0 4px 14px rgba(236,72,153,0.32)',
+                  }}>+ เพิ่มโปรโมชั่น</button>
+                </div>
+
+                {(formData.promotions || []).length === 0 && (
+                  <div style={{ textAlign:'center', padding:'48px 24px', color:'#94a3b8', fontSize:14, background:'#fff', borderRadius:14, border:'1.5px dashed #e2e8f0' }}>
+                    ยังไม่มีโปรโมชั่น — กด "เพิ่มโปรโมชั่น" เพื่อเริ่ม
+                  </div>
+                )}
+
+                {(formData.promotions || []).map((p, i) => (
+                  <div key={`promo-admin-${i}`} style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:16, padding:24, boxShadow:'0 1px 4px rgba(15,23,42,0.06)' }}>
+                    {/* Card header */}
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18 }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                        <span style={{ background: p.badgeColor||'#ec4899', color:'#fff', borderRadius:999, padding:'4px 12px', fontSize:11, fontWeight:700, letterSpacing:'0.07em', textTransform:'uppercase' }}>
+                          {p.badge || 'Badge'}
+                        </span>
+                        <span style={{ fontSize:13, fontWeight:600, color:'#1e293b' }}>{p.title || 'โปรโมชั่นใหม่'}</span>
+                      </div>
+                      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                        <label style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer' }}>
+                          <input type="checkbox" checked={p.active !== false}
+                            onChange={e => updatePromotion(i, 'active', e.target.checked)}
+                            style={{ width:16, height:16, accentColor:'#ec4899', cursor:'pointer' }} />
+                          <span style={{ fontSize:12, fontWeight:600, color: p.active !== false ? '#059669' : '#94a3b8' }}>
+                            {p.active !== false ? 'แสดงอยู่' : 'ซ่อนอยู่'}
+                          </span>
+                        </label>
+                        <button type="button" onClick={() => removePromotion(i)} style={{
+                          background:'#7f1d1d', border:0, color:'#fca5a5',
+                          padding:'7px 12px', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer',
+                        }}>ลบ</button>
+                      </div>
+                    </div>
+
+                    {/* Fields grid */}
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:14 }}>
+                      <div>
+                        <label style={lbl}>หัวข้อโปรโมชั่น</label>
+                        <input type="text" value={p.title||''} onChange={e => updatePromotion(i,'title',e.target.value)} style={inp} placeholder="เช่น จัดฟันแบบใส Invisalign" />
+                      </div>
+                      <div>
+                        <label style={lbl}>คำอธิบาย / Subtitle</label>
+                        <input type="text" value={p.subtitle||''} onChange={e => updatePromotion(i,'subtitle',e.target.value)} style={inp} placeholder="ฟรีค่า Retainer มูลค่า 3,500 บาท..." />
+                      </div>
+                      <div>
+                        <label style={lbl}>Badge Label</label>
+                        <input type="text" value={p.badge||''} onChange={e => updatePromotion(i,'badge',e.target.value)} style={inp} placeholder="Hot Deal / Limited Time / New" />
+                      </div>
+                      <div style={{ display:'flex', gap:10, alignItems:'flex-end' }}>
+                        <div style={{ flex:1 }}>
+                          <label style={lbl}>Badge Color</label>
+                          <input type="text" value={p.badgeColor||'#ef4444'} onChange={e => updatePromotion(i,'badgeColor',e.target.value)} style={inp} />
+                        </div>
+                        <input type="color" value={p.badgeColor||'#ef4444'} onChange={e => updatePromotion(i,'badgeColor',e.target.value)}
+                          style={{ width:42, height:42, borderRadius:8, border:'1.5px solid #e2e8f0', cursor:'pointer', padding:2, flexShrink:0 }} />
+                      </div>
+                      <div>
+                        <label style={lbl}>CTA Button Text</label>
+                        <input type="text" value={p.cta||''} onChange={e => updatePromotion(i,'cta',e.target.value)} style={inp} placeholder="ดูรายละเอียด / นัดหมาย" />
+                      </div>
+                      <div>
+                        <label style={lbl}>CTA Destination</label>
+                        <select value={p.ctaAction||'booking'} onChange={e => updatePromotion(i,'ctaAction',e.target.value)} style={{...inp,padding:'10px 12px'}}>
+                          <option value="booking">นัดหมาย (Booking)</option>
+                          <option value="services">บริการ (Services)</option>
+                          <option value="contact">ติดต่อ (Contact)</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label style={lbl}>รูปภาพ URL (เว้นว่างเพื่อใช้ gradient เริ่มต้น)</label>
+                      <input type="text" value={p.image||''} onChange={e => updatePromotion(i,'image',e.target.value)} style={inp} placeholder="https://..." />
+                      {p.image && (
+                        <img src={p.image} alt="" loading="lazy" style={{ marginTop:8, width:90, height:60, objectFit:'cover', borderRadius:8, border:'2px solid #e2e8f0' }} />
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
@@ -5726,6 +5987,11 @@ function App() {
   const [webData, setWebData] = React.useState(() => {
     const _def = {
       portfolioImages: [...(window.PORTFOLIO_IMAGES || PORTFOLIO_IMAGES)],
+      promotions: [
+        { id:'promo-invisalign',  badge:'Hot Deal',      badgeColor:'#ef4444', title:'จัดฟันแบบใส Invisalign',      subtitle:'ฟรีค่า Retainer มูลค่า 3,500 บาท เมื่อเริ่มรักษาก่อน 30 มิ.ย. นี้',            image:'', cta:'นัดปรึกษาฟรี',   ctaAction:'booking',  active:true },
+        { id:'promo-whitening',   badge:'Limited Time',  badgeColor:'#f97316', title:'ฟอกสีฟัน + ขูดหินปูน',         subtitle:'แพ็กเกจดูแลรอยยิ้มในราคาพิเศษ สำหรับคนไข้ใหม่เท่านั้น',                          image:'', cta:'ดูแพ็กเกจ',      ctaAction:'services', active:true },
+        { id:'promo-implant',     badge:'Popular',       badgeColor:'#0ea5e9', title:'รากฟันเทียม ระบบ Straumann',   subtitle:'ผ่อน 0% นาน 12 เดือน ปรึกษาฟรีกับผู้เชี่ยวชาญรากฟันเทียม',                      image:'', cta:'ปรึกษาฟรี',     ctaAction:'booking',  active:true },
+      ],
     branches: window.BRANCHES.map(b => ({
       ...b,
       mapsUrl: b.mapsUrl || ('https://maps.google.com/?q=We+Smile+Dental+Clinic+' + b.name),
@@ -5786,6 +6052,8 @@ function App() {
       ctaTitle2:  'ไม่มีข้อผูกมัด',
       ctaLead:    'บอกเป้าหมายรอยยิ้มของคุณ — เราจะอธิบายตัวเลือกทุกแบบ พร้อมราคา',
       ctaCta1:    'นัดหมายเลย',
+      ctaLineText: '',
+      ctaLineHref: '',
       /* ── Contact & Footer ── */
       contactBranchName: 'ลาดกระบัง',
       contactSubtext:    'มีที่จอดรถฟรี — ใกล้สนามบินสุวรรณภูมิ',
@@ -5904,7 +6172,7 @@ function App() {
   return (
     <div data-emphasis={tweaks.emphasis} className={densityClass}>
       <Navbar active={navActive} onNav={onNav} />
-      {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} doctors={webData.doctors} testimonials={webData.testimonials} portfolioImages={webData.portfolioImages} branches={webData.branches} />}
+      {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} doctors={webData.doctors} testimonials={webData.testimonials} portfolioImages={webData.portfolioImages} branches={webData.branches} promotions={webData.promotions} />}
       {route.kind === 'booking'    && <BookingScreen {...props} />}
       {route.kind === 'contact'    && <ContactScreen {...props} config={webData.config} branches={webData.branches} />}
       {route.kind === 'servicecat' && <ServiceCategoryScreen {...props} serviceId={route.categoryId} />}
