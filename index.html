@@ -2086,10 +2086,11 @@ Object.assign(window, {
 // ==========================================
 // DoctorProfile.jsx — individual doctor page with branch schedule matrix
 
-function DoctorProfileScreen({ onNav, photoFilter, doctorId }) {
-  const d = getDoctor(doctorId);
+function DoctorProfileScreen({ onNav, photoFilter, doctorId, doctors }) {
+  const allDoctors = (doctors && doctors.length > 0) ? doctors : (window.DOCTORS || DOCTORS);
+  const d = allDoctors.find(doc => doc.id === doctorId);
   if (!d) return null;
-  const specialties = d.specialties.map(id => getService(id)).filter(Boolean);
+  const specialties = (d.specialties || []).map(id => getService(id)).filter(Boolean);
 
   return (
     <div data-screen-label={`05 Doctors / ${d.name}`}>
@@ -2267,13 +2268,15 @@ function ScheduleMatrix({ doctor }) {
   const daysInMonth = lastDay.getDate();
   const startWeekday = firstDay.getDay();
 
+  const safeSchedule = doctor.schedule || [];
+
   // Map dayIndex (1..n) → {branch, day, weekOfMonth} or null
   function dateMatches(dayNum) {
     const date = new Date(view.y, view.m, dayNum);
     const dayKey = dayKeys[date.getDay()];
     // Week of month: 1..5 based on which occurrence of this weekday it is
     const weekOfMonth = Math.ceil(dayNum / 7);
-    const matches = doctor.schedule.filter(s => s.day === dayKey && s.weeks.includes(weekOfMonth));
+    const matches = safeSchedule.filter(s => s.day === dayKey && s.weeks.includes(weekOfMonth));
     return matches;
   }
 
@@ -2313,8 +2316,9 @@ function ScheduleMatrix({ doctor }) {
 
         {/* Branch legend */}
         <div style={{ display: 'flex', gap: 18, flexWrap: 'wrap' }}>
-          {[...new Set(doctor.schedule.map(s => s.branch))].map(branchId => {
+          {[...new Set(safeSchedule.map(s => s.branch))].map(branchId => {
             const b = getBranch(branchId);
+            if (!b) return null;
             const p = branchPalette[branchId] || branchPalette.ladkrabang;
             return (
               <div key={branchId} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2378,7 +2382,7 @@ function ScheduleMatrix({ doctor }) {
                 <span style={{ font: '700 14px/1 var(--ws-font-sans)', color: p.fg }}>{d}</span>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <div style={{ font: '600 10px/1 var(--ws-font-sans)', color: p.fg, textTransform: 'uppercase', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {b.nameTh}
+                    {b ? b.nameTh : matches[0].branch}
                   </div>
                   {matches.length > 1 && (
                     <div style={{ font: '500 9px/1 var(--ws-font-sans)', color: p.fg, opacity: 0.8 }}>
@@ -2398,10 +2402,16 @@ function ScheduleMatrix({ doctor }) {
         <div className="ws-eyebrow" style={{ marginBottom: 18 }}>
           {'ตารางประจำ'}
         </div>
+        {safeSchedule.length === 0 && (
+          <div style={{ font: '500 14px/1.6 var(--ws-font-sans)', color: 'var(--ws-fg-3)', padding: '8px 0' }}>
+            {'ยังไม่มีตารางออกตรวจที่กำหนด'}
+          </div>
+        )}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
-          {[...new Set(doctor.schedule.map(s => s.branch))].map(branchId => {
+          {[...new Set(safeSchedule.map(s => s.branch))].map(branchId => {
             const b = getBranch(branchId);
-            const slots = doctor.schedule.filter(s => s.branch === branchId);
+            if (!b) return null;
+            const slots = safeSchedule.filter(s => s.branch === branchId);
             const p = branchPalette[branchId] || branchPalette.ladkrabang;
             return (
               <div key={branchId} style={{
@@ -4601,7 +4611,8 @@ function AdminDashboard({ isOpen, onClose, webData, onSave }) {
     const newId = 'doc-' + Date.now();
     const newDoc = {
       id: newId, name: '', nameTh: 'แพทย์ใหม่', role: '', roleTh: '',
-      cred: '', photo: '', bioTh: '', schedule: []
+      cred: '', photo: '', bioTh: '', shortEduTh: '',
+      specialties: [], schedule: [], showPortfolio: false, portfolioImages: [],
     };
     setFormData(prev => {
       const doctors = [...prev.doctors, newDoc];
@@ -5475,7 +5486,10 @@ function App() {
       dailyHours: (b.dailyHours && b.dailyHours.length === 7) ? b.dailyHours : makeDefaultDailyHours(b.hours),
     })),
     services: window.SERVICES,
-    doctors: window.DOCTORS,
+    doctors: window.DOCTORS.map(d => ({
+      specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '',
+      ...d,
+    })),
     testimonials: window.TESTIMONIALS,
     config: {
       /* ── Clinic basics ── */
@@ -5544,7 +5558,9 @@ function App() {
     const _ls = localStorage.getItem('wsdc_webdata');
     if (_ls) {
       const _p = JSON.parse(_ls);
-      return { ..._def, ..._p, config: { ..._def.config, ...(_p.config || {}) } };
+      const _docDefaults = { specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '' };
+      const normalizedDoctors = (_p.doctors || _def.doctors).map(d => ({ ..._docDefaults, ...d }));
+      return { ..._def, ..._p, doctors: normalizedDoctors, config: { ..._def.config, ...(_p.config || {}) } };
     }
   } catch (_e) { /* corrupted — fall through to defaults */ }
   return _def;
@@ -5646,7 +5662,7 @@ function App() {
       {route.kind === 'contact'    && <ContactScreen {...props} config={webData.config} />}
       {route.kind === 'servicecat' && <ServiceCategoryScreen {...props} serviceId={route.categoryId} />}
       {route.kind === 'subservice' && <SubServiceScreen {...props} categoryId={route.categoryId} subId={route.subId} />}
-      {route.kind === 'doctor'     && <DoctorProfileScreen {...props} doctorId={route.doctorId} />}
+      {route.kind === 'doctor'     && <DoctorProfileScreen {...props} doctorId={route.doctorId} doctors={webData.doctors} />}
       <Footer onNav={onNav} config={webData.config} />
       <LineBubble />
       <TweaksPanel title="Tweaks">
