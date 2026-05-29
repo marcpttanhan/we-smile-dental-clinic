@@ -14,6 +14,8 @@
 <meta name="twitter:card"       content="summary_large_image">
 <!-- JSON-LD LocalBusiness schema placeholder (runtime-overridden by React effect) -->
 <script id="ws-jsonld" type="application/ld+json">{"@context":"https://schema.org","@type":"Dentist","name":"We Smile Dental Clinic","telephone":"063-879-8448","address":{"@type":"PostalAddress","addressLocality":"ลาดกระบัง","addressCountry":"TH"}}</script>
+<!-- Preload Anuphan before any CSS/JS so the font is available on frame 1 -->
+<link rel="preload" href="fonts/Anuphan-VariableFont_wght.ttf" as="font" type="font/truetype" crossorigin="anonymous">
 <link rel="stylesheet" href="colors_and_type.css">
 <link rel="stylesheet" href="styles.css">
 <link rel="icon" href="assets/logo.png">
@@ -42,10 +44,16 @@
   src: url('fonts/Anuphan-VariableFont_wght.ttf') format('truetype-variations');
   font-weight: 100 900;
   font-style: normal;
-  font-display: swap;
+  /* block: text is invisible for ≤3 s while the font loads, then renders in Anuphan.
+     Combined with the <link rel="preload"> above, the load is imperceptible on any
+     reasonable connection — eliminating the system-font → Anuphan snap entirely. */
+  font-display: block;
 }
+/* Force Anuphan as the very first family so the browser never picks a system fallback
+   on the initial render. The preload ensures the font bytes are already in the cache
+   by the time the first paint fires. */
 *, *::before, *::after {
-  font-family: 'Anuphan', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Anuphan', sans-serif;
 }
 /* performance-booster v1.0.0 — hardware acceleration + smooth scroll */
 html { scroll-behavior: smooth; }
@@ -3461,10 +3469,11 @@ function CTABand({ onNav, config }) {
           <div style={{ position:'relative', zIndex:1 }}>
             <div className="ws-eyebrow" style={{ color:'var(--ws-orange-300)', marginBottom:18 }}>{cfg.ctaEyebrow||'เริ่มเมื่อไหร่ก็ได้'}</div>
             <h2 style={{ font:'500 clamp(32px,4.4vw,56px)/1.05 var(--ws-font-display)', margin:0, letterSpacing:'-.025em' }}>
-              {cfg.ctaTitle1||'ปรึกษาฟรี 15 นาที'}<br/>{cfg.ctaTitle2||'ไม่มีข้อผูกมัด'}
+              {cfg.ctaTitle1||'ติดต่อกลับภายใน 15 นาที (ในเวลาทำการ)'}
+              {cfg.ctaTitle2 ? <><br/>{cfg.ctaTitle2}</> : null}
             </h2>
             <p style={{ font:'500 17px/1.75 var(--ws-font-sans)', color:'rgba(255,255,255,.72)', margin:'24px 0 0', maxWidth:480 }}>
-              {cfg.ctaLead||'บอกเป้าหมายรอยยิ้มของคุณ — เราจะอธิบายตัวเลือกทุกแบบ พร้อมราคา'}
+              {cfg.ctaLead||'ปรึกษาฟรีไม่มีค่าใช้จ่าย'}
             </p>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:12, position:'relative', zIndex:1 }}>
@@ -5633,11 +5642,28 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                       </div>
                     </div>
                     <div>
-                      <label style={lbl}>รูปภาพ URL (เว้นว่างเพื่อใช้ gradient เริ่มต้น)</label>
-                      <input type="text" value={p.image||''} onChange={e => updatePromotion(i,'image',e.target.value)} style={inp} placeholder="https://..." />
-                      {p.image && (
-                        <img src={p.image} alt="" loading="lazy" style={{ marginTop:8, width:90, height:60, objectFit:'cover', borderRadius:8, border:'2px solid #e2e8f0' }} />
-                      )}
+                      <label style={lbl}>รูปภาพโปรโมชั่น (อัปโหลดไฟล์ หรือใส่ URL)</label>
+                      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+                        <input type="file" accept="image/*"
+                          onChange={e => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            const reader = new FileReader();
+                            reader.onload = ev => updatePromotion(i, 'image', ev.target.result);
+                            reader.readAsDataURL(file);
+                          }}
+                          style={{ ...inp, padding:'8px 12px', cursor:'pointer' }} />
+                        <input type="text" value={p.image||''} onChange={e => updatePromotion(i,'image',e.target.value)}
+                          style={{ ...inp, fontSize:11, color:'#64748b' }} placeholder="หรือวางลิงก์รูปภาพ https://..." />
+                        {p.image && (
+                          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                            <img src={p.image} alt="" loading="lazy" style={{ width:90, height:60, objectFit:'cover', borderRadius:8, border:'2px solid #e2e8f0' }} />
+                            <span style={{ fontSize:11, color:'#64748b' }}>
+                              {p.image.startsWith('data:') ? 'ไฟล์อัปโหลดแล้ว (Base64)' : p.image.substring(0, 52) + '...'}
+                            </span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -6047,10 +6073,10 @@ function App() {
       testimonialsEyebrow: 'สิ่งที่คนไข้ของเราพูดถึงเรา',
       testimonialsTitle:   'ความประทับใจ จากลูกค้าของเรา',
       /* ── CTA Band ── */
-      ctaEyebrow: 'เริ่มเมื่อไหร่ก็ได้',
-      ctaTitle1:  'ปรึกษาฟรี 15 นาที',
-      ctaTitle2:  'ไม่มีข้อผูกมัด',
-      ctaLead:    'บอกเป้าหมายรอยยิ้มของคุณ — เราจะอธิบายตัวเลือกทุกแบบ พร้อมราคา',
+      ctaEyebrow: 'ติดต่อเราผ่านฟอร์ม',
+      ctaTitle1:  'ติดต่อกลับภายใน 15 นาที (ในเวลาทำการ)',
+      ctaTitle2:  '',
+      ctaLead:    'ปรึกษาฟรีไม่มีค่าใช้จ่าย',
       ctaCta1:    'นัดหมายเลย',
       ctaLineText: '',
       ctaLineHref: '',
@@ -6101,6 +6127,15 @@ function App() {
       } else {
         setScreen('home');
         setPendingScroll(anchorId);
+      }
+    } else if (id === 'home') {
+      // If already on home, useEffect([screen]) won't fire (state unchanged),
+      // so we scroll to top explicitly. If coming from another page, setScreen
+      // triggers the effect which does an instant snap — no double-scroll needed.
+      if (screen === 'home' || screen === null || screen === '') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setScreen('home');
       }
     } else {
       setScreen(id);
