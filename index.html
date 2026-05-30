@@ -2395,6 +2395,7 @@ Object.assign(window, {
 // DoctorProfile.jsx — individual doctor page with branch schedule matrix
 
 function DoctorProfileScreen({ onNav, photoFilter, doctorId, doctors }) {
+  const isMobile = useIsMobile();
   const allDoctors = (doctors && doctors.length > 0) ? doctors : (window.DOCTORS || DOCTORS);
   // Routes from DoctorCardSmall use "@i" (array position) — guaranteed unique even when
   // multiple doctors share the same custom id. Legacy named routes fall back to find().
@@ -2445,7 +2446,13 @@ function DoctorProfileScreen({ onNav, photoFilter, doctorId, doctors }) {
               <div className="ws-num" style={{ marginBottom: 22 }}>
                 {'ทีมแพทย์'}
               </div>
-              <h1 className="ws-h1" style={{ margin: 0, fontSize: 'clamp(36px, 4.6vw, 64px)' }}>
+              <h1 className="ws-h1" style={{
+                margin: 0,
+                fontSize: isMobile ? 'clamp(20px, 5.5vw, 28px)' : 'clamp(32px, 4vw, 48px)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}>
                 {d.nameTh}
               </h1>
 
@@ -3649,7 +3656,7 @@ function DoctorCardSmall({ d, i, photoFilter, onClick }) {
       <div className={`doctor-photo ${photoFilter}`} style={{ backgroundImage: d.photo?`url(${d.photo})`:undefined, backgroundSize: d.photo?'cover':undefined, backgroundPosition: d.photo?'center top':`${20+i*22}% 35%`, borderRadius:'24px 24px 0 0', marginBottom:0 }} />
       <div style={{ padding:'18px 18px 20px' }}>
         <div style={{ font:'500 11px/1 var(--ws-font-sans)', color:'var(--ws-primary)', letterSpacing:'.10em', textTransform:'uppercase', marginBottom:8 }}>{d.roleTh}</div>
-        <div style={{ font:'700 22px/1.25 var(--ws-font-sans)', color:'var(--ws-fg-1)', marginTop:4 }}>{d.nameTh}</div>
+        <div style={{ font:'700 clamp(14px,4vw,20px)/1.25 var(--ws-font-sans)', color:'var(--ws-fg-1)', marginTop:4, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{d.nameTh}</div>
         <div style={{ font:'500 11px/1.4 var(--ws-font-sans)', color:'var(--ws-fg-4)', marginTop:10, paddingTop:10, borderTop:'1px solid var(--ws-line)' }}>{d.cred}</div>
         {d.shortEduTh && (
           <div style={{ font:'400 11px/1.55 var(--ws-font-sans)', color:'var(--ws-fg-3)', marginTop:6 }}>{d.shortEduTh}</div>
