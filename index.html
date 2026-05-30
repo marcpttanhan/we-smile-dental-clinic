@@ -5561,7 +5561,35 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'ok' | 'error'
   const [saveConflict, setSaveConflict] = useState(false); // true when another device wrote first
   const [isUploading, setIsUploading] = useState(false);
-  const [newReviewUrl, setNewReviewUrl] = useState('');   // input state for adding review image URLs
+  const [isReviewUploading, setIsReviewUploading] = useState(false); // upload-in-progress flag for review images
+
+  // Uploads a review image file to Supabase Storage → appends public URL to formData
+  const handleReviewFileUpload = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    setIsReviewUploading(true);
+    try {
+      const ext      = file.name.split('.').pop().toLowerCase();
+      const filePath = `reviews/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+      const { error: upErr } = await supabaseClient.storage
+        .from('clinic-images')
+        .upload(filePath, file, { upsert: false });
+      if (upErr) { console.error('[Review upload]', upErr.message); return; }
+      const { data: urlData } = supabaseClient.storage.from('clinic-images').getPublicUrl(filePath);
+      const publicUrl = urlData.publicUrl;
+      if (publicUrl) {
+        setFormData(p => ({
+          ...p,
+          config: { ...p.config, reviewImages: [...(p.config.reviewImages || []), publicUrl] },
+        }));
+      }
+    } catch (_e) {
+      console.error('[Review upload]', _e.message);
+    } finally {
+      setIsReviewUploading(false);
+      e.target.value = ''; // reset so the same file can be re-selected if needed
+    }
+  };
 
   // ── Optimistic-lock snapshot ────────────────────────────────────────────────
   // Captured on dashboard open; compared against DB before every write to detect
@@ -6900,22 +6928,43 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                   <p style={{ margin:'4px 0 0', fontSize:12, color:'#475569' }}>เพิ่ม URL รูป Screenshot รีวิวจาก Facebook/Google — จะแสดงเป็น Slider ใต้ Section "เสียงจากคนไข้"</p>
                 </div>
 
-                {/* Add new image */}
+                {/* Upload new review image from device */}
                 <div style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:20 }}>
-                  <label style={lbl}>เพิ่มรูปภาพรีวิวใหม่</label>
-                  <div style={{ display:'flex', gap:10 }}>
-                    <input type="text" value={newReviewUrl}
-                      onChange={e => setNewReviewUrl(e.target.value)}
-                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); const u = newReviewUrl.trim(); if (!u) return; setFormData(p => ({ ...p, config: { ...p.config, reviewImages: [...(p.config.reviewImages||[]), u] } })); setNewReviewUrl(''); } }}
-                      placeholder="วาง URL รูปภาพ Screenshot รีวิว (https://...)"
-                      style={{ ...inp, flex:1 }} />
-                    <button type="button"
-                      onClick={() => { const u = newReviewUrl.trim(); if (!u) return; setFormData(p => ({ ...p, config: { ...p.config, reviewImages: [...(p.config.reviewImages||[]), u] } })); setNewReviewUrl(''); }}
-                      style={{ background:'linear-gradient(135deg,#f59e0b,#d97706)', border:0, color:'#fff', borderRadius:10, padding:'10px 18px', fontSize:13, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
-                      + เพิ่มรูป
-                    </button>
+                  <label style={lbl}>อัปโหลดรูปภาพรีวิวจากเครื่อง</label>
+
+                  {/* Hidden native file picker */}
+                  <input
+                    type="file"
+                    id="review-img-input"
+                    accept="image/*"
+                    onChange={handleReviewFileUpload}
+                    disabled={isReviewUploading}
+                    style={{ display:'none' }} />
+
+                  {/* Styled upload button that triggers the hidden input */}
+                  <label htmlFor="review-img-input" style={{
+                    display:'inline-flex', alignItems:'center', gap:10,
+                    background: isReviewUploading
+                      ? 'linear-gradient(135deg,#94a3b8,#64748b)'
+                      : 'linear-gradient(135deg,#f59e0b,#d97706)',
+                    color:'#fff', borderRadius:12,
+                    padding:'13px 24px', fontSize:14, fontWeight:700,
+                    cursor: isReviewUploading ? 'not-allowed' : 'pointer',
+                    boxShadow:'0 4px 14px rgba(245,158,11,0.30)',
+                    transition:'all 0.2s ease',
+                    userSelect:'none',
+                    width:'100%', justifyContent:'center',
+                  }}>
+                    {isReviewUploading
+                      ? <><i data-lucide="loader" style={{ width:16, height:16, animation:'spin 1s linear infinite' }}></i>{'  ⏳ กำลังอัปโหลดรูปภาพ...'}</>
+                      : <><i data-lucide="image-plus" style={{ width:16, height:16 }}></i>{'  📁 เลือกรูปภาพรีวิวจากในเครื่อง'}</>
+                    }
+                  </label>
+
+                  <div style={{ fontSize:11, color:'#94a3b8', marginTop:10, textAlign:'center', lineHeight:1.5 }}>
+                    รองรับ JPG, PNG, WEBP · อัปโหลดตรงเข้า Supabase Storage<br/>
+                    หลังอัปโหลดเสร็จ กด <strong>💾 บันทึกข้อมูล</strong> เพื่อ push ขึ้น database
                   </div>
-                  <div style={{ fontSize:11, color:'#94a3b8', marginTop:8 }}>กด Enter หรือปุ่ม "+ เพิ่มรูป" เพื่อบันทึก URL ลงใน list — กด 💾 บันทึกข้อมูล เพื่อ push ขึ้น Supabase</div>
                 </div>
 
                 {/* Existing images list */}
