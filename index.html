@@ -1994,7 +1994,7 @@ function PortfolioShowcase({ num, portfolioImages }) {
           <div>
             {num != null && (
               <div className="ws-num" style={{ marginBottom:16 }}>
-                {String(num).padStart(2,'0')} / 06 {'—'} Real Results
+                {String(num).padStart(2,'0')} / 07 {'—'} Real Results
               </div>
             )}
             <h2 className="ws-h2" style={{ margin:0 }}>
@@ -3243,7 +3243,7 @@ function HomeBranchTabs({ branches, onNav }) {
 
         {/* ── Section header ── */}
         <div style={{ marginBottom: 40 }}>
-          <div className="ws-num" style={{ marginBottom: 14 }}>{'04 / 06 — สาขาของเรา'}</div>
+          <div className="ws-num" style={{ marginBottom: 14 }}>{'06 / 07 — สาขาของเรา'}</div>
           <h2 className="ws-h2" style={{ margin: '0 0 12px' }}>
             {'สี่สาขา '}<em className="accent-fg" style={{ fontStyle: 'normal' }}>{'มาตรฐานเดียว'}</em>
           </h2>
@@ -3611,7 +3611,7 @@ function ServicesPreview({ onNav, services, config }) {
   return (
     <section id="section-services" className="ws-section" style={{ background:'transparent' }}>
       <div className="container">
-        <SectionHead num={1} align="stacked"
+        <SectionHead num={1} total={7} align="stacked"
           eyebrow={cfg.servicesEyebrow || 'บริการของเรา'}
           title={'ปลอดภัย สะอาด มั่นใจ โดยทันตแพทย์เฉพาะทาง'} />
         <p style={{
@@ -3716,7 +3716,7 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
   return (
     <section id="section-doctors" className="ws-section accent-bg" style={{ background:'var(--ws-navy-50)' }}>
       <div className="container">
-        <SectionHead num={2} align="stacked"
+        <SectionHead num={2} total={7} align="stacked"
           eyebrow={cfg.doctorsEyebrow || 'ทีมแพทย์'}
           title={'ทีมแพทย์ของเรา'}
           lead={'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา'} />
@@ -4016,7 +4016,7 @@ function PageReviewsSection({ config }) {
 
         {/* Section header */}
         <div className="section-head-stacked" style={{ marginBottom: isMobile ? 28 : 44 }}>
-          <div className="ws-num" style={{ marginBottom: 16 }}>{'04 / 06 — รีวิวจากเพจ'}</div>
+          <div className="ws-num" style={{ marginBottom: 16 }}>{'05 / 07 — รีวิวจากเพจ'}</div>
           <h2 className="ws-h2" style={{ margin:'0 0 12px', lineHeight:1.15 }}>
             {'รีวิวจากเพจ'}<em className="accent-fg" style={{ fontStyle:'italic' }}>{' Facebook'}</em>
           </h2>
@@ -4100,7 +4100,7 @@ function Testimonials({ config, testimonials }) {
       <div className="container">
         {/* Section header */}
         <div className="section-head-stacked" style={{ marginBottom: isMobile ? 32 : 56 }}>
-          <div className="ws-num" style={{ marginBottom:16 }}>{'03 / 06 — เสียงจากคนไข้'}</div>
+          <div className="ws-num" style={{ marginBottom:16 }}>{'04 / 07 — เสียงจากคนไข้'}</div>
           <h2 className="ws-h2" style={{ margin:'0 0 16px', lineHeight:1.15 }}>
             {'ความประทับใจ'}{isMobile ? ' ' : <br />}{'จากลูกค้าของเรา.'}
           </h2>
@@ -4160,7 +4160,7 @@ function FAQPreview({ onNav }) {
         <div style={{ display: 'grid', gridTemplateColumns: '0.7fr 1fr', gap: 64 }} className="grid-2-md-1">
           <div>
             <div className="ws-num" style={{ marginBottom: 16 }}>
-              04 / 06 — {'คำถามที่พบบ่อย'}
+              07 / 07 — {'คำถามที่พบบ่อย'}
             </div>
             <h2 className="ws-h2" style={{ margin: 0 }}>
               {'คำถามที่ได้รับบ่อย'}
@@ -4255,10 +4255,10 @@ function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonial
       <ServicesPreview onNav={onNav} services={services} config={config} />
       <DoctorsPreview onNav={onNav} photoFilter={photoFilter} config={config} doctors={doctors} />
       <PortfolioShowcase num={3} portfolioImages={portfolioImages} />
-      <PromotionsSection promotions={promotions} onNav={onNav} />
-      <HomeBranchTabs branches={branches} onNav={onNav} />
       <Testimonials config={config} testimonials={testimonials} />
       <PageReviewsSection config={config} />
+      <PromotionsSection promotions={promotions} onNav={onNav} />
+      <HomeBranchTabs branches={branches} onNav={onNav} />
       <FAQPreview onNav={onNav} />
       <CTABand onNav={onNav} config={config} />
     </div>
