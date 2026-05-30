@@ -1376,13 +1376,12 @@ Object.assign(window, {
 // Removed hook declaration
 
 const NAV_LINKS = [
-  { id: 'home',    label: 'หน้าแรก' },
+  { id: 'home',     label: 'หน้าแรก' },
   { id: 'services', label: 'บริการ' },
-  { id: 'doctors', label: 'ทีมแพทย์' },
+  { id: 'doctors',  label: 'ทีมแพทย์' },
   { id: 'branches', label: 'สาขา' },
-  { id: 'cases',   label: 'ตัวอย่างเคส' },
-  { id: 'booking', label: 'นัดหมาย' },
-  { id: 'contact', label: 'ติดต่อ' },
+  { id: 'cases',    label: 'ตัวอย่างเคส' },
+  { id: 'booking',  label: 'นัดหมาย' },
 ];
 
 function Navbar({ active, onNav }) {
@@ -7245,12 +7244,20 @@ function App() {
       return;
     }
 
+    // Track whether we're leaving the AllDoctorsView before resetting it
+    const leavingDoctorsView = currentView !== 'home';
+
     // Any other nav resets the dedicated view back to home
     setCurrentView('home');
 
     const anchorId = SCROLL_MAP[id];
     if (anchorId) {
-      if (screen === 'home' || screen === null || screen === '') {
+      if (leavingDoctorsView) {
+        // DOM hasn't updated yet — schedule scroll to fire after re-render.
+        // setPendingScroll + the existing useEffect([pendingScroll, screen])
+        // guarantees the element exists before scrollIntoView fires.
+        setPendingScroll(anchorId);
+      } else if (screen === 'home' || screen === null || screen === '') {
         const el = document.getElementById(anchorId);
         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
       } else {
