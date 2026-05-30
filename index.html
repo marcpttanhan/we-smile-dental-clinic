@@ -191,6 +191,22 @@ async function saveSiteConfigToSupabase(payload) {
   }
 }
 
+// ── Database: fetch only updated_at for conflict detection ───────────────────
+// Used by handleSave to perform an optimistic-lock check before writing.
+async function fetchSiteConfigUpdatedAt() {
+  try {
+    const { data, error } = await supabaseClient
+      .from(_SB_TABLE)
+      .select('updated_at')
+      .eq('id', _SB_ROW)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data.updated_at; // ISO string from Postgres TIMESTAMPTZ
+  } catch (e) {
+    return null; // network failure — skip conflict check, proceed with save
+  }
+}
+
 // ── XSS sanitizer (security-hardening v1.0.0) ──────────────────
 // Strips script injection patterns from any string value before it
 // reaches React state or localStorage.
@@ -5432,7 +5448,16 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
   // Debounce flag — prevents rapid-fire multi-save spam (security-hardening v1.0.0)
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'ok' | 'error'
+  const [saveConflict, setSaveConflict] = useState(false); // true when another device wrote first
   const [isUploading, setIsUploading] = useState(false);
+
+  // ── Optimistic-lock snapshot ────────────────────────────────────────────────
+  // Captured on dashboard open; compared against DB before every write to detect
+  // concurrent edits from other devices/tabs (multi-device conflict guard).
+  const mountedAtRef = useRef(null);
+  useEffect(() => {
+    fetchSiteConfigUpdatedAt().then(ts => { mountedAtRef.current = ts; });
+  }, []); // runs once when the dashboard mounts
 
   // ── Login gatekeeper state ──────────────────────────────────────────────
   // isLoggedIn is stored in sessionStorage so it survives component unmounts
@@ -5458,11 +5483,30 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     if (isSaving) return;
     setIsSaving(true);
     setSaveStatus('saving');
+    setSaveConflict(false);
     try {
+      // ── Fetch-before-write: optimistic lock check ──────────────────────────
+      // Pull the current updated_at from DB and compare against the snapshot
+      // captured when this dashboard session was opened. If they differ, another
+      // device saved more recently — abort to prevent overwriting their work.
+      const latestTs = await fetchSiteConfigUpdatedAt();
+      if (latestTs && mountedAtRef.current && latestTs !== mountedAtRef.current) {
+        console.warn('[Admin] Conflict detected — DB updated_at:', latestTs, '| local snapshot:', mountedAtRef.current);
+        setSaveStatus('error');
+        setIsSaving(false);
+        setSaveConflict(true);
+        setTimeout(() => { setSaveStatus('idle'); setSaveConflict(false); }, 7000);
+        return; // abort — do NOT write
+      }
+
+      // ── Safe to write ───────────────────────────────────────────────────────
       await onSave(formData);           // throws if Supabase write fails
+
+      // Refresh local snapshot so subsequent saves in the same session stay valid
+      fetchSiteConfigUpdatedAt().then(ts => { mountedAtRef.current = ts; });
+
       setSaveStatus('ok');
       // Stay on the dashboard — admin closes manually.
-      // Reset button state after the success tick fades so they can save again.
       setTimeout(() => { setSaveStatus('idle'); setIsSaving(false); }, 2500);
     } catch (_e) {
       console.error('[Admin handleSave]', _e.message);
@@ -5925,6 +5969,24 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
             <button type="button" onClick={handleSave} disabled={isSaving} style={{ ...saveBtnStyle, opacity: isSaving ? 0.65 : 1, cursor: isSaving ? 'not-allowed' : 'pointer', background: saveStatus === 'ok' ? '#10b981' : saveStatus === 'error' ? '#ef4444' : undefined }}>
               {saveStatus === 'saving' ? '⏳ กำลังบันทึก…' : saveStatus === 'ok' ? '✅ บันทึกแล้ว!' : saveStatus === 'error' ? '❌ บันทึกไม่สำเร็จ' : '💾 บันทึกข้อมูล'}
             </button>
+            {/* Conflict toast — shown when another device wrote to the DB since this session opened */}
+            {saveConflict && (
+              <div style={{
+                position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)',
+                zIndex: 999999,
+                background: 'linear-gradient(135deg,#7f1d1d,#991b1b)',
+                color: '#fecaca',
+                padding: '18px 28px', borderRadius: 18,
+                font: '600 13px/1.6 var(--ws-font-sans)',
+                boxShadow: '0 12px 48px rgba(0,0,0,0.55)',
+                maxWidth: 460, textAlign: 'center',
+                animation: 'ws-fadeIn 0.25s ease both',
+                border: '1px solid rgba(252,165,165,0.25)',
+              }}>
+                ⚠️ ข้อมูลในระบบมีการอัปเดตจากเครื่องอื่น<br/>
+                <span style={{ fontWeight: 400, color: '#fca5a5' }}>กรุณารีเฟรชหน้าจอเพื่อดึงข้อมูลล่าสุดก่อนบันทึก</span>
+              </div>
+            )}
             <button type="button" onClick={onClose} style={{ background:'#f1f5f9', border:0, color:'#64748b', borderRadius:10, width:36, height:36, fontSize:20, cursor:'pointer', display:'grid', placeItems:'center', lineHeight:1 }}>×</button>
           </div>
         </div>
