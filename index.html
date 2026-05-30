@@ -1566,7 +1566,7 @@ function Footer({ onNav, config }) {
               </div>
             </div>
             <p style={{ font: '500 14px/1.7 var(--ws-font-sans)', color: 'rgba(255,255,255,.7)', maxWidth: 320, margin: '0 0 24px' }}>
-              {cfg.footerSlogan || 'คลินิกทันตกรรมครบวงจร ทำฟัน จัดฟัน รากฟันเทียม ฟันปลอม ครอบฟัน ฟอกสีฟัน รักษาโรคเหงือก ทันตกรรมเด็ก'}
+              {'คลินิกทันตกรรมครบวงจร ทำฟัน จัดฟัน รากฟันเทียม ฟันปลอม ครอบฟัน ฟอกสีฟัน รักษาโรคเหงือก ทันตกรรมเด็ก'}
             </p>
             <div style={{ display: 'flex', gap: 10 }}>
               {[
@@ -3362,7 +3362,7 @@ function Hero({ onNav, photoFilter, config }) {
         <div className="page-enter">
           <div className="ws-eyebrow rise rise-1" style={{ marginBottom:26, display:'flex', alignItems:'center' }}>
             <span style={{ display:'inline-block', width:7, height:7, borderRadius:'50%', background:'var(--ws-primary)', marginRight:10, flexShrink:0, animation:'ws-pulse-dot 2.2s ease-in-out infinite' }} />
-            {cfg.heroEyebrow || 'คลินิกทันตกรรมครบวงจร'}
+            {'คลินิกทันตกรรมครบวงจร'}
           </div>
           <h1 className="ws-h1 rise rise-2" style={{ margin:'0 0 28px', fontSize: isMobile ? 'clamp(34px,9vw,46px)' : 'clamp(44px,5.8vw,80px)', letterSpacing:'-0.03em', lineHeight:1.08 }}>
             {cfg.heroTitleLine1 || 'รอยยิ้มของคุณ'}<br/>
@@ -3409,8 +3409,8 @@ function Hero({ onNav, photoFilter, config }) {
           }} />
           {!isMobile && (
             <>
-              <FloatingBadge top={28}  right={-20} icon={cfg.badge1Icon||'shield-check'} title={cfg.badge1Title||'ทันตแพทย์เฉพาะทาง'} sub={cfg.badge1Sub||'ปลอดภัย มั่นใจ'} delay={0} />
-              <FloatingBadge bottom={64} left={-28} icon={cfg.badge2Icon||'star'} title={cfg.badge2Title||'★ รีวิวจากผู้ใช้บริการจริง'} sub={cfg.badge2Sub||''} delay={1400} />
+              <FloatingBadge top={28}  right={-20} icon={'shield-check'} title={'ทันตแพทย์เฉพาะทาง'} sub={'ปลอดภัย มั่นใจ'} delay={0} />
+              <FloatingBadge bottom={64} left={-28} icon={'star'} title={'★ รีวิวจากผู้ใช้บริการจริง'} sub={''} delay={1400} />
               <FloatingBadge bottom={-8} right={32} icon={cfg.badge3Icon||'sparkles'} title={cfg.badge3Title||'From ฿ 35,000'} sub={cfg.badge3Sub||'จัดฟันแบบใส'} delay={2800} />
             </>
           )}
@@ -3462,7 +3462,7 @@ function ServicesPreview({ onNav, services, config }) {
       <div className="container">
         <SectionHead num={1} align="stacked"
           eyebrow={cfg.servicesEyebrow || 'บริการของเรา'}
-          title={cfg.servicesTitle || 'ปลอดภัย สะอาด มั่นใจ โดยทันตแพทย์เฉพาะทาง'} />
+          title={'ปลอดภัย สะอาด มั่นใจ โดยทันตแพทย์เฉพาะทาง'} />
         <p style={{
           font: `500 ${isMobile ? '17px' : 'clamp(16px,2.2vw,22px)'}/1.65 var(--ws-font-display)`,
           color: 'var(--ws-fg-2)',
@@ -3567,8 +3567,8 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
       <div className="container">
         <SectionHead num={2} align="stacked"
           eyebrow={cfg.doctorsEyebrow || 'ทีมแพทย์'}
-          title={cfg.doctorsTitle || 'ทีมแพทย์ของเรา'}
-          lead={cfg.doctorsLead || 'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา'} />
+          title={'ทีมแพทย์ของเรา'}
+          lead={'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา'} />
 
         {isMobile ? (
           /* ── Mobile: one-card-at-a-time carousel ── */
@@ -3714,10 +3714,10 @@ function AllDoctorsView({ onNav, photoFilter, config, doctors }) {
             font: `500 ${isMobile ? 'clamp(28px,8vw,38px)' : 'clamp(36px,4vw,56px)'}/1.1 var(--ws-font-display)`,
             margin: 0, letterSpacing: '-0.02em', color: 'var(--ws-fg-1)',
           }}>
-            {cfg.doctorsTitle || 'ทีมแพทย์ของเรา'}
+            {'ทีมแพทย์ของเรา'}
           </h1>
           <p style={{ font: '500 15px/1.65 var(--ws-font-sans)', color: 'var(--ws-fg-3)', margin: '14px 0 0', maxWidth: 560 }}>
-            {cfg.doctorsLead || 'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา'}
+            {'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา'}
           </p>
         </div>
       </section>
@@ -3929,13 +3929,13 @@ function CTABand({ onNav, config }) {
           <div style={{ position:'absolute', left:-60, bottom:-60, width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle,rgba(74,99,214,0.25),transparent 70%)', filter:'blur(28px)', animation:'ws-orb-drift 24s ease-in-out infinite reverse', pointerEvents:'none' }} />
           <div style={{ position:'absolute', right:'34%', bottom:-40, width:180, height:180, borderRadius:'50%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', pointerEvents:'none' }} />
           <div style={{ position:'relative', zIndex:1 }}>
-            <div className="ws-eyebrow" style={{ color:'var(--ws-orange-300)', marginBottom: isMobile ? 14 : 18 }}>{cfg.ctaEyebrow||'ปรึกษาคุณหมอ'}</div>
+            <div className="ws-eyebrow" style={{ color:'var(--ws-orange-300)', marginBottom: isMobile ? 14 : 18 }}>{'ปรึกษาคุณหมอ'}</div>
             <h2 style={{ font:`500 ${isMobile ? 'clamp(26px,7vw,36px)' : 'clamp(32px,4.4vw,56px)'}/1.05 var(--ws-font-display)`, margin:0, letterSpacing:'-.025em' }}>
-              {cfg.ctaTitle1||'ปรึกษาฟรี'}
+              {'ปรึกษาฟรี'}
               {cfg.ctaTitle2 ? <><br/>{cfg.ctaTitle2}</> : null}
             </h2>
             <p style={{ font:`500 ${isMobile ? '14px' : '17px'}/1.75 var(--ws-font-sans)`, color:'rgba(255,255,255,.72)', margin: `${isMobile ? 16 : 24}px 0 0`, maxWidth:480 }}>
-              {cfg.ctaLead||'บอกเป้าหมายรอยยิ้มของคุณ — เราจะอธิบายตัวเลือกทุกแบบ พร้อมราคา'}
+              {'บอกเป้าหมายรอยยิ้มของคุณ — เราจะอธิบายตัวเลือกทุกแบบ พร้อมราคา'}
             </p>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:10, position:'relative', zIndex:1 }}>
