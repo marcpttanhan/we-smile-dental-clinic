@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <title>We Smile Dental Clinic</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="คลินิกทันตกรรมครบวงจร ใจกลางลาดกระบัง — จัดฟัน รากฟันเทียม วีเนียร์ ภายใต้ทีมหมอเฉพาะทาง">
+<meta name="description" content="คลินิกทันตกรรมครบวงจร">
 <!-- OpenGraph — seo-analytics-pro v1.0.0 (static defaults; runtime-overridden by React effect) -->
 <meta property="og:type"        content="website">
 <meta property="og:site_name"   content="We Smile Dental Clinic">
-<meta property="og:title"       content="We Smile Dental Clinic — Ladkrabang">
-<meta property="og:description" content="คลินิกทันตกรรมครบวงจร ใจกลางลาดกระบัง — จัดฟัน รากฟันเทียม วีเนียร์ ภายใต้ทีมหมอเฉพาะทาง">
+<meta property="og:title"       content="We Smile Dental Clinic">
+<meta property="og:description" content="คลินิกทันตกรรมครบวงจร">
 <meta property="og:image"       content="assets/hero.webp">
 <meta name="twitter:card"       content="summary_large_image">
 <!-- JSON-LD LocalBusiness schema placeholder (runtime-overridden by React effect) -->
@@ -2112,39 +2112,107 @@ function PromotionCard({ p, onNav }) {
 
 // ── PromotionsSection ──────────────────────────────────────────────────────
 function PromotionsSection({ promotions, onNav }) {
-  const live = (promotions || []).filter(p => p.active !== false);
+  const live     = (promotions || []).filter(p => p.active !== false);
+  const isMobile = useIsMobile();
+  const [currentPromoIdx, setCurrentPromoIdx] = useState(0);
+
   if (live.length === 0) return null;
-  const cols = live.length === 1 ? '1fr' : live.length === 2 ? 'repeat(2,1fr)' : 'repeat(auto-fill,minmax(290px,1fr))';
+
+  const prevPromo = () => setCurrentPromoIdx(i => (i === 0 ? live.length - 1 : i - 1));
+  const nextPromo = () => setCurrentPromoIdx(i => (i === live.length - 1 ? 0 : i + 1));
+
+  const desktopCols = live.length === 1 ? '1fr'
+    : live.length === 2 ? 'repeat(2,1fr)'
+    : 'repeat(auto-fill,minmax(290px,1fr))';
+
   return (
     <section style={{
       background: 'linear-gradient(160deg,#090f28 0%,#0f1a3e 48%,#0b1530 100%)',
-      padding: 'clamp(64px,8vw,96px) 32px',
+      padding: isMobile ? '48px 20px' : 'clamp(64px,8vw,96px) 32px',
       position: 'relative', overflow: 'hidden',
     }}>
       <div style={{ position:'absolute', top:-140, right:-100, width:500, height:500, borderRadius:'50%', background:'radial-gradient(circle,rgba(232,90,20,0.17),transparent 65%)', filter:'blur(72px)', pointerEvents:'none' }} />
       <div style={{ position:'absolute', bottom:-100, left:-60, width:380, height:380, borderRadius:'50%', background:'radial-gradient(circle,rgba(74,99,214,0.16),transparent 65%)', filter:'blur(60px)', pointerEvents:'none' }} />
       <div style={{ maxWidth:1200, margin:'0 auto', position:'relative' }}>
+
         {/* Header */}
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:44, flexWrap:'wrap', gap:20 }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom: isMobile ? 28 : 44, flexWrap:'wrap', gap:20 }}>
           <div>
             <div style={{ font:'600 11px/1 var(--ws-font-sans)', color:'var(--ws-orange-300)', letterSpacing:'0.13em', textTransform:'uppercase', marginBottom:14, display:'flex', alignItems:'center', gap:10 }}>
               <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--ws-orange-300)', display:'inline-block', animation:'ws-pulse-dot 2.2s ease-in-out infinite' }} />
               {'โปรโมชั่นพิเศษ'}
             </div>
-            <h2 className="ws-h2" style={{ color:'#fff', margin:0, letterSpacing:'-0.02em' }}>
+            <h2 className="ws-h2" style={{ color:'#fff', margin:0, letterSpacing:'-0.02em', fontSize: isMobile ? 'clamp(24px,7vw,32px)' : undefined }}>
               {'ข้อเสนอ'}<em className="accent-fg" style={{ fontStyle:'italic', color:'var(--ws-orange-400)' }}>{' สำหรับคุณ'}</em>
             </h2>
           </div>
-          <span style={{ font:'500 13px/1 var(--ws-font-sans)', color:'rgba(255,255,255,0.38)' }}>
-            {live.length}{' โปรโมชั่น'}
-          </span>
+          {!isMobile && (
+            <span style={{ font:'500 13px/1 var(--ws-font-sans)', color:'rgba(255,255,255,0.38)' }}>
+              {live.length}{' โปรโมชั่น'}
+            </span>
+          )}
         </div>
-        {/* Card grid */}
-        <div style={{ display:'grid', gridTemplateColumns:cols, gap:22 }}>
-          {live.map((p, i) => (
-            <PromotionCard key={p.id || `promo-${i}`} p={p} onNav={onNav} />
-          ))}
-        </div>
+
+        {/* ── Desktop: full card grid (unchanged) ── */}
+        {!isMobile && (
+          <div style={{ display:'grid', gridTemplateColumns:desktopCols, gap:22 }}>
+            {live.map((p, i) => (
+              <PromotionCard key={p.id || `promo-${i}`} p={p} onNav={onNav} />
+            ))}
+          </div>
+        )}
+
+        {/* ── Mobile: 1-card-at-a-time carousel ── */}
+        {isMobile && (
+          <div>
+            {/* Card with fade-in animation keyed to index */}
+            <div key={currentPromoIdx} style={{ animation: 'ws-fadeIn 0.35s ease both' }}>
+              <PromotionCard p={live[currentPromoIdx]} onNav={onNav} />
+            </div>
+
+            {/* Navigation row */}
+            {live.length > 1 && (
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:16, marginTop:22 }}>
+                {/* Prev arrow */}
+                <button onClick={prevPromo} style={{
+                  width:38, height:38, borderRadius:'50%', border:'1.5px solid rgba(255,255,255,0.22)',
+                  background:'rgba(255,255,255,0.08)', color:'#fff', cursor:'pointer',
+                  display:'grid', placeItems:'center',
+                  transition:'background 0.18s ease',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.18)'}
+                  onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.08)'}>
+                  <i data-lucide="chevron-left" style={{ width:18, height:18 }}></i>
+                </button>
+
+                {/* Dot indicators */}
+                <div style={{ display:'flex', gap:7 }}>
+                  {live.map((_, i) => (
+                    <button key={i} onClick={() => setCurrentPromoIdx(i)} style={{
+                      width: i === currentPromoIdx ? 20 : 7,
+                      height:7, borderRadius:999, border:0, cursor:'pointer', padding:0,
+                      background: i === currentPromoIdx ? 'var(--ws-primary)' : 'rgba(255,255,255,0.28)',
+                      transition:'all 0.28s ease',
+                    }} />
+                  ))}
+                </div>
+
+                {/* Next arrow */}
+                <button onClick={nextPromo} style={{
+                  width:38, height:38, borderRadius:'50%', border:'1.5px solid rgba(255,255,255,0.22)',
+                  background:'rgba(255,255,255,0.08)', color:'#fff', cursor:'pointer',
+                  display:'grid', placeItems:'center',
+                  transition:'background 0.18s ease',
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.18)'}
+                  onMouseLeave={e => e.currentTarget.style.background='rgba(255,255,255,0.08)'}>
+                  <i data-lucide="chevron-right" style={{ width:18, height:18 }}></i>
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </section>
   );
@@ -5374,7 +5442,9 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
   const [isUploading, setIsUploading] = useState(false);
 
   // ── Login gatekeeper state ──────────────────────────────────────────────
-  const [isLoggedIn,  setIsLoggedIn]  = useState(false);
+  // isLoggedIn is stored in sessionStorage so it survives component unmounts
+  // (the dashboard closes after every save, but the session must stay alive).
+  const [isLoggedIn,  setIsLoggedIn]  = useState(() => sessionStorage.getItem('wsdc_admin_auth') === '1');
   const [loginUser,   setLoginUser]   = useState('');
   const [loginPass,   setLoginPass]   = useState('');
   const [loginError,  setLoginError]  = useState('');
@@ -5383,6 +5453,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
   const handleLogin = (e) => {
     e.preventDefault();
     if (loginUser === 'wesmile' && loginPass === 'admin1234') {
+      sessionStorage.setItem('wsdc_admin_auth', '1'); // persist across unmounts
       setIsLoggedIn(true);
       setLoginError('');
     } else {
@@ -5397,12 +5468,13 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     try {
       await onSave(formData);           // throws if Supabase write fails
       setSaveStatus('ok');
-      setTimeout(onClose, 1400);        // show ✅ tick for 1.4 s then close — do NOT reset isSaving
-                                        // here because the component unmounts on onClose anyway
+      // Stay on the dashboard — admin closes manually.
+      // Reset button state after the success tick fades so they can save again.
+      setTimeout(() => { setSaveStatus('idle'); setIsSaving(false); }, 2500);
     } catch (_e) {
       console.error('[Admin handleSave]', _e.message);
       setSaveStatus('error');
-      setIsSaving(false);               // re-enable so admin can retry without reloading
+      setIsSaving(false);               // re-enable so admin can retry
       setTimeout(() => setSaveStatus('idle'), 4000);
     }
   };
