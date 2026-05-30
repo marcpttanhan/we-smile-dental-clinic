@@ -3954,6 +3954,113 @@ function AllDoctorsView({ onNav, photoFilter, config, doctors }) {
   );
 }
 
+// ── ReviewImagesSlider ─────────────────────────────────────────────────────
+// Desktop: 3-col grid. Mobile: 1-at-a-time carousel with swipe + arrows + dots.
+function ReviewImagesSlider({ images }) {
+  const isMobile = useIsMobile();
+  const [activeIdx, setActiveIdx] = useState(0);
+  const touchStartX = useRef(null);
+
+  if (!images || images.length === 0) return null;
+
+  const prev = () => setActiveIdx(i => (i === 0 ? images.length - 1 : i - 1));
+  const next = () => setActiveIdx(i => (i === images.length - 1 ? 0 : i + 1));
+
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd   = (e) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (dx < -48) next();
+    else if (dx > 48) prev();
+    touchStartX.current = null;
+  };
+
+  const imgStyle = { width:'100%', objectFit:'contain', display:'block', background:'#f8fafc' };
+
+  return (
+    <div style={{ marginTop: isMobile ? 36 : 52 }}>
+      <div style={{ font:'600 11px/1 var(--ws-font-sans)', color:'var(--ws-primary)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom: isMobile ? 18 : 24, display:'flex', alignItems:'center', gap:8 }}>
+        <i data-lucide="star" style={{ width:13, height:13, fill:'currentColor' }}></i>
+        {'รีวิวจากผู้ใช้บริการจริง'}
+      </div>
+
+      {/* ── Desktop: 3-column grid ── */}
+      <div className="hidden md:grid" style={{ gridTemplateColumns:'repeat(3,1fr)', gap:18 }}>
+        {images.map((src, i) => (
+          <div key={i} style={{ borderRadius:20, overflow:'hidden', background:'#fff', boxShadow:'0 4px 20px rgba(33,53,133,0.10)', border:'1px solid var(--ws-line)' }}>
+            <img src={src} alt={`รีวิวที่ ${i+1}`} loading="lazy" style={{ ...imgStyle, height:320, objectFit:'cover' }} />
+          </div>
+        ))}
+      </div>
+
+      {/* ── Mobile: 1-at-a-time carousel ── */}
+      <div className="block md:hidden">
+        {/* Swipe-enabled image container */}
+        <div
+          key={activeIdx}
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          style={{
+            borderRadius:20, overflow:'hidden',
+            background:'#fff',
+            boxShadow:'0 8px 32px rgba(33,53,133,0.14)',
+            border:'1px solid var(--ws-line)',
+            animation:'ws-fadeIn 0.4s ease-in-out both',
+            userSelect:'none',
+          }}>
+          <img
+            src={images[activeIdx]}
+            alt={`รีวิวที่ ${activeIdx+1}`}
+            loading="lazy"
+            draggable={false}
+            style={{ ...imgStyle, height:380, objectFit:'contain' }} />
+        </div>
+
+        {/* Navigation row — below the image, never overlapping */}
+        {images.length > 1 && (
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:14, marginTop:16 }}>
+            {/* Prev chevron */}
+            <button onClick={prev} style={{
+              width:38, height:38, borderRadius:'50%',
+              border:'1.5px solid var(--ws-line)', background:'#fff',
+              color:'var(--ws-fg-2)', cursor:'pointer',
+              display:'grid', placeItems:'center',
+              boxShadow:'0 2px 8px rgba(33,53,133,0.09)',
+              transition:'box-shadow 0.18s ease',
+            }}>
+              <i data-lucide="chevron-left" style={{ width:18, height:18 }}></i>
+            </button>
+
+            {/* Expanding dot indicators */}
+            <div style={{ display:'flex', gap:7 }}>
+              {images.map((_, i) => (
+                <button key={i} onClick={() => setActiveIdx(i)} style={{
+                  width: i === activeIdx ? 22 : 7, height:7,
+                  borderRadius:999, border:0, cursor:'pointer', padding:0,
+                  background: i === activeIdx ? 'var(--ws-primary)' : 'rgba(33,53,133,0.2)',
+                  transition:'all 0.3s ease',
+                }} />
+              ))}
+            </div>
+
+            {/* Next chevron */}
+            <button onClick={next} style={{
+              width:38, height:38, borderRadius:'50%',
+              border:'1.5px solid var(--ws-line)', background:'#fff',
+              color:'var(--ws-fg-2)', cursor:'pointer',
+              display:'grid', placeItems:'center',
+              boxShadow:'0 2px 8px rgba(33,53,133,0.09)',
+              transition:'box-shadow 0.18s ease',
+            }}>
+              <i data-lucide="chevron-right" style={{ width:18, height:18 }}></i>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function Testimonials({ config, testimonials }) {
   const cfg      = config || {};
   const items    = testimonials || [];
@@ -4010,6 +4117,10 @@ function Testimonials({ config, testimonials }) {
             );
           })}
         </div>
+
+        {/* Review image slider — shown when admin has uploaded review screenshots */}
+        <ReviewImagesSlider images={cfg.reviewImages || []} />
+
       </div>
     </section>
   );
@@ -5450,6 +5561,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
   const [saveStatus, setSaveStatus] = useState('idle'); // 'idle' | 'saving' | 'ok' | 'error'
   const [saveConflict, setSaveConflict] = useState(false); // true when another device wrote first
   const [isUploading, setIsUploading] = useState(false);
+  const [newReviewUrl, setNewReviewUrl] = useState('');   // input state for adding review image URLs
 
   // ── Optimistic-lock snapshot ────────────────────────────────────────────────
   // Captured on dashboard open; compared against DB before every write to detect
@@ -5944,6 +6056,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     { id:'promotions', label:'โปรโมชั่น',         icon:'🎁', color:'#ec4899', desc:'Promotions Manager' },
     { id:'doctors',    label:'จัดการทีมแพทย์',  icon:'👩‍⚕️', color:'#3b82f6', desc:'Doctors Roster' },
     { id:'branches',   label:'จัดการสาขา',       icon:'📍', color:'#ef4444', desc:'Branch Editor' },
+    { id:'reviews',    label:'รีวิวจากเพจ',       icon:'⭐', color:'#f59e0b', desc:'Review Images Slider' },
     { id:'contact',    label:'ติดต่อ & Footer',  icon:'⚙️', color:'#6366f1', desc:'Contact Setup' },
   ];
 
@@ -6778,6 +6891,65 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
             )}
 
             {/* ═══════════════════════════════════════════
+                TAB — รีวิวจากเพจ (Review Images)
+            ═══════════════════════════════════════════ */}
+            {activeTab === 'reviews' && (
+              <div style={{ display:'flex', flexDirection:'column', gap:22 }}>
+                <div style={{ borderBottom:'1.5px solid #e8edf5', paddingBottom:14, marginBottom:4 }}>
+                  <h3 style={{ margin:0, color:'#f59e0b', fontSize:15, fontWeight:700 }}>⭐ จัดการรูปภาพรีวิวจากเพจ</h3>
+                  <p style={{ margin:'4px 0 0', fontSize:12, color:'#475569' }}>เพิ่ม URL รูป Screenshot รีวิวจาก Facebook/Google — จะแสดงเป็น Slider ใต้ Section "เสียงจากคนไข้"</p>
+                </div>
+
+                {/* Add new image */}
+                <div style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:20 }}>
+                  <label style={lbl}>เพิ่มรูปภาพรีวิวใหม่</label>
+                  <div style={{ display:'flex', gap:10 }}>
+                    <input type="text" value={newReviewUrl}
+                      onChange={e => setNewReviewUrl(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); const u = newReviewUrl.trim(); if (!u) return; setFormData(p => ({ ...p, config: { ...p.config, reviewImages: [...(p.config.reviewImages||[]), u] } })); setNewReviewUrl(''); } }}
+                      placeholder="วาง URL รูปภาพ Screenshot รีวิว (https://...)"
+                      style={{ ...inp, flex:1 }} />
+                    <button type="button"
+                      onClick={() => { const u = newReviewUrl.trim(); if (!u) return; setFormData(p => ({ ...p, config: { ...p.config, reviewImages: [...(p.config.reviewImages||[]), u] } })); setNewReviewUrl(''); }}
+                      style={{ background:'linear-gradient(135deg,#f59e0b,#d97706)', border:0, color:'#fff', borderRadius:10, padding:'10px 18px', fontSize:13, fontWeight:700, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0 }}>
+                      + เพิ่มรูป
+                    </button>
+                  </div>
+                  <div style={{ fontSize:11, color:'#94a3b8', marginTop:8 }}>กด Enter หรือปุ่ม "+ เพิ่มรูป" เพื่อบันทึก URL ลงใน list — กด 💾 บันทึกข้อมูล เพื่อ push ขึ้น Supabase</div>
+                </div>
+
+                {/* Existing images list */}
+                <div style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:20 }}>
+                  <div style={{ font:'700 12px/1 var(--ws-font-sans)', color:'#1e293b', letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:14 }}>
+                    รูปภาพปัจจุบัน · {(formData.config.reviewImages||[]).length} รูป
+                  </div>
+                  {(formData.config.reviewImages||[]).length === 0 ? (
+                    <div style={{ textAlign:'center', padding:'28px 0', color:'#94a3b8', fontSize:13 }}>ยังไม่มีรูปภาพ — กด "+ เพิ่มรูป" เพื่อเริ่มต้น</div>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+                      {(formData.config.reviewImages||[]).map((url, idx) => (
+                        <div key={idx} style={{ display:'flex', gap:12, alignItems:'center', background:'#f8fafc', borderRadius:10, padding:'10px 12px', border:'1.5px solid #e8edf5' }}>
+                          <img src={url} alt={`รีวิว ${idx+1}`} loading="lazy"
+                            style={{ width:64, height:64, objectFit:'cover', borderRadius:8, flexShrink:0, border:'1px solid #e2e8f0', background:'#e2e8f0' }}
+                            onError={e => { e.target.style.background='#fee2e2'; }} />
+                          <div style={{ flex:1, minWidth:0 }}>
+                            <div style={{ fontSize:11, color:'#64748b', fontWeight:700, marginBottom:4 }}>#{idx+1}</div>
+                            <div style={{ fontSize:11, color:'#334155', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{url}</div>
+                          </div>
+                          <button type="button"
+                            onClick={() => setFormData(p => ({ ...p, config: { ...p.config, reviewImages: (p.config.reviewImages||[]).filter((_,i) => i !== idx) } }))}
+                            style={{ background:'#7f1d1d', border:0, color:'#fca5a5', padding:'7px 12px', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', flexShrink:0 }}>
+                            ✕ ลบ
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ═══════════════════════════════════════════
                 TAB 7 — ติดต่อ & Footer
             ═══════════════════════════════════════════ */}
             {activeTab === 'contact' && (
@@ -6941,6 +7113,7 @@ function App() {
       /* ── Testimonials section ── */
       testimonialsEyebrow: 'สิ่งที่คนไข้ของเราพูดถึงเรา',
       testimonialsTitle:   'ความประทับใจ จากลูกค้าของเรา',
+      reviewImages:        [], // Screenshot URLs from Facebook/Google reviews — rendered as slider
       /* ── CTA Band ── */
       ctaEyebrow: 'ปรึกษาคุณหมอ',
       ctaTitle1:  'ปรึกษาฟรี',
