@@ -2720,11 +2720,16 @@ function BranchesScreen({ onNav, photoFilter }) {
       <PageHeader
         eyebrow={'สี่สาขาทั่วกรุงเทพฯ'}
         title={
-          <span style={{ fontSize: 'clamp(24px,5vw,72px)', display:'block', lineHeight:1.1 }}>
-            4 สาขา <em className="accent-fg" style={{ fontStyle:'normal' }}>มาตรฐาน เดียว</em>
+          <span style={{ display:'block', lineHeight:1.15 }}>
+            <span style={{ fontSize:'clamp(24px,5vw,64px)', fontWeight:500 }}>
+              4 สาขา <em className="accent-fg" style={{ fontStyle:'normal' }}>มาตรฐาน เดียว</em>
+            </span>
+            <span style={{ display:'block', fontSize:'clamp(16px,2.8vw,32px)', fontWeight:400, marginTop:10, color:'var(--ws-fg-2)', letterSpacing:'-0.01em' }}>
+              เลือกสาขาที่สะดวกที่สุดสำหรับคุณ
+            </span>
           </span>
         }
-        lead={'เลือกสาขาที่สะดวกที่สุดสำหรับคุณ — ทุกสาขาให้บริการมาตรฐานเดียวกัน'}
+        lead={'ทุกสาขาให้บริการมาตรฐานเดียวกัน'}
       />
 
       {/* Map + branch selector */}
@@ -3540,7 +3545,12 @@ function Testimonials({ config, testimonials }) {
             {'จากคนไข้ที่เคยได้รับการบริการที่ We Smile Dental Clinic — เรื่องราวเล็ก ๆ ที่บอกเล่าความรู้สึก หลังจบการทันตกรรม'}
           </p>
         </div>
-        <div style={{ display:'grid', gridTemplateColumns: cols, gap: isMobile ? 14 : 24, alignItems:'start' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? 14 : 24,
+          alignItems: isMobile ? 'stretch' : 'flex-start',
+        }}>
           {items.map((t,i) => {
             const accent = i===1;
             return (
@@ -3551,7 +3561,8 @@ function Testimonials({ config, testimonials }) {
                 border: accent ? 'none' : '1px solid var(--ws-line)',
                 boxShadow: accent ? '0 20px 60px rgba(33,53,133,0.22)' : 'var(--ws-shadow-sm)',
                 display:'flex', flexDirection:'column', gap: isMobile ? 14 : 20,
-                marginTop: (accent && !isMobile) ? 0 : (isMobile ? 0 : 24),
+                flex: isMobile ? 'none' : '1 1 0',
+                minWidth: isMobile ? 'auto' : 0,
                 position:'relative', overflow:'hidden',
               }}>
                 {!isMobile && <div style={{ position:'absolute', top:-8, left:20, font:'700 110px/1 var(--ws-font-display)', color:accent?'rgba(255,255,255,0.07)':'var(--ws-orange-100)', pointerEvents:'none', userSelect:'none', lineHeight:1 }}>"</div>}
