@@ -1644,7 +1644,7 @@ Object.assign(window, {
 const NAV_LINKS = [
   { id: 'home',     label: 'หน้าแรก' },
   { id: 'services', label: 'บริการ' },
-  { id: 'doctors',  label: 'ทีมแพทย์' },
+  { id: 'doctors',  label: 'ทีมทันตแพทย์' },
   { id: 'branches', label: 'สาขา' },
   { id: 'cases',    label: 'ตัวอย่างเคส' },
   { id: 'faq',      label: 'คำถามที่พบบ่อย' },
@@ -1690,7 +1690,7 @@ function Navbar({ active, onNav }) {
   const MOBILE_MENU_LINKS = [
     { id: 'home',     label: 'หน้าแรก' },
     { id: 'services', label: 'บริการ' },
-    { id: 'doctors',  label: 'ทีมแพทย์' },
+    { id: 'doctors',  label: 'ทีมทันตแพทย์' },
     { id: 'branches', label: 'สาขา' },
     { id: 'cases',    label: 'ตัวอย่างเคส' },
     { id: 'faq',      label: 'คำถามที่พบบ่อย' },
@@ -1885,7 +1885,7 @@ function Footer({ onNav, config }) {
 
           <FooterCol title={'ลิงก์'} items={[
             { label: 'บริการ', click: () => onNav('services') },
-            { label: 'ทีมแพทย์', click: () => onNav('doctors') },
+            { label: 'ทีมทันตแพทย์', click: () => onNav('doctors') },
             { label: 'สาขา', click: () => onNav('branches') },
             { label: 'ตัวอย่างเคส', click: () => onNav('cases') },
           ]} />
@@ -2343,22 +2343,6 @@ function PortfolioShowcase({ num, portfolioImages }) {
               }
             }}
             style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0, transition:'opacity 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
-          {/* Left arrow */}
-          <button onClick={prev} aria-label="previous"
-            style={{ position:'absolute', left:20, top:'50%', transform:'translateY(-50%)',
-                     width:48, height:48, borderRadius:'50%', border:'1.5px solid rgba(255,255,255,0.35)',
-                     background:'rgba(0,0,0,0.28)', backdropFilter:'blur(10px)',
-                     cursor:'pointer', display:'grid', placeItems:'center', color:'#fff', zIndex:2 }}>
-            <i data-lucide="arrow-left" style={{ width:18, height:18 }}></i>
-          </button>
-          {/* Right arrow */}
-          <button onClick={next} aria-label="next"
-            style={{ position:'absolute', right:20, top:'50%', transform:'translateY(-50%)',
-                     width:48, height:48, borderRadius:'50%', border:'1.5px solid rgba(255,255,255,0.35)',
-                     background:'rgba(0,0,0,0.28)', backdropFilter:'blur(10px)',
-                     cursor:'pointer', display:'grid', placeItems:'center', color:'#fff', zIndex:2 }}>
-            <i data-lucide="arrow-right" style={{ width:18, height:18 }}></i>
-          </button>
           {/* Dot nav */}
           <div style={{ position:'absolute', bottom:20, left:'50%', transform:'translateX(-50%)', display:'flex', gap:8, zIndex:2 }}>
             {images.map((_, i) => (
@@ -2815,7 +2799,7 @@ function DoctorProfileScreen({ onNav, photoFilter, doctorId, doctors }) {
         <div className="container">
           <Breadcrumb items={[
             { label: 'หน้าแรก', onClick: () => onNav('home') },
-            { label: 'ทีมแพทย์', onClick: () => onNav('doctors') },
+            { label: 'ทีมทันตแพทย์', onClick: () => onNav('doctors') },
             { label: d.nameTh },
           ]} />
 
@@ -2843,7 +2827,7 @@ function DoctorProfileScreen({ onNav, photoFilter, doctorId, doctors }) {
             {/* Bio */}
             <div>
               <div className="ws-num" style={{ marginBottom: 22 }}>
-                {'ทีมแพทย์'}
+                {'ทีมทันตแพทย์'}
               </div>
               <h1 className="ws-h1" style={{
                 margin: 0,
@@ -2870,18 +2854,6 @@ function DoctorProfileScreen({ onNav, photoFilter, doctorId, doctors }) {
         </div>
       </section>
 
-      {/* Branch Schedule Matrix */}
-      <section className="ws-section" style={{ background: 'var(--ws-orange-50)' }}>
-        <div className="container">
-          <SectionHead num={1} eyebrow={'ตารางออกตรวจ'}
-            title={<>ตารางออกตรวจ <em className="accent-fg">รายเดือน</em></>}
-            lead={'หมอจะออกตรวจที่สาขาและวันเหล่านี้ในแต่ละสัปดาห์ของเดือน'}
-            total={6}
-          />
-
-          <ScheduleMatrix doctor={d} />
-        </div>
-      </section>
 
       {/* Portfolio Case Slider */}
       {d.showPortfolio && d.portfolioImages && d.portfolioImages.filter(Boolean).length > 0 && (
@@ -4084,8 +4056,8 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
     <section id="section-doctors" className="ws-section accent-bg" style={{ background:'var(--ws-navy-50)' }}>
       <div className="container">
         <SectionHead num={2} total={7} align="stacked"
-          eyebrow={cfg.doctorsEyebrow || 'ทีมแพทย์'}
-          title={'ทีมแพทย์ของเรา'}
+          eyebrow={cfg.doctorsEyebrow || 'ทีมทันตแพทย์'}
+          title={'ทีมทันตแพทย์ของเรา'}
           lead={'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา'} />
 
         {isMobile ? (
@@ -4097,7 +4069,7 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
                   key={activeIdx}
                   d={allDocs[activeIdx]} i={activeIdx}
                   photoFilter={photoFilter}
-                  onClick={() => { window.location.href = 'dr-profile-placeholder.html'; }}
+                  onClick={() => onNav(`doctor:@${activeIdx}`)}
                 />
               )}
               {/* Prev arrow */}
@@ -4144,7 +4116,7 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
               <div key={`doc-wrap-${i}`} className={`sr sr-d${Math.min(i+1,6)}`}>
                 <DoctorCardSmall
                   d={d} i={i} photoFilter={photoFilter}
-                  onClick={() => { window.location.href = 'dr-profile-placeholder.html'; }}
+                  onClick={() => onNav(`doctor:@${i}`)}
                 />
               </div>
             ))}
@@ -4153,7 +4125,7 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
 
         <div style={{ marginTop: 32, display: 'flex', justifyContent: 'center' }}>
           <button onClick={() => onNav('doctors')} className="btn btn-ghost">
-            {'ดูทีมแพทย์ทั้งหมด'}
+            {'ดูทีมทันตแพทย์ทั้งหมด'}
             <i data-lucide="arrow-right" style={{ width: 16, height: 16 }}></i>
           </button>
         </div>
@@ -4295,12 +4267,12 @@ function AllDoctorsView({ onNav, photoFilter, config, doctors }) {
             <i data-lucide="arrow-left" style={{ width: 14, height: 14 }}></i>
             หน้าแรก
           </button>
-          <div className="ws-eyebrow" style={{ marginBottom: 14 }}>{'ทีมแพทย์ทั้งหมด'}</div>
+          <div className="ws-eyebrow" style={{ marginBottom: 14 }}>{'ทีมทันตแพทย์ทั้งหมด'}</div>
           <h1 style={{
             font: `500 ${isMobile ? 'clamp(28px,8vw,38px)' : 'clamp(36px,4vw,56px)'}/1.1 var(--ws-font-display)`,
             margin: 0, letterSpacing: '-0.02em', color: 'var(--ws-fg-1)',
           }}>
-            {'ทีมแพทย์ของเรา'}
+            {'ทีมทันตแพทย์ของเรา'}
           </h1>
           <p style={{ font: '500 15px/1.65 var(--ws-font-sans)', color: 'var(--ws-fg-3)', margin: '14px 0 0', maxWidth: 560 }}>
             {'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา'}
@@ -4881,7 +4853,7 @@ function DoctorsScreen({ onNav, photoFilter, doctors }) {
   return (
     <div data-screen-label="03 Doctors">
       <PageHeader
-        eyebrow={'ทีมแพทย์'}
+        eyebrow={'ทีมทันตแพทย์'}
         title={<>หมอที่จะ <em className="accent-fg">จำชื่อคุณได้</em></>}
         lead={'หมอทุกคนได้รับการรับรองและอบรมเฉพาะทาง — มุ่งมั่นในการดูแลคนไข้ระยะยาว'}
       />
@@ -7601,8 +7573,8 @@ function App() {
       servicesLead:    'หกสาขาความเชี่ยวชาญหลัก ครอบคลุมทุกขั้นตอนของการดูแลรอยยิ้มคุณ โดยทันตแพทย์เฉพาะทางที่อธิบายเข้าใจง่าย',
       servicesCtaLabel:'ดูบริการทั้งหมด',
       /* ── Doctors section ── */
-      doctorsEyebrow: 'ทีมแพทย์',
-      doctorsTitle:   'ทีมแพทย์ของเรา',
+      doctorsEyebrow: 'ทีมทันตแพทย์',
+      doctorsTitle:   'ทีมทันตแพทย์ของเรา',
       doctorsLead:    'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา',
       /* ── Testimonials section ── */
       testimonialsEyebrow: 'สิ่งที่คนไข้ของเราพูดถึงเรา',
