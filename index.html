@@ -1647,7 +1647,6 @@ const NAV_LINKS = [
   { id: 'doctors',  label: 'ทีมแพทย์' },
   { id: 'branches', label: 'สาขา' },
   { id: 'cases',    label: 'ตัวอย่างเคส' },
-  { id: 'booking',  label: 'นัดหมาย' },
 ];
 
 function Navbar({ active, onNav }) {
@@ -1692,7 +1691,7 @@ function Navbar({ active, onNav }) {
     { id: 'services', label: 'บริการ' },
     { id: 'doctors',  label: 'ทีมแพทย์' },
     { id: 'branches', label: 'สาขา' },
-    { id: 'booking',  label: 'นัดหมาย' },
+    { id: 'cases',    label: 'ตัวอย่างเคส' },
   ];
 
   return (
@@ -1880,11 +1879,10 @@ function Footer({ onNav, config }) {
           ]} onClick={() => onNav('services')} />
 
           <FooterCol title={'ลิงก์'} items={[
-            { label: 'ตัวอย่างเคส', click: () => onNav('cases') },
+            { label: 'บริการ', click: () => onNav('services') },
             { label: 'ทีมแพทย์', click: () => onNav('doctors') },
             { label: 'สาขา', click: () => onNav('branches') },
-            { label: 'นัดหมาย', click: () => onNav('booking') },
-            { label: 'ติดต่อ', click: () => onNav('contact') },
+            { label: 'ตัวอย่างเคส', click: () => onNav('cases') },
           ]} />
         </div>
 
@@ -2020,7 +2018,7 @@ function MobileFloatingCTA({ onNav }) {
 
       {/* Right — compact primary CTA with shimmer */}
       <button
-        onClick={() => onNav('booking')}
+        onClick={() => onNav('branches')}
         className="btn btn-primary animate-shimmer"
         style={{
           padding: '11px 20px',
@@ -2228,7 +2226,7 @@ function SubServiceScreen({ onNav, photoFilter, categoryId, subId }) {
               </div>
 
               <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
-                <button onClick={() => onNav('booking')} className="btn btn-primary" style={{ padding: '16px 24px' }}>
+                <button onClick={() => onNav('branches')} className="btn btn-primary" style={{ padding: '16px 24px' }}>
                   <i data-lucide="calendar-check" style={{ width: 16, height: 16 }}></i>
                   {'นัดปรึกษา'}
                 </button>
@@ -3229,7 +3227,7 @@ function BranchesScreen({ onNav, photoFilter }) {
                   b={b}
                   active={activeBranch === b.id}
                   onClick={() => setActiveBranch(b.id)}
-                  onBook={() => onNav('booking')}
+                  onBook={() => onNav('branches')}
                   index={i + 1}
                 />
               ))}
@@ -3263,7 +3261,7 @@ function BranchesScreen({ onNav, photoFilter }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 24 }} className="grid-2-md-1">
             {liveBranches.map((b) => (
-              <BranchCard key={b.id} b={b} photoFilter={photoFilter} onBook={() => onNav('booking')} />
+              <BranchCard key={b.id} b={b} photoFilter={photoFilter} onBook={() => onNav('branches')} />
             ))}
           </div>
         </div>
@@ -3560,7 +3558,7 @@ function HomeBranchTabs({ branches, onNav }) {
     : makeDefaultDailyHours(b.hours);
 
   return (
-    <section id="section-branches" style={{
+    <section id="section-branches" data-anchor="branches" style={{
       background: 'linear-gradient(180deg, #F8F7F4 0%, #FAFAF8 100%)',
       paddingTop: 'clamp(64px,8vw,96px)',
       paddingBottom: 'clamp(64px,8vw,96px)',
@@ -3703,7 +3701,7 @@ function HomeBranchTabs({ branches, onNav }) {
 
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: 10, marginTop: 'auto' }}>
-              <button onClick={() => onNav('booking')} className="btn btn-primary"
+              <button onClick={() => onNav('branches')} className="btn btn-primary"
                 style={{ flex: 1, padding: '14px 20px', fontSize: 14 }}>
                 <i data-lucide="calendar-check" style={{ width: 16, height: 16 }}></i>
                 {'นัดที่สาขา'}{b.nameTh}
@@ -3803,7 +3801,7 @@ function Hero({ onNav, photoFilter, config }) {
             {cfg.heroLead || 'ทันตกรรมครบวงจรในที่เดียว — จัดฟัน จัดฟันแบบใส รากฟันเทียม วีเนียร์ ดูแลโดยทีมหมอเฉพาะทาง'}
           </p>
           <div className="rise rise-4" style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
-            <button onClick={() => onNav('booking')} className="btn btn-primary animate-shimmer"
+            <button onClick={() => onNav('branches')} className="btn btn-primary animate-shimmer"
               style={{ padding: isMobile ? '14px 20px' : '20px 32px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 10px 32px rgba(232,90,20,0.35)' }}
               onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', boxShadow:'0 4px 16px rgba(232,90,20,0.28)', transitionDuration:'0.12s' })}
               onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-2px) scale(1.03)', boxShadow:'0 8px 32px rgba(232,90,20,0.48)', transitionDuration:'0.5s' })}>
@@ -4105,7 +4103,7 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
                   key={activeIdx}
                   d={allDocs[activeIdx]} i={activeIdx}
                   photoFilter={photoFilter}
-                  onClick={() => onNav('doctors')}
+                  onClick={() => { window.location.href = 'dr-profile-placeholder.html'; }}
                 />
               )}
               {/* Prev arrow */}
@@ -4152,7 +4150,7 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
               <div key={`doc-wrap-${i}`} className={`sr sr-d${Math.min(i+1,6)}`}>
                 <DoctorCardSmall
                   d={d} i={i} photoFilter={photoFilter}
-                  onClick={() => onNav('doctors')}
+                  onClick={() => { window.location.href = 'dr-profile-placeholder.html'; }}
                 />
               </div>
             ))}
@@ -4278,7 +4276,7 @@ function AllDoctorsView({ onNav, photoFilter, config, doctors }) {
     return () => { document.body.style.overflow = ''; };
   }, [selectedDocIdx]);
 
-  // If a CTA inside the modal calls onNav('booking') etc., close the modal first
+  // If a CTA inside the modal calls onNav('branches') etc., close the modal first
   const modalOnNav = (id) => {
     closeModal();
     onNav(id);
@@ -4712,7 +4710,7 @@ function CTABand({ onNav, config }) {
             </p>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:10, position:'relative', zIndex:1 }}>
-            <button onClick={() => onNav('booking')} className="btn btn-primary animate-shimmer"
+            <button onClick={() => onNav('branches')} className="btn btn-primary animate-shimmer"
               style={{ padding: isMobile ? '14px 20px' : '20px 28px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 12px 36px rgba(232,90,20,0.40)' }}
               onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', transitionDuration:'0.12s' })}
               onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-2px) scale(1.03)', transitionDuration:'0.5s' })}>
@@ -4746,7 +4744,6 @@ function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonial
       <PortfolioShowcase num={3} portfolioImages={portfolioImages} />
       <Testimonials config={config} testimonials={testimonials} />
       <PageReviewsSection config={config} />
-      <PromotionsSection promotions={promotions} onNav={onNav} />
       <HomeBranchTabs branches={branches} onNav={onNav} />
       <FAQPreview onNav={onNav} />
       <CTABand onNav={onNav} config={config} />
@@ -4794,7 +4791,7 @@ function ServicesScreen({ onNav }) {
                 {'ปรึกษาฟรี 15 นาที — เราจะอธิบายทุกตัวเลือกให้ฟัง'}
               </h3>
             </div>
-            <button onClick={() => onNav('booking')} className="btn btn-primary" style={{ padding: '18px 28px', fontSize: 16 }}>
+            <button onClick={() => onNav('branches')} className="btn btn-primary" style={{ padding: '18px 28px', fontSize: 16 }}>
               <i data-lucide="calendar-check" style={{ width: 18, height: 18 }}></i>
               {'นัดปรึกษาฟรี'}
             </button>
@@ -4960,7 +4957,7 @@ function DoctorsScreen({ onNav, photoFilter, doctors }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {liveDoctors.map((d, i) => (
               <DoctorBigCard key={`doc-big-${i}`} d={d} i={i} photoFilter={photoFilter}
-                onBook={() => onNav('booking')}
+                onBook={() => onNav('branches')}
                 onView={() => onNav(`doctor:@${i}`)} />
             ))}
           </div>
@@ -5822,7 +5819,7 @@ function ContactScreen({ onNav, config, branches }) {
                       icon="navigation" label="นำทาง" ghost
                     />
                     <BranchActionBtn
-                      onClick={() => onNav('booking')}
+                      onClick={() => onNav('branches')}
                       icon="calendar-check" label="นัดหมาย"
                     />
                   </div>
@@ -7883,8 +7880,7 @@ function App() {
         />
       ) : (
         <>
-          {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} doctors={webData.doctors} testimonials={webData.testimonials} portfolioImages={webData.portfolioImages} branches={webData.branches} promotions={webData.promotions} />}
-          {route.kind === 'booking'    && <BookingScreen {...props} />}
+          {route.kind === 'home'       && <HomeScreen {...props} services={webData.services} config={webData.config} doctors={webData.doctors} testimonials={webData.testimonials} portfolioImages={webData.portfolioImages} branches={webData.branches} />}
           {route.kind === 'contact'    && <ContactScreen {...props} config={webData.config} branches={webData.branches} />}
           {route.kind === 'servicecat' && <ServiceCategoryScreen {...props} serviceId={route.categoryId} />}
           {route.kind === 'subservice' && <SubServiceScreen {...props} categoryId={route.categoryId} subId={route.subId} />}
