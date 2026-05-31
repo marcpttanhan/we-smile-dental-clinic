@@ -1647,6 +1647,7 @@ const NAV_LINKS = [
   { id: 'doctors',  label: 'ทีมแพทย์' },
   { id: 'branches', label: 'สาขา' },
   { id: 'cases',    label: 'ตัวอย่างเคส' },
+  { id: 'faq',      label: 'คำถามที่พบบ่อย' },
 ];
 
 function Navbar({ active, onNav }) {
@@ -1692,6 +1693,7 @@ function Navbar({ active, onNav }) {
     { id: 'doctors',  label: 'ทีมแพทย์' },
     { id: 'branches', label: 'สาขา' },
     { id: 'cases',    label: 'ตัวอย่างเคส' },
+    { id: 'faq',      label: 'คำถามที่พบบ่อย' },
   ];
 
   return (
@@ -1747,17 +1749,17 @@ function Navbar({ active, onNav }) {
 
           {/* Desktop: phone + CTA pill */}
           {!isMobileNav && (
-            <button onClick={() => handleClick('booking')} className="btn btn-pill">
-              <i data-lucide="calendar-check" style={{ width: 14, height: 14 }}></i>
-              {'นัดหมาย'}
+            <button onClick={() => handleClick('branches')} className="btn btn-pill">
+              <i data-lucide="map-pin" style={{ width: 14, height: 14 }}></i>
+              {'ดูสาขาของเรา'}
             </button>
           )}
 
           {/* Mobile: booking pill + hamburger */}
           {isMobileNav && (
             <>
-              <button onClick={() => handleClick('booking')} className="btn btn-pill" style={{ padding: '10px 16px', fontSize: 13 }}>
-                {'นัดหมาย'}
+              <button onClick={() => handleClick('branches')} className="btn btn-pill" style={{ padding: '10px 16px', fontSize: 13 }}>
+                {'ดูสาขา'}
               </button>
               <button
                 onClick={() => setMenuOpen(o => !o)}
@@ -2029,22 +2031,14 @@ function MobileFloatingCTA({ onNav }) {
         }}
         onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.95)', transitionDuration:'0.12s' })}
         onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'scale(1)',    transitionDuration:'0.5s' })}>
-        <i data-lucide="calendar-check" style={{ width: 14, height: 14 }}></i>
-        {'นัดหมาย'}
+        <i data-lucide="map-pin" style={{ width: 14, height: 14 }}></i>
+        {'ดูสาขาของเรา'}
       </button>
     </div>
   );
 }
 
-function LineBubble() {
-  return (
-    <a href="#contact" className="line-bubble" title="Chat on LINE" aria-label="Chat on LINE">
-      <i data-lucide="message-circle" style={{ width: 24, height: 24 }}></i>
-    </a>
-  );
-}
-
-Object.assign(window, { Navbar, Footer, SectionHead, Stat, LineBubble, NAV_LINKS });
+Object.assign(window, { Navbar, Footer, SectionHead, Stat, NAV_LINKS });
 
 
 // ==========================================
@@ -2112,7 +2106,6 @@ function ServiceCategoryScreen({ onNav, photoFilter, serviceId }) {
       </section>
 
 
-      <CTABand onNav={onNav} />
     </div>
   );
 }
@@ -2900,7 +2893,6 @@ function DoctorProfileScreen({ onNav, photoFilter, doctorId, doctors }) {
         </section>
       )}
 
-      <CTABand onNav={onNav} />
     </div>
   );
 }
@@ -3267,7 +3259,6 @@ function BranchesScreen({ onNav, photoFilter }) {
         </div>
       </section>
 
-      <CTABand onNav={onNav} />
     </div>
   );
 }
@@ -3805,15 +3796,15 @@ function Hero({ onNav, photoFilter, config }) {
               style={{ padding: isMobile ? '14px 20px' : '20px 32px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 10px 32px rgba(232,90,20,0.35)' }}
               onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', boxShadow:'0 4px 16px rgba(232,90,20,0.28)', transitionDuration:'0.12s' })}
               onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-2px) scale(1.03)', boxShadow:'0 8px 32px rgba(232,90,20,0.48)', transitionDuration:'0.5s' })}>
-              <i data-lucide="calendar-check" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
-              {cfg.heroCta1 || 'นัดหมายตรวจฟัน'}
+              <i data-lucide="map-pin" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
+              {'ดูสาขาของเรา'}
             </button>
-            <button onClick={() => onNav('branches')} className="btn btn-ghost"
+            <button onClick={() => onNav('services')} className="btn btn-ghost"
               style={{ padding: isMobile ? '13px 18px' : '19px 28px', fontSize: isMobile ? 14 : 16 }}
               onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', transitionDuration:'0.12s' })}
               onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-1px)', transitionDuration:'0.5s' })}>
-              <i data-lucide="map-pin" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
-              {'ดูสาขาของเรา'}
+              <i data-lucide="layout-grid" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
+              {'บริการของเรา'}
             </button>
           </div>
           <div className="rise rise-4" style={{ display:'flex', gap: isMobile ? 20 : 0, marginTop: isMobile ? 28 : 56, paddingTop: isMobile ? 20 : 32, borderTop:'1px solid var(--ws-line)' }}>
@@ -4639,7 +4630,7 @@ function FAQPreview({ onNav }) {
   const [openIdx, setOpenIdx] = useState(0);
   const items = FAQS.slice(0, 4);
   return (
-    <section className="ws-section" style={{ background: 'var(--ws-orange-50)' }}>
+    <section id="section-faq" className="ws-section" style={{ background: 'var(--ws-orange-50)' }}>
       <div className="container">
         <div style={{ display: 'grid', gridTemplateColumns: '0.7fr 1fr', gap: 64 }} className="grid-2-md-1">
           <div>
@@ -4678,61 +4669,6 @@ function FAQPreview({ onNav }) {
   );
 }
 
-function CTABand({ onNav, config }) {
-  const cfg      = config || window.CLINIC_CONFIG || {};
-  const isMobile = useIsMobile();
-  return (
-    <section style={{ padding: isMobile ? '0 16px 64px' : '0 32px 96px' }}>
-      <div className="container">
-        <div style={{
-          borderRadius: isMobile ? 24 : 44,
-          background:'linear-gradient(135deg,#0F1E5C 0%,#1A2A6C 45%,#1E3580 100%)',
-          color:'#fff',
-          padding: isMobile ? '40px 24px' : 'clamp(56px,8vw,88px) clamp(32px,6vw,72px)',
-          display:'grid',
-          gridTemplateColumns: isMobile ? '1fr' : '1.3fr 1fr',
-          alignItems:'center',
-          gap: isMobile ? 28 : 56,
-          position:'relative',
-          overflow:'hidden',
-        }}>
-          <div style={{ position:'absolute', right:-80, top:-80, width:440, height:440, borderRadius:'50%', background:'radial-gradient(circle,rgba(242,107,31,0.32),transparent 65%)', filter:'blur(40px)', animation:'ws-orb-drift 18s ease-in-out infinite', pointerEvents:'none' }} />
-          <div style={{ position:'absolute', left:-60, bottom:-60, width:300, height:300, borderRadius:'50%', background:'radial-gradient(circle,rgba(74,99,214,0.25),transparent 70%)', filter:'blur(28px)', animation:'ws-orb-drift 24s ease-in-out infinite reverse', pointerEvents:'none' }} />
-          <div style={{ position:'absolute', right:'34%', bottom:-40, width:180, height:180, borderRadius:'50%', background:'rgba(255,255,255,0.04)', border:'1px solid rgba(255,255,255,0.08)', pointerEvents:'none' }} />
-          <div style={{ position:'relative', zIndex:1 }}>
-            <div className="ws-eyebrow" style={{ color:'var(--ws-orange-300)', marginBottom: isMobile ? 14 : 18 }}>{'ปรึกษาคุณหมอ'}</div>
-            <h2 style={{ font:`500 ${isMobile ? 'clamp(26px,7vw,36px)' : 'clamp(32px,4.4vw,56px)'}/1.05 var(--ws-font-display)`, margin:0, letterSpacing:'-.025em' }}>
-              {'ปรึกษาฟรี'}
-              {cfg.ctaTitle2 ? <><br/>{cfg.ctaTitle2}</> : null}
-            </h2>
-            <p style={{ font:`500 ${isMobile ? '14px' : '17px'}/1.75 var(--ws-font-sans)`, color:'rgba(255,255,255,.72)', margin: `${isMobile ? 16 : 24}px 0 0`, maxWidth:480 }}>
-              {'บอกเป้าหมายรอยยิ้มของคุณ — เราจะอธิบายตัวเลือกทุกแบบ พร้อมราคา'}
-            </p>
-          </div>
-          <div style={{ display:'flex', flexDirection:'column', gap:10, position:'relative', zIndex:1 }}>
-            <button onClick={() => onNav('branches')} className="btn btn-primary animate-shimmer"
-              style={{ padding: isMobile ? '14px 20px' : '20px 28px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 12px 36px rgba(232,90,20,0.40)' }}
-              onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', transitionDuration:'0.12s' })}
-              onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-2px) scale(1.03)', transitionDuration:'0.5s' })}>
-              <i data-lucide="calendar-check" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>{cfg.ctaCta1||'นัดหมายเลย'}
-            </button>
-            <a href={cfg.ctaLineHref || cfg.socialLine || '#'}
-              target="_blank" rel="noopener noreferrer"
-              className="btn btn-line"
-              style={{ padding: isMobile ? '13px 18px' : '19px 28px', fontSize: isMobile ? 14 : 16, borderRadius:14, textDecoration:'none', display:'flex', alignItems:'center', gap:10 }}>
-              <i data-lucide="message-circle" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
-              {cfg.ctaLineText || `แชต LINE ${cfg.clinicLine||'@wesmiledc1'}`}
-            </a>
-            <a href={`tel:${(cfg.clinicPhone||'063-879-8448').replace(/-/g,'')}`} className="btn"
-              style={{ padding: isMobile ? '13px 18px' : '19px 28px', fontSize: isMobile ? 14 : 16, borderRadius:14, background:'rgba(255,255,255,.09)', color:'#fff', border:'1px solid rgba(255,255,255,.22)', textDecoration:'none' }}>
-              <i data-lucide="phone" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>{cfg.clinicPhone||'063-879-8448'}
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
 
 function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonials, portfolioImages, branches, promotions }) {
   return (
@@ -4746,7 +4682,6 @@ function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonial
       <PageReviewsSection config={config} />
       <HomeBranchTabs branches={branches} onNav={onNav} />
       <FAQPreview onNav={onNav} />
-      <CTABand onNav={onNav} config={config} />
     </div>
   );
 }
@@ -4799,7 +4734,6 @@ function ServicesScreen({ onNav }) {
         </div>
       </section>
 
-      <CTABand onNav={onNav} />
     </div>
   );
 }
@@ -4979,7 +4913,6 @@ function DoctorsScreen({ onNav, photoFilter, doctors }) {
         </div>
       </section>
 
-      <CTABand onNav={onNav} />
     </div>
   );
 }
@@ -5147,7 +5080,6 @@ function AboutScreen({ onNav, photoFilter }) {
         </div>
       </section>
 
-      <CTABand onNav={onNav} />
     </div>
   );
 }
@@ -7721,7 +7653,7 @@ function App() {
   const [currentView, setCurrentView] = React.useState('home');
 
   // 'doctors' removed from SCROLL_MAP — it now flips to the dedicated view
-  const SCROLL_MAP = { services: 'section-services', cases: 'section-cases', branches: 'section-branches' };
+  const SCROLL_MAP = { services: 'section-services', cases: 'section-cases', branches: 'section-branches', faq: 'section-faq' };
 
   const onNav = (id) => {
     // Flip to dedicated doctors view — no screen change, no scroll
@@ -7889,7 +7821,6 @@ function App() {
       )}
 
       <Footer onNav={onNav} config={webData.config} />
-      <LineBubble />
       <MobileFloatingCTA onNav={onNav} />
       <TweaksPanel title="Tweaks">
         <TweakSection title="Color emphasis">
