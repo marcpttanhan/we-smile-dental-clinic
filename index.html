@@ -84,6 +84,11 @@ html { scroll-behavior: smooth; }
   animation:         ws-slide-up 0.55s cubic-bezier(0.4,0,0.2,1) both;
 }
 
+/* ── Mobile: footer safe-area so floating CTA bar never overlaps copyright ── */
+@media (max-width: 767px) {
+  footer { padding-bottom: 76px !important; }
+}
+
 /* ── Mobile: COMPLETE animation bypass ───────────────────────────────────────
    On phones the IntersectionObserver can miss elements that are already
    partially in view at paint time, or fire too late due to browser paint
@@ -215,6 +220,56 @@ html { scroll-behavior: smooth; }
   will-change: transform;
   -webkit-transition: -webkit-transform 0.5s cubic-bezier(0.16,1,0.3,1) !important;
   transition: transform 0.5s cubic-bezier(0.16,1,0.3,1) !important;
+}
+
+/* ── Skeleton loading placeholder ───────────────────────────────────────────
+   Used on doctor photo containers and portfolio frames while images download.
+   Prevents layout shift (CLS = 0) because containers have a defined aspect-ratio. */
+@keyframes ws-skeleton-shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+.sk {
+  background: linear-gradient(
+    90deg,
+    #f0f2f7 0%,
+    #e6eaf2 40%,
+    #edf0f7 60%,
+    #f0f2f7 100%
+  );
+  background-size: 200% 100%;
+  -webkit-animation: ws-skeleton-shimmer 1.6s ease-in-out infinite;
+  animation:         ws-skeleton-shimmer 1.6s ease-in-out infinite;
+}
+
+/* ── Continuous shimmer / glint on primary booking CTAs ──────────────────────
+   Uses ::before (not ::after — styles.css already owns ::after on .btn-primary
+   for the hover flash). Keyframe named ws-shimmer-flow to avoid the existing
+   ws-shimmer definition in styles.css. */
+@keyframes ws-shimmer-flow {
+  0%   { -webkit-transform: translateX(-180%) skewX(-25deg); transform: translateX(-180%) skewX(-25deg); }
+  100% { -webkit-transform: translateX(360%)  skewX(-25deg); transform: translateX(360%)  skewX(-25deg); }
+}
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.animate-shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; z-index: 1;
+  width: 42%; height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255,255,255,0.32) 50%,
+    transparent 100%
+  );
+  -webkit-transform: translateX(-180%) skewX(-25deg);
+  transform: translateX(-180%) skewX(-25deg);
+  -webkit-animation: ws-shimmer-flow 3.5s cubic-bezier(0.4,0,0.2,1) infinite;
+  animation: ws-shimmer-flow 3.5s cubic-bezier(0.4,0,0.2,1) infinite;
+  pointer-events: none;
 }
 </style>
 </head>
@@ -1922,6 +1977,61 @@ function Stat({ n, label }) {
   );
 }
 
+// ── MobileFloatingCTA — fixed bottom bar, phones only ─────────────────────
+// Luxury medical aesthetic: frosted glass bar with brand label + shimmer CTA.
+// JS-gated via useIsMobile so it never renders in the desktop DOM at all.
+function MobileFloatingCTA({ onNav }) {
+  const isMobile = useIsMobile(); // ≤ 640 px
+  if (!isMobile) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: 0, left: 0, right: 0,
+      zIndex: 60,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '10px 16px 14px',            // extra 4px bottom for safe-area notch
+      background: 'rgba(255,255,255,0.88)',
+      backdropFilter: 'blur(18px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(18px) saturate(180%)',
+      borderTop: '1px solid rgba(15,23,42,0.06)',
+      boxShadow: '0 -4px 24px rgba(0,0,0,0.05), 0 -1px 3px rgba(0,0,0,0.04)',
+    }}>
+      {/* Left — brand identity, muted + minimal */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <img src="assets/logo.png" alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+        <div>
+          <div style={{ font: '700 12px/1.2 var(--ws-font-sans)', color: 'var(--ws-navy-800)', letterSpacing: '-0.01em' }}>
+            We Smile Dental
+          </div>
+          <div style={{ font: '500 9px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>
+            Dental Clinic
+          </div>
+        </div>
+      </div>
+
+      {/* Right — compact primary CTA with shimmer */}
+      <button
+        onClick={() => onNav('booking')}
+        className="btn btn-primary animate-shimmer"
+        style={{
+          padding: '11px 20px',
+          fontSize: 13,
+          borderRadius: 12,
+          boxShadow: '0 4px 16px rgba(232,90,20,0.30)',
+          flexShrink: 0,
+        }}
+        onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.95)', transitionDuration:'0.12s' })}
+        onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'scale(1)',    transitionDuration:'0.5s' })}>
+        <i data-lucide="calendar-check" style={{ width: 14, height: 14 }}></i>
+        {'นัดหมาย'}
+      </button>
+    </div>
+  );
+}
+
 function LineBubble() {
   return (
     <a href="#contact" className="line-bubble" title="Chat on LINE" aria-label="Chat on LINE">
@@ -2222,9 +2332,16 @@ function PortfolioShowcase({ num, portfolioImages }) {
         </div>
         {/* Tightened image frame — max-w-2xl centred, responsive padding */}
         <div style={{ padding:'0 8px' }}>
-        <div style={{ position:'relative', borderRadius:28, overflow:'hidden', width:'100%', maxWidth:672, margin:'0 auto', aspectRatio:'4/3', background:'#111', boxShadow:'0 24px 64px rgba(15,23,42,0.22), 0 4px 16px rgba(15,23,42,0.10)' }}>
+        <div className="sk" style={{ position:'relative', borderRadius:28, overflow:'hidden', width:'100%', maxWidth:672, margin:'0 auto', aspectRatio:'4/3', boxShadow:'0 24px 64px rgba(15,23,42,0.22), 0 4px 16px rgba(15,23,42,0.10)' }}>
           <img key={safeIdx} src={images[safeIdx]} alt={'ผลงาน ' + (safeIdx + 1)} loading="lazy"
-            style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', animation:'ws-fadeIn 0.38s ease' }} />
+            onLoad={e => {
+              e.target.style.opacity = '1';
+              if (e.target.parentNode) {
+                e.target.parentNode.style.animation = 'none';
+                e.target.parentNode.style.background = '#111';
+              }
+            }}
+            style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0, transition:'opacity 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
           {/* Left arrow */}
           <button onClick={prev} aria-label="previous"
             style={{ position:'absolute', left:20, top:'50%', transform:'translateY(-50%)',
@@ -3679,7 +3796,7 @@ function Hero({ onNav, photoFilter, config }) {
             {cfg.heroLead || 'ทันตกรรมครบวงจรในที่เดียว — จัดฟัน จัดฟันแบบใส รากฟันเทียม วีเนียร์ ดูแลโดยทีมหมอเฉพาะทาง'}
           </p>
           <div className="rise rise-4" style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
-            <button onClick={() => onNav('booking')} className="btn btn-primary"
+            <button onClick={() => onNav('booking')} className="btn btn-primary animate-shimmer"
               style={{ padding: isMobile ? '14px 20px' : '20px 32px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 10px 32px rgba(232,90,20,0.35)' }}
               onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', boxShadow:'0 4px 16px rgba(232,90,20,0.28)', transitionDuration:'0.12s' })}
               onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-2px) scale(1.03)', boxShadow:'0 8px 32px rgba(232,90,20,0.48)', transitionDuration:'0.5s' })}>
@@ -4064,16 +4181,38 @@ function DoctorCardSmall({ d, i, photoFilter, onClick }) {
         transition: 'all 0.22s cubic-bezier(0.4,0,0.2,1)',
         transform: hov ? 'translateY(-3px)' : 'translateY(0)',
       }}>
-      {/* Photo */}
-      <div className={`doctor-photo ${photoFilter}`} style={{
-        backgroundImage: d.photo ? `url(${d.photo})` : undefined,
-        backgroundSize: d.photo ? 'cover' : undefined,
-        backgroundPosition: d.photo ? 'center top' : `${20+i*22}% 35%`,
+      {/* Photo — skeleton wrapper prevents CLS; img fades in on load */}
+      <div className="sk" style={{
+        aspectRatio: '4/5',
         borderRadius: '24px 24px 0 0',
-        marginBottom: 0,
+        overflow: 'hidden',
+        position: 'relative',
         transform: hov ? 'scale(1.03)' : 'scale(1)',
         transition: 'transform 0.45s cubic-bezier(0.22,0.61,0.36,1)',
-      }} />
+      }}>
+        <img
+          src={d.photo || 'assets/banner.jpg'}
+          alt={d.nameTh || ''}
+          loading="lazy"
+          className={photoFilter}
+          onLoad={e => {
+            // Fade the image in and stop the skeleton shimmer on the parent
+            e.target.style.opacity = '1';
+            if (e.target.parentNode) {
+              e.target.parentNode.style.animation = 'none';
+              e.target.parentNode.style.background = 'transparent';
+            }
+          }}
+          style={{
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover',
+            objectPosition: d.photo ? 'center top' : `${20+i*22}% 35%`,
+            opacity: 0,
+            transition: 'opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        />
+      </div>
 
       {/* Body */}
       <div style={{ padding:'16px 18px 20px' }}>
@@ -4566,7 +4705,7 @@ function CTABand({ onNav, config }) {
             </p>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:10, position:'relative', zIndex:1 }}>
-            <button onClick={() => onNav('booking')} className="btn btn-primary"
+            <button onClick={() => onNav('booking')} className="btn btn-primary animate-shimmer"
               style={{ padding: isMobile ? '14px 20px' : '20px 28px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 12px 36px rgba(232,90,20,0.40)' }}
               onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', transitionDuration:'0.12s' })}
               onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-2px) scale(1.03)', transitionDuration:'0.5s' })}>
@@ -7746,6 +7885,7 @@ function App() {
 
       <Footer onNav={onNav} config={webData.config} />
       <LineBubble />
+      <MobileFloatingCTA onNav={onNav} />
       <TweaksPanel title="Tweaks">
         <TweakSection title="Color emphasis">
           <TweakRadio value={tweaks.emphasis} onChange={(v) => setTweak('emphasis', v)}
