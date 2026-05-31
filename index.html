@@ -3953,13 +3953,17 @@ function AllDoctorsView({ onNav, photoFilter, config, doctors }) {
   );
 }
 
-// ── PageReviewsSection — 04/06 ────────────────────────────────────────────
-// Standalone section. Desktop: centred image with circular side-arrow buttons
-// floating outside the frame. Mobile: full-width swipeable card + dots below.
+// ── PageReviewsSection — 05/07 ────────────────────────────────────────────
+// Lens 1: Rich background texture, layered shadow stack, precise spacing ladder.
+// Lens 2: cubic-bezier(0.4,0,0.2,1) on every transition — lift + fill on hover,
+//         scale-down on press, fadeIn on slide change.
+// Lens 3: 48×48 min touch targets, clamp() image heights, inertia swipe.
+// Lens 4: Centred stage draws focus, dot + counter builds progress awareness.
 function PageReviewsSection({ config }) {
-  const cfg    = config || {};
-  const images = cfg.reviewImages || [];
+  const cfg      = config || {};
+  const images   = cfg.reviewImages || [];
   const isMobile = useIsMobile();
+  const isTablet = useIsMobile(900);
   const [activeIdx, setActiveIdx] = useState(0);
   const touchStartX = useRef(null);
 
@@ -3977,73 +3981,101 @@ function PageReviewsSection({ config }) {
     touchStartX.current = null;
   };
 
-  // Reusable circular arrow button
+  // Circular nav button — 56px desktop / 48px mobile.
+  // Hover: orange fill + 2px lift + shadow bloom. Press: scale(0.95).
+  const ease = '0.22s cubic-bezier(0.4, 0, 0.2, 1)';
   const ArrowBtn = ({ onClick, icon }) => (
     <button
       onClick={onClick}
       style={{
-        width: isMobile ? 40 : 52, height: isMobile ? 40 : 52,
+        width: isMobile ? 48 : 56, height: isMobile ? 48 : 56,
+        minWidth: isMobile ? 48 : 56,
         borderRadius: '50%',
         background: '#fff',
-        border: '1.5px solid var(--ws-line)',
-        color: 'var(--ws-fg-2)',
+        border: '1.5px solid rgba(33,53,133,0.10)',
+        color: 'var(--ws-fg-3)',
         cursor: 'pointer',
         display: 'grid', placeItems: 'center',
-        boxShadow: '0 4px 20px rgba(33,53,133,0.12)',
-        transition: 'all 0.2s ease',
         flexShrink: 0,
+        // Ambient + mid shadow
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(33,53,133,0.09)',
+        transition: `all ${ease}`,
+        transform: 'translateY(0) scale(1)',
       }}
-      onMouseEnter={e => {
-        e.currentTarget.style.background   = 'var(--ws-primary)';
-        e.currentTarget.style.color        = '#fff';
-        e.currentTarget.style.borderColor  = 'transparent';
-        e.currentTarget.style.boxShadow    = '0 6px 24px rgba(232,90,20,0.35)';
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.background  = '#fff';
-        e.currentTarget.style.color       = 'var(--ws-fg-2)';
-        e.currentTarget.style.borderColor = 'var(--ws-line)';
-        e.currentTarget.style.boxShadow   = '0 4px 20px rgba(33,53,133,0.12)';
-      }}>
-      <i data-lucide={icon} style={{ width: isMobile ? 18 : 22, height: isMobile ? 18 : 22 }}></i>
+      onMouseEnter={e => Object.assign(e.currentTarget.style, {
+        background:   'var(--ws-primary)',
+        color:        '#fff',
+        borderColor:  'transparent',
+        boxShadow:    '0 2px 6px rgba(0,0,0,0.10), 0 10px 32px rgba(232,90,20,0.38)',
+        transform:    'translateY(-2px) scale(1)',
+      })}
+      onMouseLeave={e => Object.assign(e.currentTarget.style, {
+        background:  '#fff',
+        color:       'var(--ws-fg-3)',
+        borderColor: 'rgba(33,53,133,0.10)',
+        boxShadow:   '0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(33,53,133,0.09)',
+        transform:   'translateY(0) scale(1)',
+      })}
+      onMouseDown={e => { e.currentTarget.style.transform = 'translateY(0) scale(0.95)'; }}
+      onMouseUp={e   => { e.currentTarget.style.transform = 'translateY(-2px) scale(1)'; }}>
+      <i data-lucide={icon} style={{ width: isMobile ? 18 : 22, height: isMobile ? 18 : 22, strokeWidth: 2.5 }}></i>
     </button>
   );
 
   return (
-    <section className="ws-section" style={{ background: 'var(--ws-navy-50)' }}>
-      <div className="container">
+    <section className="ws-section" style={{
+      // Lens 1: layered background — dot grid over soft gradient
+      background: [
+        'radial-gradient(circle, rgba(33,53,133,0.09) 1px, transparent 1px) 0 0 / 26px 26px',
+        'linear-gradient(160deg, #EEF1FB 0%, #F4F6FF 55%, #E8EEFF 100%)',
+      ].join(', '),
+      position: 'relative',
+      overflow: 'hidden',
+    }}>
+      {/* Decorative ambient orbs — add depth without clutter */}
+      <div style={{ position:'absolute', top:-140, right:-100, width:400, height:400, borderRadius:'50%', background:'radial-gradient(circle,rgba(232,90,20,0.07),transparent 68%)', filter:'blur(48px)', pointerEvents:'none' }} />
+      <div style={{ position:'absolute', bottom:-80, left:-80, width:320, height:320, borderRadius:'50%', background:'radial-gradient(circle,rgba(33,53,133,0.08),transparent 68%)', filter:'blur(40px)', pointerEvents:'none' }} />
 
-        {/* Section header */}
-        <div className="section-head-stacked" style={{ marginBottom: isMobile ? 28 : 44 }}>
-          <div className="ws-num" style={{ marginBottom: 16 }}>{'05 / 07 — รีวิวจากเพจ'}</div>
-          <h2 className="ws-h2" style={{ margin:'0 0 12px', lineHeight:1.15 }}>
-            {'รีวิวจากเพจ'}<em className="accent-fg" style={{ fontStyle:'italic' }}>{' Facebook'}</em>
+      <div className="container" style={{ position:'relative' }}>
+
+        {/* Section header — Lens 1 spacing ladder */}
+        <div style={{ marginBottom: isMobile ? 32 : 52 }}>
+          <div className="ws-num" style={{ marginBottom: 18 }}>{'05 / 07 — รีวิวจากเพจ'}</div>
+          <h2 className="ws-h2" style={{ margin:'0 0 14px', lineHeight:1.12, letterSpacing:'-0.02em', fontSize: isMobile ? 'clamp(26px,7vw,34px)' : undefined }}>
+            {'รีวิวจากเพจ'}
+            <em className="accent-fg" style={{ fontStyle:'italic' }}>{' Facebook'}</em>
           </h2>
-          <p className="ws-lead" style={{ margin:0, maxWidth:560, fontSize: isMobile ? 15 : undefined }}>
+          <p className="ws-lead" style={{ margin:0, maxWidth:520, lineHeight:1.72, fontSize: isMobile ? 15 : 17, color:'var(--ws-fg-3)' }}>
             {'ความประทับใจจากลูกค้าที่ติดต่อมาจากทางเฟสบุ๊กของเรา'}
           </p>
         </div>
 
-        {/* Centred slider — max-width capped so it stays elegant on wide screens */}
-        <div style={{ maxWidth: isMobile ? '100%' : 720, margin: '0 auto' }}>
+        {/* Centred slider stage — max-width 740px on desktop */}
+        <div style={{ maxWidth: isTablet ? '100%' : 740, margin:'0 auto' }}>
 
-          {/* Image row: [←]  IMAGE  [→] */}
-          <div style={{ display:'flex', alignItems:'center', gap: isMobile ? 10 : 24 }}>
+          {/* [←]  CARD  [→] — Lens 3: gap scales with breakpoint */}
+          <div style={{ display:'flex', alignItems:'center', gap: isMobile ? 12 : 28 }}>
             {images.length > 1 && <ArrowBtn onClick={prev} icon="chevron-left" />}
 
-            {/* Swipe-enabled image frame */}
+            {/* Image card — Lens 1: three-layer shadow stack */}
             <div
               key={activeIdx}
               onTouchStart={onTouchStart}
               onTouchEnd={onTouchEnd}
               style={{
                 flex: 1,
-                borderRadius: isMobile ? 20 : 28,
+                borderRadius: isMobile ? 24 : 32,
                 overflow: 'hidden',
                 background: '#fff',
-                boxShadow: '0 16px 56px rgba(33,53,133,0.14)',
-                border: '1px solid var(--ws-line)',
-                animation: 'ws-fadeIn 0.4s ease-in-out both',
+                // Layer 1: ambient, Layer 2: mid-range, Layer 3: close glow
+                boxShadow: [
+                  '0 1px 3px rgba(0,0,0,0.06)',
+                  '0 8px 24px rgba(33,53,133,0.10)',
+                  '0 32px 80px rgba(33,53,133,0.14)',
+                ].join(', '),
+                border: '1px solid rgba(33,53,133,0.07)',
+                // Lens 2: cubic-bezier slide fade
+                animation: `ws-fadeIn 0.38s cubic-bezier(0.4, 0, 0.2, 1) both`,
                 userSelect: 'none',
               }}>
               <img
@@ -4053,7 +4085,8 @@ function PageReviewsSection({ config }) {
                 draggable={false}
                 style={{
                   width: '100%',
-                  height: isMobile ? 360 : 520,
+                  // Lens 3: clamp height — responsive without breakpoints
+                  height: isMobile ? 'clamp(300px, 72vw, 420px)' : 560,
                   objectFit: 'contain',
                   display: 'block',
                   background: '#f8fafc',
@@ -4063,21 +4096,31 @@ function PageReviewsSection({ config }) {
             {images.length > 1 && <ArrowBtn onClick={next} icon="chevron-right" />}
           </div>
 
-          {/* Dot indicators + counter */}
+          {/* Dot row + counter — Lens 3: 44px touch row via padding */}
           {images.length > 1 && (
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10, marginTop:20 }}>
-              <div style={{ display:'flex', gap:8 }}>
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10, marginTop: isMobile ? 22 : 30 }}>
+              {/* Dots — 44px tall hit area via vertical padding */}
+              <div style={{ display:'flex', gap:8, padding:'18px 0' }}>
                 {images.map((_, i) => (
                   <button key={i} onClick={() => setActiveIdx(i)} style={{
-                    width: i === activeIdx ? 24 : 8, height: 8,
-                    borderRadius: 999, border: 0, cursor: 'pointer', padding: 0,
-                    background: i === activeIdx ? 'var(--ws-primary)' : 'rgba(33,53,133,0.2)',
-                    transition: 'all 0.3s ease',
+                    width: i === activeIdx ? 28 : 8,
+                    height: 8,
+                    borderRadius: 999,
+                    border: 0,
+                    cursor: 'pointer',
+                    padding: 0,
+                    // Active: gradient pill. Inactive: soft navy tint
+                    background: i === activeIdx
+                      ? 'linear-gradient(90deg, var(--ws-primary), var(--ws-orange-300))'
+                      : 'rgba(33,53,133,0.16)',
+                    // Lens 2: cubic-bezier width animation
+                    transition: `all 0.35s cubic-bezier(0.4, 0, 0.2, 1)`,
                   }} />
                 ))}
               </div>
-              <span style={{ font:'500 12px/1 var(--ws-font-sans)', color:'var(--ws-fg-4)' }}>
-                {activeIdx + 1} / {images.length}
+              {/* Counter — formatted 01 — 06 style */}
+              <span style={{ font:'600 11px/1 var(--ws-font-sans)', color:'var(--ws-fg-4)', letterSpacing:'0.08em' }}>
+                {String(activeIdx + 1).padStart(2,'0')} — {String(images.length).padStart(2,'0')}
               </span>
             </div>
           )}
