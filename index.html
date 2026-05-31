@@ -1646,7 +1646,7 @@ const NAV_LINKS = [
   { id: 'services', label: 'บริการ' },
   { id: 'doctors',  label: 'ทีมทันตแพทย์' },
   { id: 'branches', label: 'สาขา' },
-  { id: 'cases',    label: 'ตัวอย่างเคส' },
+  { id: 'cases',    label: 'ความประทับใจ' },
   { id: 'faq',      label: 'คำถามที่พบบ่อย' },
 ];
 
@@ -1692,7 +1692,7 @@ function Navbar({ active, onNav }) {
     { id: 'services', label: 'บริการ' },
     { id: 'doctors',  label: 'ทีมทันตแพทย์' },
     { id: 'branches', label: 'สาขา' },
-    { id: 'cases',    label: 'ตัวอย่างเคส' },
+    { id: 'cases',    label: 'ความประทับใจ' },
     { id: 'faq',      label: 'คำถามที่พบบ่อย' },
   ];
 
@@ -1887,7 +1887,7 @@ function Footer({ onNav, config }) {
             { label: 'บริการ', click: () => onNav('services') },
             { label: 'ทีมทันตแพทย์', click: () => onNav('doctors') },
             { label: 'สาขา', click: () => onNav('branches') },
-            { label: 'ตัวอย่างเคส', click: () => onNav('cases') },
+            { label: 'ความประทับใจ', click: () => onNav('cases') },
           ]} />
         </div>
 
@@ -3909,7 +3909,7 @@ function ServicesPreview({ onNav, services, config }) {
     <section id="section-services" className="ws-section" style={{ background:'transparent' }}>
       <div className="container">
         <SectionHead num={1} total={7} align="stacked"
-          eyebrow={cfg.servicesEyebrow || 'บริการของเรา'}
+          eyebrow={cfg.servicesEyebrow || 'บริการของทางคลินิก'}
           title={'ปลอดภัย สะอาด มั่นใจ โดยทันตแพทย์เฉพาะทาง'} />
         <p style={{
           font: `500 ${isMobile ? '17px' : 'clamp(16px,2.2vw,22px)'}/1.65 var(--ws-font-display)`,
@@ -4544,16 +4544,16 @@ function Testimonials({ config, testimonials }) {
   const isTablet = useIsMobile(900);
   const cols     = isMobile ? '1fr' : isTablet ? 'repeat(2,1fr)' : 'repeat(3,1fr)';
   return (
-    <section className="ws-section" style={{ background:'#EEF1FB', backgroundImage:'radial-gradient(circle,#B8C3EC 1.5px,transparent 1.5px)', backgroundSize:'24px 24px' }}>
+    <section id="section-testimonials" className="ws-section" style={{ background:'#EEF1FB', backgroundImage:'radial-gradient(circle,#B8C3EC 1.5px,transparent 1.5px)', backgroundSize:'24px 24px' }}>
       <div className="container">
         {/* Section header */}
         <div className="section-head-stacked" style={{ marginBottom: isMobile ? 32 : 56 }}>
-          <div className="ws-num" style={{ marginBottom:16 }}>{'04 / 07 — เสียงจากคนไข้'}</div>
+          <div className="ws-num" style={{ marginBottom:16 }}>{'04 / 07 — เสียงจากลูกค้า'}</div>
           <h2 className="ws-h2" style={{ margin:'0 0 16px', lineHeight:1.15 }}>
             {'ความประทับใจ'}{isMobile ? ' ' : <br />}{'จากลูกค้าของเรา.'}
           </h2>
           <p className="ws-lead" style={{ margin:0, maxWidth:640, fontSize: isMobile ? 15 : undefined }}>
-            {'จากคนไข้ที่เคยได้รับการบริการที่ We Smile Dental Clinic — เรื่องราวเล็ก ๆ ที่บอกเล่าความรู้สึก หลังจบการทันตกรรม'}
+            {'จากลูกค้าที่เคยได้รับการบริการที่ We Smile Dental Clinic — เรื่องราวเล็ก ๆ ที่บอกเล่าความรู้สึก หลังจบการทันตกรรม'}
           </p>
         </div>
         <div style={{
@@ -4608,10 +4608,10 @@ function FAQPreview({ onNav }) {
         <div style={{ display: 'grid', gridTemplateColumns: '0.7fr 1fr', gap: 64 }} className="grid-2-md-1">
           <div>
             <div className="ws-num" style={{ marginBottom: 16 }}>
-              07 / 07 — {'คำถามที่พบบ่อย'}
+              {'FAQ'}
             </div>
             <h2 className="ws-h2" style={{ margin: 0 }}>
-              {'คำถามที่ได้รับบ่อย'}
+              {'คำถามที่พบบ่อย'}
             </h2>
             <p className="ws-lead" style={{ marginTop: 18, maxWidth: 360 }}>
               {'อะไรที่คนไข้อยากรู้ก่อนนัดหมาย — เราตอบให้ตรงไปตรงมา'}
@@ -4650,7 +4650,6 @@ function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonial
       <TrustBar />
       <ServicesPreview onNav={onNav} services={services} config={config} />
       <DoctorsPreview onNav={onNav} photoFilter={photoFilter} config={config} doctors={doctors} />
-      <PortfolioShowcase num={3} portfolioImages={portfolioImages} />
       <Testimonials config={config} testimonials={testimonials} />
       <PageReviewsSection config={config} />
       <HomeBranchTabs branches={branches} onNav={onNav} />
@@ -4671,7 +4670,7 @@ function ServicesScreen({ onNav }) {
   return (
     <div data-screen-label="02 Services">
       <PageHeader
-        eyebrow={'บริการของเรา'}
+        eyebrow={'บริการของทางคลินิก'}
         title={<>ทุกบริการ <em className="accent-fg">ราคาโปร่งใส</em></>}
         lead={'หกสาขาความเชี่ยวชาญ ครอบคลุมทุกขั้นตอนของรอยยิ้มคุณ — ใช้ประกันได้ทั้งบริษัทประกันชั้นนำของไทยส่วนใหญ่'}
       />
@@ -7568,7 +7567,7 @@ function App() {
       badge3Title:'From ฿ 35,000',
       badge3Sub:  'จัดฟันแบบใส',
       /* ── Services section ── */
-      servicesEyebrow: 'บริการของเรา',
+      servicesEyebrow: 'บริการของทางคลินิก',
       servicesTitle:   'ปลอดภัย สะอาด มั่นใจ โดยทันตแพทย์เฉพาะทาง',
       servicesLead:    'หกสาขาความเชี่ยวชาญหลัก ครอบคลุมทุกขั้นตอนของการดูแลรอยยิ้มคุณ โดยทันตแพทย์เฉพาะทางที่อธิบายเข้าใจง่าย',
       servicesCtaLabel:'ดูบริการทั้งหมด',
@@ -7626,7 +7625,7 @@ function App() {
   const [currentView, setCurrentView] = React.useState('home');
 
   // 'doctors' removed from SCROLL_MAP — it now flips to the dedicated view
-  const SCROLL_MAP = { services: 'section-services', cases: 'section-cases', branches: 'section-branches', faq: 'section-faq' };
+  const SCROLL_MAP = { services: 'section-services', cases: 'section-testimonials', branches: 'section-branches', faq: 'section-faq' };
 
   const onNav = (id) => {
     // Flip to dedicated doctors view — no screen change, no scroll
