@@ -66,79 +66,138 @@ html { scroll-behavior: smooth; }
   transform: translateZ(0);
 }
 /* ── Scroll-reveal ── */
+/* GPU-composited: opacity + transform run on the compositor thread,
+   never blocking layout or paint on the main thread. */
 @keyframes ws-slide-up {
-  from { opacity:0; transform:translateY(22px); }
-  to   { opacity:1; transform:translateY(0); }
+  from { opacity:0; -webkit-transform:translate3d(0,22px,0); transform:translate3d(0,22px,0); }
+  to   { opacity:1; -webkit-transform:translate3d(0,0,0);    transform:translate3d(0,0,0); }
 }
-.sr { opacity:0; }
+.sr {
+  opacity:0;
+  /* Hoist layer pre-emptively so iOS Safari doesn't stutter on first frame */
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  will-change: transform, opacity;
+}
 .sr.sr-visible {
-  animation: ws-slide-up 0.6s cubic-bezier(0.4,0,0.2,1) both;
+  -webkit-animation: ws-slide-up 0.55s cubic-bezier(0.4,0,0.2,1) both;
+  animation:         ws-slide-up 0.55s cubic-bezier(0.4,0,0.2,1) both;
 }
-.sr-d1 { animation-delay:  80ms; }
-.sr-d2 { animation-delay: 160ms; }
-.sr-d3 { animation-delay: 240ms; }
-.sr-d4 { animation-delay: 320ms; }
-.sr-d5 { animation-delay: 400ms; }
-.sr-d6 { animation-delay: 480ms; }
+
+/* Mobile: instant reveal — stagger delays compress to 0–80ms so cards
+   pop in without the user having to wait while scrolling on a phone. */
+@media (max-width: 767px) {
+  .sr-d1,.sr-d2,.sr-d3,.sr-d4,.sr-d5,.sr-d6 { animation-delay: 0ms !important; }
+  .sr.sr-visible { animation-duration: 0.38s !important; }
+}
+
+/* Desktop stagger — sequential 80ms cadence */
+@media (min-width: 768px) {
+  .sr-d1 { animation-delay:  80ms; }
+  .sr-d2 { animation-delay: 160ms; }
+  .sr-d3 { animation-delay: 240ms; }
+  .sr-d4 { animation-delay: 320ms; }
+  .sr-d5 { animation-delay: 400ms; }
+  .sr-d6 { animation-delay: 480ms; }
+}
 
 /* ── Spring easing system ── */
 /* Expo-out curve: fast takeoff, ultra-smooth deceleration.
-   Replaces all generic ease/ease-in-out across interactive elements. */
+   -webkit- prefix ensures iOS Safari picks up the custom curve. */
 :root { --ws-spring: cubic-bezier(0.16, 1, 0.3, 1); }
 
 /* ── Button motion upgrades ── */
 .btn {
-  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1),
-              box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
-              background 0.22s cubic-bezier(0.16,1,0.3,1),
-              color 0.22s cubic-bezier(0.16,1,0.3,1) !important;
+  /* translate3d(0,0,0) forces GPU composite layer on Webkit */
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  will-change: transform, box-shadow;
+  -webkit-transition:
+    -webkit-transform 0.5s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+    background 0.22s cubic-bezier(0.16,1,0.3,1),
+    color 0.22s cubic-bezier(0.16,1,0.3,1) !important;
+  transition:
+    transform 0.5s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+    background 0.22s cubic-bezier(0.16,1,0.3,1),
+    color 0.22s cubic-bezier(0.16,1,0.3,1) !important;
 }
 .btn-primary:hover {
-  transform: translateY(-2px) scale(1.03) !important;
+  -webkit-transform: translate3d(0,-2px,0) scale(1.03) !important;
+  transform: translate3d(0,-2px,0) scale(1.03) !important;
   box-shadow: 0 8px 32px rgba(232,90,20,0.48),
               0 2px 8px rgba(232,90,20,0.22) !important;
 }
 .btn-primary:active {
+  -webkit-transform: scale(0.97) !important;
   transform: scale(0.97) !important;
+  -webkit-transition-duration: 0.12s !important;
   transition-duration: 0.12s !important;
 }
 .btn-ghost:hover {
-  transform: translateY(-1px) !important;
+  -webkit-transform: translate3d(0,-1px,0) !important;
+  transform: translate3d(0,-1px,0) !important;
   box-shadow: 0 4px 18px rgba(33,53,133,0.12) !important;
 }
 .btn-ghost:active, .btn:active {
+  -webkit-transform: scale(0.97) !important;
   transform: scale(0.97) !important;
+  -webkit-transition-duration: 0.12s !important;
   transition-duration: 0.12s !important;
 }
 .btn-pill:hover {
-  transform: translateY(-1px) scale(1.04) !important;
+  -webkit-transform: translate3d(0,-1px,0) scale(1.04) !important;
+  transform: translate3d(0,-1px,0) scale(1.04) !important;
   box-shadow: 0 6px 20px rgba(232,90,20,0.38) !important;
 }
 
 /* ── Card motion upgrades ── */
 .card-hover {
-  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1),
-              box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
-              border-color 0.28s ease !important;
-  will-change: transform;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  will-change: transform, box-shadow, opacity;
+  -webkit-transition:
+    -webkit-transform 0.5s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+    border-color 0.28s ease !important;
+  transition:
+    transform 0.5s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+    border-color 0.28s ease !important;
 }
 .card-hover:hover {
-  transform: translateY(-5px) scale(1.012) !important;
+  -webkit-transform: translate3d(0,-5px,0) scale(1.012) !important;
+  transform: translate3d(0,-5px,0) scale(1.012) !important;
   box-shadow: 0 2px 4px rgba(0,0,0,0.06),
               0 16px 48px rgba(33,53,133,0.16) !important;
 }
 
 /* ── Service tile motion ── */
 .service-tile {
-  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1),
-              box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
-              border-color 0.28s ease !important;
-  will-change: transform;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  will-change: transform, box-shadow;
+  -webkit-transition:
+    -webkit-transform 0.5s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+    border-color 0.28s ease !important;
+  transition:
+    transform 0.5s cubic-bezier(0.16,1,0.3,1),
+    box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+    border-color 0.28s ease !important;
 }
-.service-tile:hover { transform: translateY(-4px) !important; }
+.service-tile:hover {
+  -webkit-transform: translate3d(0,-4px,0) !important;
+  transform: translate3d(0,-4px,0) !important;
+}
 
 /* ── Stat items ── */
 .stat-item {
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  will-change: transform;
+  -webkit-transition: -webkit-transform 0.5s cubic-bezier(0.16,1,0.3,1) !important;
   transition: transform 0.5s cubic-bezier(0.16,1,0.3,1) !important;
 }
 </style>
@@ -3972,7 +4031,6 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
 }
 
 function DoctorCardSmall({ d, i, photoFilter, onClick }) {
-  const badges = getDoctorBadges(d);
   const [hov, setHov] = useState(false);
   return (
     <div
@@ -4022,26 +4080,8 @@ function DoctorCardSmall({ d, i, photoFilter, onClick }) {
           {d.cred}
         </div>
 
-        {/* Micro-badge chips */}
-        {badges.length > 0 && (
-          <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginTop:12, paddingTop:12, borderTop:'1px solid var(--ws-line)' }}>
-            {badges.map(b => (
-              <span key={b} style={{
-                display:'inline-flex', alignItems:'center',
-                background:'var(--ws-orange-50)', color:'var(--ws-primary)',
-                padding:'4px 9px', borderRadius:999,
-                font:'600 9px/1 var(--ws-font-sans)', letterSpacing:'0.05em',
-                textTransform:'uppercase', border:'1px solid rgba(232,90,20,0.18)',
-                whiteSpace:'nowrap',
-              }}>
-                {b}
-              </span>
-            ))}
-          </div>
-        )}
-
         {/* Short education */}
-        {d.shortEduTh && !badges.length && (
+        {d.shortEduTh && (
           <div style={{ font:'400 11px/1.55 var(--ws-font-sans)', color:'var(--ws-fg-3)', marginTop:10, paddingTop:10, borderTop:'1px solid var(--ws-line)' }}>
             {d.shortEduTh}
           </div>
