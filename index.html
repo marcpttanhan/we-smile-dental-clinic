@@ -6002,13 +6002,31 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     }
   };
 
-  // ── Optimistic-lock snapshot ────────────────────────────────────────────────
-  // Captured on dashboard open; compared against DB before every write to detect
-  // concurrent edits from other devices/tabs (multi-device conflict guard).
+  // ── Dashboard open: fetch latest Supabase state ───────────────────────────
+  // TWO things happen on every dashboard mount:
+  // 1. Capture updated_at for the optimistic-lock conflict check.
+  // 2. Re-hydrate formData from the canonical Supabase row so that Admin B
+  //    never overwrites Admin A's work with a stale localStorage snapshot.
+  //    This closes the race window where formData was initialised from
+  //    localStorage before the page-level Supabase hydration effect finished.
   const mountedAtRef = useRef(null);
   useEffect(() => {
     fetchSiteConfigUpdatedAt().then(ts => { mountedAtRef.current = ts; });
-  }, []); // runs once when the dashboard mounts
+
+    loadSiteConfigFromSupabase().then(remote => {
+      if (!remote) return; // empty table or network error — keep current formData
+      setFormData(prev => {
+        const _docDef = { specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '' };
+        const docs    = (remote.doctors || prev.doctors || []).map(d => ({ ..._docDef, ...d }));
+        return {
+          ...prev,
+          ...remote,
+          doctors: docs,
+          config: { ...(prev.config || {}), ...(remote.config || {}) },
+        };
+      });
+    });
+  }, []); // runs exactly once when the dashboard mounts
 
   // ── Login gatekeeper state ──────────────────────────────────────────────
   // isLoggedIn is stored in sessionStorage so it survives component unmounts
