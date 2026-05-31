@@ -2079,7 +2079,7 @@ function ServiceCategoryScreen({ onNav, photoFilter, serviceId }) {
             <div className={photoFilter} style={{
               borderRadius: 28, overflow: 'hidden', aspectRatio: '4/3',
               boxShadow: 'var(--ws-shadow-xl)',
-              backgroundImage: 'url(assets/hero.webp)',
+              backgroundImage: `url(${s.image || 'assets/hero.webp'})`,
               backgroundSize: 'cover', backgroundPosition: 'center',
             }} />
           </div>
@@ -2114,39 +2114,77 @@ function ServiceCategoryScreen({ onNav, photoFilter, serviceId }) {
 }
 
 function SubServiceCard({ sub, cat, index, onClick }) {
+  const [hov, setHov] = React.useState(false);
+  const imgSrc = sub.image || cat?.image || null;
   return (
-    <div onClick={onClick} className="card-hover" style={{
-      background: '#fff', borderRadius: 24, padding: 32,
-      border: '1px solid var(--ws-line)', boxShadow: 'var(--ws-shadow-sm)',
-      cursor: 'pointer',
-      display: 'flex', flexDirection: 'column', gap: 16,
-      minHeight: 240,
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-        <div className="ws-num" style={{ marginTop: 4 }}>
-          {String(index).padStart(2, '0')} — {'ทางเลือก'}
+    <div onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: '#fff', borderRadius: 20,
+        border: `1px solid ${hov ? 'rgba(232,90,20,0.2)' : 'var(--ws-line)'}`,
+        boxShadow: hov ? '0 8px 28px rgba(232,90,20,0.10)' : 'var(--ws-shadow-sm)',
+        cursor: 'pointer',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
+        transition: 'all 0.22s cubic-bezier(0.4,0,0.2,1)',
+        transform: hov ? 'translateY(-3px)' : 'none',
+      }}>
+      {/* Image zone */}
+      <div style={{
+        position: 'relative', width: '100%', aspectRatio: '16/9',
+        background: imgSrc ? '#111' : 'linear-gradient(135deg,var(--ws-navy-800),var(--ws-navy-900))',
+        overflow: 'hidden',
+        flexShrink: 0,
+      }}>
+        {imgSrc ? (
+          <img src={imgSrc} alt={sub.titleTh} loading="lazy"
+            style={{ width:'100%', height:'100%', objectFit:'cover', display:'block',
+                     transform: hov ? 'scale(1.04)' : 'scale(1)',
+                     transition:'transform 0.45s cubic-bezier(0.22,0.61,0.36,1)' }} />
+        ) : (
+          <div style={{ position:'absolute', inset:0, display:'grid', placeItems:'center' }}>
+            <i data-lucide="tooth" style={{ width:40, height:40, color:'rgba(255,255,255,0.2)' }}></i>
+          </div>
+        )}
+        {/* Index badge */}
+        <div style={{ position:'absolute', top:12, left:12,
+          background:'rgba(10,18,60,0.65)', backdropFilter:'blur(8px)',
+          padding:'4px 10px', borderRadius:999,
+          font:'600 10px/1 var(--ws-font-sans)', color:'rgba(255,255,255,0.85)',
+          letterSpacing:'0.1em', textTransform:'uppercase' }}>
+          {String(index).padStart(2,'0')}
         </div>
-        <i data-lucide="arrow-up-right" style={{ width: 20, height: 20, color: 'var(--ws-fg-4)' }}></i>
+        {/* Arrow indicator */}
+        <div style={{ position:'absolute', bottom:12, right:12,
+          width:32, height:32, borderRadius:'50%',
+          background: hov ? 'var(--ws-primary)' : 'rgba(255,255,255,0.15)',
+          display:'grid', placeItems:'center',
+          transition:'background 0.22s ease' }}>
+          <i data-lucide="arrow-up-right" style={{ width:14, height:14, color:'#fff' }}></i>
+        </div>
       </div>
-      <h3 style={{ margin: 0, font: '500 26px/1.2 var(--ws-font-display)', color: 'var(--ws-fg-1)', letterSpacing: '-0.01em' }}>
-        {sub.titleTh}
-      </h3>
-      <p style={{ margin: 0, font: '500 14px/1.6 var(--ws-font-sans)', color: 'var(--ws-fg-3)', flex: 1, textWrap: 'pretty' }}>
-        {sub.blurbTh}
-      </p>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 16, borderTop: '1px dashed var(--ws-line)' }}>
-        <div>
-          <div style={{ font: '500 11px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>
-            {'เริ่มต้น'}
+
+      {/* Text zone */}
+      <div style={{ padding:'18px 20px 20px', flex:1, display:'flex', flexDirection:'column', gap:8 }}>
+        <h3 style={{ margin:0, font:'600 17px/1.25 var(--ws-font-display)', color:'var(--ws-fg-1)', letterSpacing:'-0.01em' }}>
+          {sub.titleTh}
+        </h3>
+        <p style={{ margin:0, font:'400 13px/1.6 var(--ws-font-sans)', color:'var(--ws-fg-3)', flex:1 }}>
+          {sub.blurbTh}
+        </p>
+        {/* Price only — ระยะเวลา and การรับประกัน removed */}
+        <div style={{ paddingTop:12, borderTop:'1px dashed var(--ws-line)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <div>
+            <div style={{ font:'500 9.5px/1 var(--ws-font-sans)', color:'var(--ws-fg-4)', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:4 }}>
+              {'ราคาเริ่มต้น'}
+            </div>
+            <div style={{ font:'700 16px/1 var(--ws-font-sans)', color:'var(--ws-primary)' }}>
+              {sub.priceLabel}
+            </div>
           </div>
-          <div style={{ font: '600 17px/1 var(--ws-font-sans)', color: 'var(--ws-primary)' }}>
-            {sub.priceLabel}
-          </div>
+          <i data-lucide="chevron-right" style={{ width:16, height:16, color:'var(--ws-fg-4)' }}></i>
         </div>
-        <span className="chip chip-navy">
-          <i data-lucide="clock" style={{ width: 11, height: 11 }}></i>
-          {sub.duration}
-        </span>
       </div>
     </div>
   );
@@ -2210,25 +2248,20 @@ function SubServiceScreen({ onNav, photoFilter, categoryId, subId }) {
                 {sub.blurbTh}
               </p>
 
-              {/* Quick spec table */}
-              <div style={{
-                marginTop: 32, padding: 24, borderRadius: 20,
-                background: 'var(--ws-orange-50)',
-                display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 24,
-              }}>
-                <SpecCell label={'ราคาเริ่มต้น'} value={sub.priceLabel} accent />
-                <SpecCell label={'ระยะเวลา'} value={sub.duration} />
-                <SpecCell label={'การรับประกัน'} value={'1 ปี'} />
+              {/* Price only — duration and warranty removed */}
+              <div style={{ marginTop: 28, padding: '20px 24px', borderRadius: 18, background: 'var(--ws-orange-50)', display: 'inline-flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ font: '500 10px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{'ราคาเริ่มต้น'}</div>
+                <div style={{ font: '500 28px/1.1 var(--ws-font-display)', color: 'var(--ws-primary)', letterSpacing: '-0.01em' }}>{sub.priceLabel}</div>
               </div>
 
-              <div style={{ display: 'flex', gap: 12, marginTop: 32, flexWrap: 'wrap' }}>
-                <button onClick={() => onNav('branches')} className="btn btn-primary" style={{ padding: '16px 24px' }}>
-                  <i data-lucide="calendar-check" style={{ width: 16, height: 16 }}></i>
-                  {'นัดปรึกษา'}
+              <div style={{ display: 'flex', gap: 12, marginTop: 28, flexWrap: 'wrap' }}>
+                <button onClick={() => onNav('branches')} className="btn btn-primary animate-shimmer" style={{ padding: '16px 24px' }}>
+                  <i data-lucide="map-pin" style={{ width: 16, height: 16 }}></i>
+                  {'เลือกสาขา'}
                 </button>
-                <button onClick={() => onNav('contact')} className="btn btn-ghost" style={{ padding: '15px 22px' }}>
-                  <i data-lucide="message-circle" style={{ width: 16, height: 16 }}></i>
-                  {'สอบถามทาง LINE'}
+                <button onClick={() => onNav('home')} className="btn btn-ghost" style={{ padding: '15px 22px' }}>
+                  <i data-lucide="arrow-left" style={{ width: 16, height: 16 }}></i>
+                  {'กลับไปหน้าแรก'}
                 </button>
               </div>
             </div>
@@ -3922,54 +3955,16 @@ function ServicesPreview({ onNav, services, config }) {
         }}>
           {cfg.servicesLead || 'บริการของเรา ปลอดภัย สะอาด ถูกหลัก โดยทันตแพทย์เฉพาะทาง'}
         </p>
-        {/* ── Desktop bento — asymmetric: big left + 2 stacked right + 3-col row ── */}
-        {!isMobile && !isTablet ? (
-          <>
-            <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:16, marginBottom:16 }}>
-              {/* Big card — spans 2 rows */}
-              {features[0] && (
-                <div className="sr sr-d1" style={{ gridRow:'span 2', display:'flex' }}>
-                  <ServiceCard s={features[0]} large seqNum={1}
-                    onClick={() => onNav(`service:${features[0].id}`)}
-                    style={{ flex:1, minHeight:460 }} />
-                </div>
-              )}
-              {/* Two stacked medium cards */}
-              {features[1] && (
-                <div className="sr sr-d2">
-                  <ServiceCard s={features[1]} seqNum={2}
-                    onClick={() => onNav(`service:${features[1].id}`)}
-                    style={{ minHeight:218 }} />
-                </div>
-              )}
-              {features[2] && (
-                <div className="sr sr-d3">
-                  <ServiceCard s={features[2]} seqNum={3}
-                    onClick={() => onNav(`service:${features[2].id}`)}
-                    style={{ minHeight:218 }} />
-                </div>
-              )}
+        {/* Uniform responsive grid — all services equal weight */}
+        <div style={{ display:'grid', gridTemplateColumns: cols, gap }}>
+          {allSvcs.map((s, idx) => (
+            <div key={s.id} className={`sr sr-d${Math.min(idx+1,6)}`}>
+              <ServiceCard s={s} seqNum={idx+1}
+                onClick={() => onNav(`service:${s.id}`)}
+                style={{ minHeight: isMobile ? 200 : 260 }} />
             </div>
-            {/* Bottom row — 3 equal cards */}
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16 }}>
-              {otherWithSeq.map(({ s, seq }, idx) => (
-                <div key={s.id} className={`sr sr-d${idx+1}`}>
-                  <ServiceCard s={s} seqNum={seq} onClick={() => onNav(`service:${s.id}`)} style={{ minHeight:240 }} />
-                </div>
-              ))}
-            </div>
-          </>
-        ) : (
-          /* Tablet / Mobile — simple responsive grid */
-          <>
-            <div style={{ display:'grid', gridTemplateColumns: cols, gap, marginBottom: gap }}>
-              {featureWithSeq.map(({ s, seq }) => <ServiceCard key={s.id} s={s} large seqNum={seq} onClick={() => onNav(`service:${s.id}`)} />)}
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns: cols, gap }}>
-              {otherWithSeq.map(({ s, seq }) => <ServiceCard key={s.id} s={s} seqNum={seq} onClick={() => onNav(`service:${s.id}`)} />)}
-            </div>
-          </>
-        )}
+          ))}
+        </div>
         <div style={{ marginTop: isMobile ? 32 : 48, display:'flex', justifyContent:'center' }}>
           <button onClick={() => onNav('services')} className="btn btn-ghost">
             {cfg.servicesCtaLabel || 'ดูบริการทั้งหมด'}
@@ -6186,52 +6181,6 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
       return { ...prev, doctors };
     });
   };
-  const addDoctorSchedule = (docIdx) => {
-    setFormData(prev => {
-      const doctors = [...prev.doctors];
-      const doc = { ...doctors[docIdx] };
-      const schedule = [...(doc.schedule || [])];
-      schedule.push({ branch: 'ladkrabang', day: 'mon', weeks: [1,2,3,4,5] });
-      doc.schedule = schedule;
-      doctors[docIdx] = doc;
-      return { ...prev, doctors };
-    });
-  };
-  const removeDoctorSchedule = (docIdx, schedIdx) => {
-    setFormData(prev => {
-      const doctors = [...prev.doctors];
-      const doc = { ...doctors[docIdx] };
-      doc.schedule = doc.schedule.filter((_, i) => i !== schedIdx);
-      doctors[docIdx] = doc;
-      return { ...prev, doctors };
-    });
-  };
-  const updateDoctorSchedule = (docIdx, schedIdx, key, val) => {
-    setFormData(prev => {
-      const doctors = [...prev.doctors];
-      const doc = { ...doctors[docIdx] };
-      const schedule = [...doc.schedule];
-      schedule[schedIdx] = { ...schedule[schedIdx], [key]: val };
-      doc.schedule = schedule;
-      doctors[docIdx] = doc;
-      return { ...prev, doctors };
-    });
-  };
-  const toggleDoctorScheduleWeek = (docIdx, schedIdx, weekNum) => {
-    setFormData(prev => {
-      const doctors = [...prev.doctors];
-      const doc = { ...doctors[docIdx] };
-      const schedule = [...doc.schedule];
-      const slot = { ...schedule[schedIdx] };
-      let weeks = [...(slot.weeks || [])];
-      weeks = weeks.includes(weekNum) ? weeks.filter(w => w !== weekNum) : [...weeks, weekNum].sort();
-      slot.weeks = weeks;
-      schedule[schedIdx] = slot;
-      doc.schedule = schedule;
-      doctors[docIdx] = doc;
-      return { ...prev, doctors };
-    });
-  };
 
   // ── เพิ่ม / ลบ แพทย์ ──
   const addDoctor = () => {
@@ -6497,11 +6446,9 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
   const TABS = [
     { id:'dashboard',  label:'แผงควบคุมหลัก',   icon:'📊', color:'#0d9488', desc:'Overview & ตั้งค่าหน้าแรก' },
     { id:'services',   label:'จัดการบริการ',     icon:'🦷', color:'#f59e0b', desc:'Service Catalog' },
-    { id:'promotions', label:'โปรโมชั่น',         icon:'🎁', color:'#ec4899', desc:'Promotions Manager' },
     { id:'doctors',    label:'จัดการทีมแพทย์',  icon:'👩‍⚕️', color:'#3b82f6', desc:'Doctors Roster' },
     { id:'branches',   label:'จัดการสาขา',       icon:'📍', color:'#ef4444', desc:'Branch Editor' },
     { id:'reviews',    label:'รีวิวจากเพจ',       icon:'⭐', color:'#f59e0b', desc:'Review Images Slider' },
-    { id:'contact',    label:'ติดต่อ & Footer',  icon:'⚙️', color:'#6366f1', desc:'Contact Setup' },
   ];
 
   return (
@@ -6729,10 +6676,18 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                     ข้อมูลบริการหลัก
                   </div>
 
-                  {/* Service ID chip */}
+                  {/* Service ID — editable */}
                   <div style={{ marginBottom:18 }}>
-                    <label style={lbl}>รหัสบริการ (ล็อก)</label>
-                    <span style={slate}>{formData.services[selectedServiceIdx].id}</span>
+                    <label style={lbl}>รหัสบริการ</label>
+                    <input type="text"
+                      value={formData.services[selectedServiceIdx].id || ''}
+                      onChange={e => {
+                        const svcs = [...formData.services];
+                        svcs[selectedServiceIdx] = { ...svcs[selectedServiceIdx], id: e.target.value };
+                        setFormData(p => ({ ...p, services: svcs }));
+                      }}
+                      style={inp}
+                      placeholder="เช่น orthodontics, implants..." />
                   </div>
 
                   {/* Title row */}
@@ -6765,6 +6720,92 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                       style={{ ...inp, resize:'vertical' }}
                       placeholder="อธิบายบริการนี้ให้คนไข้เข้าใจ..." />
                   </div>
+                </div>
+
+                {/* ── Sub-services CRUD ── */}
+                <div style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:24, boxShadow:'0 1px 4px rgba(15,23,42,0.06)' }}>
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18 }}>
+                    <div style={{ fontSize:10, color:'#6366f1', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' }}>
+                      รายการบริการย่อย ({(formData.services[selectedServiceIdx].subServices||[]).length} รายการ)
+                    </div>
+                    <button type="button"
+                      onClick={() => {
+                        const svcs = [...formData.services];
+                        const subs = [...(svcs[selectedServiceIdx].subServices||[])];
+                        subs.push({ id:`sub-${Date.now()}`, title:'New Service', titleTh:'บริการใหม่', blurb:'', blurbTh:'', priceLabel:'฿ —', image:'' });
+                        svcs[selectedServiceIdx] = { ...svcs[selectedServiceIdx], subServices: subs };
+                        setFormData(p => ({ ...p, services: svcs }));
+                      }}
+                      style={{ background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:0, color:'#fff', borderRadius:9, padding:'8px 16px', fontSize:12, fontWeight:700, cursor:'pointer' }}>
+                      + เพิ่มบริการย่อย
+                    </button>
+                  </div>
+
+                  {(formData.services[selectedServiceIdx].subServices||[]).length === 0 ? (
+                    <div style={{ textAlign:'center', padding:'28px 0', color:'#94a3b8', fontSize:13 }}>ยังไม่มีบริการย่อย — กด "+ เพิ่มบริการย่อย"</div>
+                  ) : (
+                    <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
+                      {(formData.services[selectedServiceIdx].subServices||[]).map((sub, sIdx) => {
+                        const updateSub = (key, val) => {
+                          const svcs = [...formData.services];
+                          const subs = [...(svcs[selectedServiceIdx].subServices||[])];
+                          subs[sIdx] = { ...subs[sIdx], [key]: val };
+                          svcs[selectedServiceIdx] = { ...svcs[selectedServiceIdx], subServices: subs };
+                          setFormData(p => ({ ...p, services: svcs }));
+                        };
+                        const deleteSub = () => {
+                          const svcs = [...formData.services];
+                          const subs = (svcs[selectedServiceIdx].subServices||[]).filter((_,i)=>i!==sIdx);
+                          svcs[selectedServiceIdx] = { ...svcs[selectedServiceIdx], subServices: subs };
+                          setFormData(p => ({ ...p, services: svcs }));
+                        };
+                        return (
+                          <div key={sIdx} style={{ background:'#f8fafc', border:'1.5px solid #e8edf5', borderRadius:12, padding:18, display:'flex', flexDirection:'column', gap:12 }}>
+                            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                              <span style={{ fontSize:11, fontWeight:700, color:'#6366f1' }}>#{sIdx+1} — {sub.titleTh||sub.title}</span>
+                              <button type="button" onClick={deleteSub}
+                                style={{ background:'#7f1d1d', border:0, color:'#fca5a5', padding:'5px 11px', borderRadius:7, fontSize:11, fontWeight:700, cursor:'pointer' }}>
+                                ✕ ลบ
+                              </button>
+                            </div>
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                              <div>
+                                <label style={lbl}>ชื่อบริการย่อย (ไทย)</label>
+                                <input type="text" value={sub.titleTh||''} onChange={e=>updateSub('titleTh',e.target.value)} style={inp} />
+                              </div>
+                              <div>
+                                <label style={lbl}>ราคาเริ่มต้น</label>
+                                <input type="text" value={sub.priceLabel||''} onChange={e=>updateSub('priceLabel',e.target.value)} style={inp} placeholder="From ฿ 35,000" />
+                              </div>
+                            </div>
+                            <div>
+                              <label style={lbl}>คำอธิบาย (ไทย)</label>
+                              <textarea rows={2} value={sub.blurbTh||''} onChange={e=>updateSub('blurbTh',e.target.value)} style={{ ...inp, resize:'vertical' }} />
+                            </div>
+                            <div>
+                              <label style={lbl}>รูปภาพบริการย่อย</label>
+                              <div style={{ display:'flex', gap:10, alignItems:'center' }}>
+                                <input type="file" accept="image/*"
+                                  onChange={async e => {
+                                    const file = e.target.files[0]; if(!file) return;
+                                    setIsUploading(true);
+                                    const url = await uploadToSupabase(file, 'services');
+                                    if(url) updateSub('image', url);
+                                    setIsUploading(false); e.target.value='';
+                                  }}
+                                  style={{ flex:1, font:'12px var(--ws-font-sans)', color:'#334155' }} />
+                                {sub.image && <img src={sub.image} alt="" style={{ width:56, height:40, objectFit:'cover', borderRadius:7, border:'1.5px solid #e2e8f0' }} />}
+                              </div>
+                              {sub.image && (
+                                <input type="text" value={sub.image} onChange={e=>updateSub('image',e.target.value)}
+                                  style={{ ...inp, marginTop:6, fontSize:11, color:'#64748b' }} placeholder="หรือวาง URL ตรง..." />
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Banner Image ── */}
@@ -6982,10 +7023,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
               </div>
             )}
 
-            {/* ═══════════════════════════════════════════
-                TAB — จัดการโปรโมชั่น
-            ═══════════════════════════════════════════ */}
-            {activeTab === 'promotions' && (
+            {activeTab === '__promotions_removed__' && (
               <div style={{ display:'flex', flexDirection:'column', gap:22 }}>
                 {/* Header */}
                 <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1.5px solid #e8edf5', paddingBottom:14 }}>
@@ -7251,86 +7289,6 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                   </div>
                 )}
 
-                {/* ตารางเวรออกตรวจ — Matrix Schedule Builder */}
-                <div style={{ background: '#fff', border: '1.5px solid #e8edf5', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(15,23,42,0.06)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <div>
-                      <div style={{ fontSize: 10, color: '#0d9488', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Matrix Schedule Builder</div>
-                      <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 3 }}>ตารางเวรออกตรวจรายเดือน</div>
-                    </div>
-                    <button type="button" onClick={() => addDoctorSchedule(selectedDoctorIdx)} style={{
-                      background: '#0369a1', border: 0, color: '#fff',
-                      padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer'
-                    }}>
-                      + เพิ่มวันออกตรวจ
-                    </button>
-                  </div>
-
-                  {(formData.doctors[selectedDoctorIdx].schedule || []).length === 0 && (
-                    <div style={{ textAlign: 'center', padding: 24, color: '#334155', fontSize: 13 }}>
-                      ยังไม่มีตารางเวร — กด "เพิ่มวันออกตรวจ"
-                    </div>
-                  )}
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {(formData.doctors[selectedDoctorIdx].schedule || []).map((sched, sIdx) => (
-                      <div key={sIdx} style={{
-                        background: '#f8fafc', border: '1.5px solid #e8edf5', borderRadius: 10, padding: 14,
-                        display: 'flex', flexDirection: 'column', gap: 12
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12 }}>
-                          <div style={{ flex: 1 }}>
-                            <label style={{ ...lbl, marginBottom: 5 }}>สาขาเวร</label>
-                            <select value={sched.branch} onChange={e => updateDoctorSchedule(selectedDoctorIdx, sIdx, 'branch', e.target.value)}
-                              style={{ ...inp, padding: '8px 10px', fontSize: 13 }}>
-                              {formData.branches.map(b => <option key={b.id} value={b.id}>{b.nameTh}</option>)}
-                            </select>
-                          </div>
-                          <div style={{ flex: 1 }}>
-                            <label style={{ ...lbl, marginBottom: 5 }}>วันเวร</label>
-                            <select value={sched.day} onChange={e => updateDoctorSchedule(selectedDoctorIdx, sIdx, 'day', e.target.value)}
-                              style={{ ...inp, padding: '8px 10px', fontSize: 13 }}>
-                              <option value="mon">จันทร์</option>
-                              <option value="tue">อังคาร</option>
-                              <option value="wed">พุธ</option>
-                              <option value="thu">พฤหัสบดี</option>
-                              <option value="fri">ศุกร์</option>
-                              <option value="sat">เสาร์</option>
-                              <option value="sun">อาทิตย์</option>
-                            </select>
-                          </div>
-                          <button type="button" onClick={() => removeDoctorSchedule(selectedDoctorIdx, sIdx)} style={{
-                            background: '#7f1d1d', border: 0, color: '#fca5a5',
-                            padding: '8px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0
-                          }}>
-                            ลบออก
-                          </button>
-                        </div>
-                        <div>
-                          <label style={{ ...lbl, marginBottom: 8 }}>สัปดาห์ที่ออกตรวจ (เลือกได้หลายสัปดาห์)</label>
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            {[1,2,3,4,5].map(wk => {
-                              const on = (sched.weeks || []).includes(wk);
-                              return (
-                                <button key={wk} type="button" onClick={() => toggleDoctorScheduleWeek(selectedDoctorIdx, sIdx, wk)}
-                                  style={{
-                                    background: on ? '#0d9488' : '#1e293b',
-                                    border: on ? '2px solid #0d9488' : '2px solid #334155',
-                                    color: on ? '#fff' : '#475569',
-                                    borderRadius: 8, padding: '6px 14px',
-                                    fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                                    transition: 'all 0.15s'
-                                  }}>
-                                  สป.{wk}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             )}
 
@@ -7414,10 +7372,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
               </div>
             )}
 
-            {/* ═══════════════════════════════════════════
-                TAB 7 — ติดต่อ & Footer
-            ═══════════════════════════════════════════ */}
-            {activeTab === 'contact' && (
+            {activeTab === '__contact_removed__' && (
               <div style={{ display:'flex', flexDirection:'column', gap:22 }}>
                 <div style={{ borderBottom:'1.5px solid #e8edf5', paddingBottom:14, marginBottom:4 }}>
                   <h3 style={{ margin:0, color:'#6366f1', fontSize:15, fontWeight:700 }}>📬 จัดการข้อมูลการติดต่อและท้ายเว็บ</h3>
