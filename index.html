@@ -65,6 +65,82 @@ html { scroll-behavior: smooth; }
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
 }
+/* ── Scroll-reveal ── */
+@keyframes ws-slide-up {
+  from { opacity:0; transform:translateY(22px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.sr { opacity:0; }
+.sr.sr-visible {
+  animation: ws-slide-up 0.6s cubic-bezier(0.4,0,0.2,1) both;
+}
+.sr-d1 { animation-delay:  80ms; }
+.sr-d2 { animation-delay: 160ms; }
+.sr-d3 { animation-delay: 240ms; }
+.sr-d4 { animation-delay: 320ms; }
+.sr-d5 { animation-delay: 400ms; }
+.sr-d6 { animation-delay: 480ms; }
+
+/* ── Spring easing system ── */
+/* Expo-out curve: fast takeoff, ultra-smooth deceleration.
+   Replaces all generic ease/ease-in-out across interactive elements. */
+:root { --ws-spring: cubic-bezier(0.16, 1, 0.3, 1); }
+
+/* ── Button motion upgrades ── */
+.btn {
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+              background 0.22s cubic-bezier(0.16,1,0.3,1),
+              color 0.22s cubic-bezier(0.16,1,0.3,1) !important;
+}
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.03) !important;
+  box-shadow: 0 8px 32px rgba(232,90,20,0.48),
+              0 2px 8px rgba(232,90,20,0.22) !important;
+}
+.btn-primary:active {
+  transform: scale(0.97) !important;
+  transition-duration: 0.12s !important;
+}
+.btn-ghost:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 18px rgba(33,53,133,0.12) !important;
+}
+.btn-ghost:active, .btn:active {
+  transform: scale(0.97) !important;
+  transition-duration: 0.12s !important;
+}
+.btn-pill:hover {
+  transform: translateY(-1px) scale(1.04) !important;
+  box-shadow: 0 6px 20px rgba(232,90,20,0.38) !important;
+}
+
+/* ── Card motion upgrades ── */
+.card-hover {
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+              border-color 0.28s ease !important;
+  will-change: transform;
+}
+.card-hover:hover {
+  transform: translateY(-5px) scale(1.012) !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06),
+              0 16px 48px rgba(33,53,133,0.16) !important;
+}
+
+/* ── Service tile motion ── */
+.service-tile {
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1),
+              box-shadow 0.5s cubic-bezier(0.16,1,0.3,1),
+              border-color 0.28s ease !important;
+  will-change: transform;
+}
+.service-tile:hover { transform: translateY(-4px) !important; }
+
+/* ── Stat items ── */
+.stat-item {
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1) !important;
+}
 </style>
 </head>
 <body>
@@ -96,6 +172,60 @@ function useIsMobile(bp = 640) {
     return () => window.removeEventListener('resize', h);
   }, [bp]);
   return is;
+}
+
+// ── TrustBar — world-class partner tech strip ────────────────────────────────
+// Monochromatic, low-opacity logotype treatment: builds instant credibility
+// without distracting from the main conversion path.
+function TrustBar() {
+  const partners = [
+    { name:'Invisalign',       sub:'Clear Aligners' },
+    { name:'Straumann',        sub:'Implant Systems' },
+    { name:'Nobel Biocare',    sub:'Dental Implants' },
+    { name:'3M ESPE',          sub:'Dental Materials' },
+    { name:'Digital Smile',    sub:'Design' },
+    { name:'Ormco',            sub:'Orthodontics' },
+  ];
+  return (
+    <div style={{ background:'#fff', borderTop:'1px solid var(--ws-line)', borderBottom:'1px solid var(--ws-line)', padding:'22px 32px', position:'relative', zIndex:1 }}>
+      <div style={{ maxWidth:1200, margin:'0 auto' }}>
+        <div style={{ font:'700 9px/1 var(--ws-font-sans)', color:'var(--ws-fg-4)', letterSpacing:'0.22em', textTransform:'uppercase', textAlign:'center', marginBottom:18 }}>
+          {'WORLD-CLASS TECHNOLOGY & MATERIALS'}
+        </div>
+        <div style={{ display:'flex', justifyContent:'center', alignItems:'center', flexWrap:'wrap', gap:'clamp(18px,4vw,52px)', rowGap:14 }}>
+          {partners.map(p => (
+            <div key={p.name} style={{ opacity:0.38, textAlign:'center', userSelect:'none', transition:'opacity 0.22s ease' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.72'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '0.38'}>
+              <div style={{ font:'700 14px/1 var(--ws-font-sans)', color:'var(--ws-fg-1)', letterSpacing:'-0.01em', whiteSpace:'nowrap' }}>{p.name}</div>
+              <div style={{ font:'500 8.5px/1 var(--ws-font-sans)', color:'var(--ws-fg-3)', letterSpacing:'0.14em', textTransform:'uppercase', marginTop:4 }}>{p.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── getDoctorBadges — infers credential micro-badges from doctor data ─────────
+function getDoctorBadges(d) {
+  const specBadges = {
+    orthodontics: 'Invisalign Certified',
+    implants:     'Straumann Partner',
+    veneers:      'DSD Certified',
+    whitening:    'Zoom Whitening',
+    general:      'ทันตกรรมทั่วไป',
+    pediatric:    'ทันตกรรมเด็ก',
+  };
+  const specs = (d.specialties || []).slice(0, 2).map(id => specBadges[id]).filter(Boolean);
+  if (specs.length) return specs;
+  // Fallback: infer from Thai role text
+  const r = (d.roleTh || '').toLowerCase();
+  if (r.includes('จัดฟัน')) return ['Invisalign Certified'];
+  if (r.includes('ราก'))   return ['Straumann Partner'];
+  if (r.includes('เด็ก'))  return ['ทันตกรรมเด็ก'];
+  if (r.includes('สวยงาม') || r.includes('เวเนียร์')) return ['DSD Certified'];
+  return [];
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3475,11 +3605,16 @@ function Hero({ onNav, photoFilter, config }) {
           </p>
           <div className="rise rise-4" style={{ display:'flex', gap:10, alignItems:'center', flexWrap:'wrap' }}>
             <button onClick={() => onNav('booking')} className="btn btn-primary"
-              style={{ padding: isMobile ? '14px 20px' : '20px 32px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 10px 32px rgba(232,90,20,0.35)' }}>
+              style={{ padding: isMobile ? '14px 20px' : '20px 32px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 10px 32px rgba(232,90,20,0.35)' }}
+              onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', boxShadow:'0 4px 16px rgba(232,90,20,0.28)', transitionDuration:'0.12s' })}
+              onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-2px) scale(1.03)', boxShadow:'0 8px 32px rgba(232,90,20,0.48)', transitionDuration:'0.5s' })}>
               <i data-lucide="calendar-check" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
               {cfg.heroCta1 || 'นัดหมายตรวจฟัน'}
             </button>
-            <button onClick={() => onNav('branches')} className="btn btn-ghost" style={{ padding: isMobile ? '13px 18px' : '19px 28px', fontSize: isMobile ? 14 : 16 }}>
+            <button onClick={() => onNav('branches')} className="btn btn-ghost"
+              style={{ padding: isMobile ? '13px 18px' : '19px 28px', fontSize: isMobile ? 14 : 16 }}
+              onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', transitionDuration:'0.12s' })}
+              onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-1px)', transitionDuration:'0.5s' })}>
               <i data-lucide="map-pin" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
               {'ดูสาขาของเรา'}
             </button>
@@ -3490,9 +3625,9 @@ function Hero({ onNav, photoFilter, config }) {
               { n: cfg.heroStat2Num||'8,400', label: cfg.heroStat2Label||'รอยยิ้ม' },
               { n: cfg.heroStat3Num||'4.9★',  label: cfg.heroStat3Label||'คะแนนกูเกิล' },
             ].map((s,i) => (
-              <div key={i} style={{ flex:1, paddingRight: isMobile ? 0 : (i<2?32:0), marginRight: isMobile ? 0 : (i<2?32:0), borderRight: isMobile ? 'none' : (i<2?'1px solid var(--ws-line)':'none'), transition:'transform 220ms ease' }}
-                onMouseEnter={e=>e.currentTarget.style.transform='translateY(-3px)'}
-                onMouseLeave={e=>e.currentTarget.style.transform=''}>
+              <div key={i} className="stat-item" style={{ flex:1, paddingRight: isMobile ? 0 : (i<2?32:0), marginRight: isMobile ? 0 : (i<2?32:0), borderRight: isMobile ? 'none' : (i<2?'1px solid var(--ws-line)':'none') }}
+                onMouseEnter={e => e.currentTarget.style.transform='translateY(-3px)'}
+                onMouseLeave={e => e.currentTarget.style.transform=''}>
                 <Stat n={s.n} label={s.label} />
               </div>
             ))}
@@ -3624,12 +3759,54 @@ function ServicesPreview({ onNav, services, config }) {
         }}>
           {cfg.servicesLead || 'บริการของเรา ปลอดภัย สะอาด ถูกหลัก โดยทันตแพทย์เฉพาะทาง'}
         </p>
-        <div style={{ display:'grid', gridTemplateColumns: cols, gap, marginBottom: gap }}>
-          {featureWithSeq.map(({ s, seq }) => <ServiceCard key={s.id} s={s} large seqNum={seq} onClick={() => onNav(`service:${s.id}`)} />)}
-        </div>
-        <div style={{ display:'grid', gridTemplateColumns: cols, gap }}>
-          {otherWithSeq.map(({ s, seq }) => <ServiceCard key={s.id} s={s} seqNum={seq} onClick={() => onNav(`service:${s.id}`)} />)}
-        </div>
+        {/* ── Desktop bento — asymmetric: big left + 2 stacked right + 3-col row ── */}
+        {!isMobile && !isTablet ? (
+          <>
+            <div style={{ display:'grid', gridTemplateColumns:'2fr 1fr', gap:16, marginBottom:16 }}>
+              {/* Big card — spans 2 rows */}
+              {features[0] && (
+                <div className="sr sr-d1" style={{ gridRow:'span 2', display:'flex' }}>
+                  <ServiceCard s={features[0]} large seqNum={1}
+                    onClick={() => onNav(`service:${features[0].id}`)}
+                    style={{ flex:1, minHeight:460 }} />
+                </div>
+              )}
+              {/* Two stacked medium cards */}
+              {features[1] && (
+                <div className="sr sr-d2">
+                  <ServiceCard s={features[1]} seqNum={2}
+                    onClick={() => onNav(`service:${features[1].id}`)}
+                    style={{ minHeight:218 }} />
+                </div>
+              )}
+              {features[2] && (
+                <div className="sr sr-d3">
+                  <ServiceCard s={features[2]} seqNum={3}
+                    onClick={() => onNav(`service:${features[2].id}`)}
+                    style={{ minHeight:218 }} />
+                </div>
+              )}
+            </div>
+            {/* Bottom row — 3 equal cards */}
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:16 }}>
+              {otherWithSeq.map(({ s, seq }, idx) => (
+                <div key={s.id} className={`sr sr-d${idx+1}`}>
+                  <ServiceCard s={s} seqNum={seq} onClick={() => onNav(`service:${s.id}`)} style={{ minHeight:240 }} />
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          /* Tablet / Mobile — simple responsive grid */
+          <>
+            <div style={{ display:'grid', gridTemplateColumns: cols, gap, marginBottom: gap }}>
+              {featureWithSeq.map(({ s, seq }) => <ServiceCard key={s.id} s={s} large seqNum={seq} onClick={() => onNav(`service:${s.id}`)} />)}
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns: cols, gap }}>
+              {otherWithSeq.map(({ s, seq }) => <ServiceCard key={s.id} s={s} seqNum={seq} onClick={() => onNav(`service:${s.id}`)} />)}
+            </div>
+          </>
+        )}
         <div style={{ marginTop: isMobile ? 32 : 48, display:'flex', justifyContent:'center' }}>
           <button onClick={() => onNav('services')} className="btn btn-ghost">
             {cfg.servicesCtaLabel || 'ดูบริการทั้งหมด'}
@@ -3641,7 +3818,7 @@ function ServicesPreview({ onNav, services, config }) {
   );
 }
 
-function ServiceCard({ s, large, seqNum, onClick }) {
+function ServiceCard({ s, large, seqNum, onClick, style: extraStyle }) {
   const [hov, setHov] = React.useState(false);
   const palettes = [
     'linear-gradient(135deg,#1A2A6C 0%,#2E45A8 60%,#4A63D6 100%)',
@@ -3655,7 +3832,7 @@ function ServiceCard({ s, large, seqNum, onClick }) {
   const shortTag = (s.title || '').split(' ').slice(0, 1).join('').toUpperCase();
   return (
     <div onClick={onClick}
-      style={{ position:'relative', borderRadius:20, overflow:'hidden', minHeight: large?380:260, cursor:'pointer', userSelect:'none' }}
+      style={{ position:'relative', borderRadius:20, overflow:'hidden', minHeight: large?380:260, cursor:'pointer', userSelect:'none', ...extraStyle }}
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
       {/* Background layer */}
       <div style={{ position:'absolute', inset:0, overflow:'hidden', borderRadius:20 }}>
@@ -3773,11 +3950,12 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
           /* ── Desktop / tablet: grid ── */
           <div style={{ display: 'grid', gridTemplateColumns: desktopCols, gap: 20 }}>
             {allDocs.map((d,i) => (
-              <DoctorCardSmall
-                key={`doc-card-${i}`}
-                d={d} i={i} photoFilter={photoFilter}
-                onClick={() => onNav('doctors')}
-              />
+              <div key={`doc-wrap-${i}`} className={`sr sr-d${Math.min(i+1,6)}`}>
+                <DoctorCardSmall
+                  d={d} i={i} photoFilter={photoFilter}
+                  onClick={() => onNav('doctors')}
+                />
+              </div>
             ))}
           </div>
         )}
@@ -3794,15 +3972,79 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
 }
 
 function DoctorCardSmall({ d, i, photoFilter, onClick }) {
+  const badges = getDoctorBadges(d);
+  const [hov, setHov] = useState(false);
   return (
-    <div onClick={onClick} className="card-hover" style={{ background:'#fff', borderRadius:24, border:'1px solid var(--ws-line)', boxShadow:'var(--ws-shadow-sm)', cursor:'pointer', overflow:'hidden' }}>
-      <div className={`doctor-photo ${photoFilter}`} style={{ backgroundImage: d.photo?`url(${d.photo})`:undefined, backgroundSize: d.photo?'cover':undefined, backgroundPosition: d.photo?'center top':`${20+i*22}% 35%`, borderRadius:'24px 24px 0 0', marginBottom:0 }} />
-      <div style={{ padding:'18px 18px 20px' }}>
-        <div style={{ font:'500 11px/1 var(--ws-font-sans)', color:'var(--ws-primary)', letterSpacing:'.10em', textTransform:'uppercase', marginBottom:8 }}>{d.roleTh}</div>
-        <div style={{ font:'700 clamp(14px,4vw,20px)/1.25 var(--ws-font-sans)', color:'var(--ws-fg-1)', marginTop:4, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{d.nameTh}</div>
-        <div style={{ font:'500 11px/1.4 var(--ws-font-sans)', color:'var(--ws-fg-4)', marginTop:10, paddingTop:10, borderTop:'1px solid var(--ws-line)' }}>{d.cred}</div>
-        {d.shortEduTh && (
-          <div style={{ font:'400 11px/1.55 var(--ws-font-sans)', color:'var(--ws-fg-3)', marginTop:6 }}>{d.shortEduTh}</div>
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background:'#fff',
+        borderRadius: 24,
+        border: hov ? '1px solid rgba(232,90,20,0.25)' : '1px solid var(--ws-line)',
+        boxShadow: hov
+          ? '0 1px 3px rgba(0,0,0,0.06), 0 10px 32px rgba(232,90,20,0.12)'
+          : '0 1px 3px rgba(0,0,0,0.05), 0 4px 14px rgba(33,53,133,0.07)',
+        cursor:'pointer', overflow:'hidden',
+        transition: 'all 0.22s cubic-bezier(0.4,0,0.2,1)',
+        transform: hov ? 'translateY(-3px)' : 'translateY(0)',
+      }}>
+      {/* Photo */}
+      <div className={`doctor-photo ${photoFilter}`} style={{
+        backgroundImage: d.photo ? `url(${d.photo})` : undefined,
+        backgroundSize: d.photo ? 'cover' : undefined,
+        backgroundPosition: d.photo ? 'center top' : `${20+i*22}% 35%`,
+        borderRadius: '24px 24px 0 0',
+        marginBottom: 0,
+        transform: hov ? 'scale(1.03)' : 'scale(1)',
+        transition: 'transform 0.45s cubic-bezier(0.22,0.61,0.36,1)',
+      }} />
+
+      {/* Body */}
+      <div style={{ padding:'16px 18px 20px' }}>
+        {/* Role — uppercase tracking eyebrow */}
+        <div style={{ font:'600 9.5px/1 var(--ws-font-sans)', color:'var(--ws-primary)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:9 }}>
+          {d.roleTh}
+        </div>
+
+        {/* Name — high-contrast, no-wrap */}
+        <div style={{
+          font: '700 clamp(14px,3.5vw,19px)/1.22 var(--ws-font-display)',
+          color: 'var(--ws-fg-1)', letterSpacing:'-0.01em',
+          whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
+        }}>
+          {d.nameTh}
+        </div>
+
+        {/* Credential line */}
+        <div style={{ font:'500 10.5px/1.45 var(--ws-font-sans)', color:'var(--ws-fg-4)', marginTop:7 }}>
+          {d.cred}
+        </div>
+
+        {/* Micro-badge chips */}
+        {badges.length > 0 && (
+          <div style={{ display:'flex', flexWrap:'wrap', gap:5, marginTop:12, paddingTop:12, borderTop:'1px solid var(--ws-line)' }}>
+            {badges.map(b => (
+              <span key={b} style={{
+                display:'inline-flex', alignItems:'center',
+                background:'var(--ws-orange-50)', color:'var(--ws-primary)',
+                padding:'4px 9px', borderRadius:999,
+                font:'600 9px/1 var(--ws-font-sans)', letterSpacing:'0.05em',
+                textTransform:'uppercase', border:'1px solid rgba(232,90,20,0.18)',
+                whiteSpace:'nowrap',
+              }}>
+                {b}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Short education */}
+        {d.shortEduTh && !badges.length && (
+          <div style={{ font:'400 11px/1.55 var(--ws-font-sans)', color:'var(--ws-fg-3)', marginTop:10, paddingTop:10, borderTop:'1px solid var(--ws-line)' }}>
+            {d.shortEduTh}
+          </div>
         )}
       </div>
     </div>
@@ -4269,7 +4511,9 @@ function CTABand({ onNav, config }) {
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:10, position:'relative', zIndex:1 }}>
             <button onClick={() => onNav('booking')} className="btn btn-primary"
-              style={{ padding: isMobile ? '14px 20px' : '20px 28px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 12px 36px rgba(232,90,20,0.40)' }}>
+              style={{ padding: isMobile ? '14px 20px' : '20px 28px', fontSize: isMobile ? 14 : 16, animation:'ws-cta-pulse 3s ease-in-out infinite', boxShadow:'0 12px 36px rgba(232,90,20,0.40)' }}
+              onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', transitionDuration:'0.12s' })}
+              onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-2px) scale(1.03)', transitionDuration:'0.5s' })}>
               <i data-lucide="calendar-check" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>{cfg.ctaCta1||'นัดหมายเลย'}
             </button>
             <a href={cfg.ctaLineHref || cfg.socialLine || '#'}
@@ -4294,6 +4538,7 @@ function HomeScreen({ onNav, photoFilter, services, config, doctors, testimonial
   return (
     <div data-screen-label="01 Home">
       <Hero onNav={onNav} photoFilter={photoFilter} config={config} />
+      <TrustBar />
       <ServicesPreview onNav={onNav} services={services} config={config} />
       <DoctorsPreview onNav={onNav} photoFilter={photoFilter} config={config} doctors={doctors} />
       <PortfolioShowcase num={3} portfolioImages={portfolioImages} />
@@ -7320,6 +7565,22 @@ function App() {
 
   React.useEffect(() => { window.toggleAdminDashboard = () => setIsAdminOpen(prev => !prev); }, []);
   React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
+
+  // ── Scroll-reveal: staggered fade-in-up as sections enter viewport ──────────
+  React.useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('sr-visible'); io.unobserve(e.target); }
+      }),
+      { threshold: 0.08, rootMargin: '0px 0px -36px 0px' }
+    );
+    const scan = () => document.querySelectorAll('.sr:not(.sr-visible)').forEach(el => io.observe(el));
+    scan();
+    // Rescan after React paints new content (route changes, data loads)
+    const t = setTimeout(scan, 600);
+    return () => { io.disconnect(); clearTimeout(t); };
+  });
 
   // ── seo-analytics-pro v1.0.0 — Dynamic OG tags + JSON-LD from CMS config ──
   React.useEffect(() => {
