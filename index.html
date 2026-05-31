@@ -1719,8 +1719,11 @@ function Navbar({ active, onNav }) {
             <img src="assets/logo.png" alt="" style={{ width: 44, height: 44, objectFit: 'contain' }} />
             {!isMobileNav && (
               <div style={{ textAlign: 'left', lineHeight: 1 }}>
-                <div style={{ font: '800 16px/1 var(--ws-font-sans)', color: 'var(--ws-navy-800)', letterSpacing: '-0.01em' }}>
-                  We Smile Dental Clinic
+                <div style={{ font: '800 20px/1 var(--ws-font-sans)', color: 'var(--ws-navy-800)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
+                  We Smile
+                </div>
+                <div style={{ font: '600 9px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 4 }}>
+                  DENTAL CLINIC
                 </div>
               </div>
             )}
@@ -2009,11 +2012,11 @@ function MobileFloatingCTA({ onNav }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <img src="assets/logo.png" alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
         <div>
-          <div style={{ font: '700 12px/1.2 var(--ws-font-sans)', color: 'var(--ws-navy-800)', letterSpacing: '-0.01em' }}>
-            We Smile Dental
+          <div style={{ font: '800 15px/1 var(--ws-font-sans)', color: 'var(--ws-navy-800)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
+            We Smile
           </div>
-          <div style={{ font: '500 9px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: 2 }}>
-            Dental Clinic
+          <div style={{ font: '600 8.5px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 3 }}>
+            DENTAL CLINIC
           </div>
         </div>
       </div>
