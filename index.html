@@ -1672,7 +1672,7 @@ function Navbar({ active, onNav }) {
   }, [active]);
 
   // Scroll-map anchors (doctors removed — now a view flip, not a scroll)
-  const SCROLL_SECTION_IDS = new Set(['services', 'branches', 'cases']);
+  const SCROLL_SECTION_IDS = new Set(['services', 'branches', 'cases', 'faq']);
 
   const handleClick = (id) => {
     setMenuOpen(false);
@@ -1751,7 +1751,7 @@ function Navbar({ active, onNav }) {
           {!isMobileNav && (
             <button onClick={() => handleClick('branches')} className="btn btn-pill">
               <i data-lucide="map-pin" style={{ width: 14, height: 14 }}></i>
-              {'ดูสาขาของเรา'}
+              {'สาขาของเรา'}
             </button>
           )}
 
@@ -2032,7 +2032,7 @@ function MobileFloatingCTA({ onNav }) {
         onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.95)', transitionDuration:'0.12s' })}
         onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'scale(1)',    transitionDuration:'0.5s' })}>
         <i data-lucide="map-pin" style={{ width: 14, height: 14 }}></i>
-        {'ดูสาขาของเรา'}
+        {'สาขาของเรา'}
       </button>
     </div>
   );
@@ -3797,7 +3797,7 @@ function Hero({ onNav, photoFilter, config }) {
               onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', boxShadow:'0 4px 16px rgba(232,90,20,0.28)', transitionDuration:'0.12s' })}
               onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-2px) scale(1.03)', boxShadow:'0 8px 32px rgba(232,90,20,0.48)', transitionDuration:'0.5s' })}>
               <i data-lucide="map-pin" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
-              {'ดูสาขาของเรา'}
+              {'สาขาของเรา'}
             </button>
             <button onClick={() => onNav('services')} className="btn btn-ghost"
               style={{ padding: isMobile ? '13px 18px' : '19px 28px', fontSize: isMobile ? 14 : 16 }}
@@ -4326,8 +4326,6 @@ function AllDoctorsView({ onNav, photoFilter, config, doctors }) {
           </p>
         </div>
       </section>
-
-      <CTABand onNav={onNav} config={cfg} />
 
       {/* ── Doctor detail modal overlay ─────────────────────────── */}
       {selectedDocIdx !== null && (
