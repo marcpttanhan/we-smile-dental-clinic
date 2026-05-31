@@ -89,26 +89,32 @@ html { scroll-behavior: smooth; }
   footer { padding-bottom: 76px !important; }
 }
 
-/* ── Mobile: COMPLETE animation bypass ───────────────────────────────────────
-   On phones the IntersectionObserver can miss elements that are already
-   partially in view at paint time, or fire too late due to browser paint
-   throttling — leaving entire sections locked at opacity:0.
-   Solution: on ≤767px, every .sr element is unconditionally visible and
-   transitions are stripped entirely so no JS trigger is required.
-   Desktop keeps the full stagger / spring system untouched below. */
+/* ── Mobile scroll-reveal — CSS-transition approach (≤767px) ─────────────────
+   Uses transition instead of animation so the reveal fires purely on class
+   toggle (no keyframe timing or animation-fill-mode edge cases).
+   Stagger delay classes are reset to 0 so all elements reveal simultaneously
+   as soon as the IntersectionObserver fires — no cascade wait on phones.
+   The base .sr state is still opacity:0/translateY so the reveal is felt,
+   but the motion is shorter and faster than desktop for thumb-scroll pacing. */
 @media (max-width: 767px) {
-  .sr,
-  .sr.sr-visible,
+  .sr {
+    opacity: 0;
+    -webkit-transform: translate3d(0, 15px, 0);
+    transform: translate3d(0, 15px, 0);
+    -webkit-transition: opacity 0.45s ease-out, -webkit-transform 0.45s ease-out;
+    transition: opacity 0.45s ease-out, transform 0.45s ease-out;
+    will-change: opacity, transform;
+  }
+  .sr.sr-visible {
+    opacity: 1 !important;
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+  }
+  /* All stagger delays collapse to 0 on mobile */
   .sr-d1, .sr-d2, .sr-d3,
   .sr-d4, .sr-d5, .sr-d6 {
-    opacity: 1 !important;
-    -webkit-transform: none !important;
-    transform: none !important;
-    -webkit-animation: none !important;
-    animation: none !important;
-    -webkit-transition: none !important;
-    transition: none !important;
-    will-change: auto !important;
+    -webkit-transition-delay: 0ms !important;
+    transition-delay: 0ms !important;
   }
 }
 
@@ -2336,9 +2342,10 @@ function PortfolioShowcase({ num, portfolioImages }) {
           <img key={safeIdx} src={images[safeIdx]} alt={'ผลงาน ' + (safeIdx + 1)} loading="lazy"
             onLoad={e => {
               e.target.style.opacity = '1';
-              if (e.target.parentNode) {
-                e.target.parentNode.style.animation = 'none';
-                e.target.parentNode.style.background = '#111';
+              const p = e.target.parentNode;
+              if (p) {
+                p.classList.remove('sk');     // stops skeleton shimmer only
+                p.style.background = '#111';  // restore dark bg for failed-load safety
               }
             }}
             style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0, transition:'opacity 0.5s cubic-bezier(0.4,0,0.2,1)' }} />
@@ -4196,11 +4203,11 @@ function DoctorCardSmall({ d, i, photoFilter, onClick }) {
           loading="lazy"
           className={photoFilter}
           onLoad={e => {
-            // Fade the image in and stop the skeleton shimmer on the parent
             e.target.style.opacity = '1';
-            if (e.target.parentNode) {
-              e.target.parentNode.style.animation = 'none';
-              e.target.parentNode.style.background = 'transparent';
+            const p = e.target.parentNode;
+            if (p) {
+              p.classList.remove('sk'); // stops skeleton shimmer only — never touches .sr ancestors
+              p.style.background = 'transparent';
             }
           }}
           style={{
