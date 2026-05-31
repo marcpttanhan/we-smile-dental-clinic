@@ -7768,20 +7768,22 @@ function App() {
   React.useEffect(() => { window.toggleAdminDashboard = () => setIsAdminOpen(prev => !prev); }, []);
   React.useEffect(() => { if (window.lucide) window.lucide.createIcons(); });
 
-  // ── Scroll-reveal: staggered fade-in-up as sections enter viewport ──────────
+  // ── Scroll-reveal: fires on ALL screen sizes, no width gate ──────────────────
+  // threshold:0  → fires the instant ANY pixel of the element enters the viewport
+  // rootMargin:0 → no inset; works on short phone screens where -36px killed triggers
   React.useEffect(() => {
     if (typeof IntersectionObserver === 'undefined') return;
     const io = new IntersectionObserver(
       entries => entries.forEach(e => {
         if (e.isIntersecting) { e.target.classList.add('sr-visible'); io.unobserve(e.target); }
       }),
-      { threshold: 0.08, rootMargin: '0px 0px -36px 0px' }
+      { threshold: 0, rootMargin: '0px 0px 0px 0px' }
     );
     const scan = () => document.querySelectorAll('.sr:not(.sr-visible)').forEach(el => io.observe(el));
     scan();
-    // Rescan after React paints new content (route changes, data loads)
-    const t = setTimeout(scan, 600);
-    return () => { io.disconnect(); clearTimeout(t); };
+    const t1 = setTimeout(scan, 400);   // catch elements rendered by React after first paint
+    const t2 = setTimeout(scan, 1200);  // catch lazy-loaded sections on slow connections
+    return () => { io.disconnect(); clearTimeout(t1); clearTimeout(t2); };
   });
 
   // ── seo-analytics-pro v1.0.0 — Dynamic OG tags + JSON-LD from CMS config ──
