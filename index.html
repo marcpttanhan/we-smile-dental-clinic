@@ -4051,7 +4051,7 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
     <section id="section-doctors" className="ws-section accent-bg" style={{ background:'var(--ws-navy-50)' }}>
       <div className="container">
         <SectionHead num={2} total={7} align="stacked"
-          eyebrow={cfg.doctorsEyebrow || 'ทีมทันตแพทย์'}
+          eyebrow={'ทีมทันตแพทย์'}
           title={'ทีมทันตแพทย์ของเรา'}
           lead={'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา'} />
 
@@ -7527,7 +7527,7 @@ function App() {
       servicesLead:    'หกสาขาความเชี่ยวชาญหลัก ครอบคลุมทุกขั้นตอนของการดูแลรอยยิ้มคุณ โดยทันตแพทย์เฉพาะทางที่อธิบายเข้าใจง่าย',
       servicesCtaLabel:'ดูบริการทั้งหมด',
       /* ── Doctors section ── */
-      doctorsEyebrow: 'ทีมทันตแพทย์',
+      doctorsEyebrow: 'ทีมทันตแพทย์', /* hardcoded in JSX — this default syncs value on next admin Save */
       doctorsTitle:   'ทีมทันตแพทย์ของเรา',
       doctorsLead:    'รวมทีมทันตแพทย์เฉพาะทางจากสถาบันชั้นนำ พร้อมดูแลรักษาอย่างตรงจุดด้วยเครื่องมือที่ทันสมัย เพื่อผลลัพธ์และการบริการที่ดีที่สุดในทุกการรักษา',
       /* ── Testimonials section ── */
