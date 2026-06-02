@@ -958,7 +958,7 @@ const BRANCHES = [
     addressEn: '222/15 Luang Phaeng Rd., Lat Krabang, Bangkok 10520',
     phone: '063-879-8448',
     lineId: '@wesmiledc1',
-    facebook_url: 'https://facebook.com/wesmiledental1',
+    facebook_url: 'https://www.facebook.com/wesmiledental1',
     hours: '09:00 — 20:00',
     hoursTh: 'เปิดทุกวัน · 09:00 — 20:00',
     landmarks: ['Near Lat Krabang ARL', '8 min to Suvarnabhumi'],
@@ -970,15 +970,15 @@ const BRANCHES = [
   },
   {
     id: 'suvarnabhumi',
-    name: 'Suvarnabhumi',
-    nameTh: 'สุวรรณภูมิ',
+    name: 'Lamlukka',
+    nameTh: 'ลำลูกกา',
     label: 'Airport branch',
     labelTh: 'สาขาสนามบิน',
     address: '88/2 ถนนกิ่งแก้ว แขวงราชาเทวะ อ.บางพลี สมุทรปราการ 10540',
     addressEn: '88/2 King Kaeo Rd., Racha Thewa, Bang Phli, Samut Prakan 10540',
     phone: '063-879-8449',
     lineId: '@wesmile-sv',
-    facebook_url: 'https://facebook.com/wesmiledental1',
+    facebook_url: 'https://www.facebook.com/wesmiledental2',
     hours: '10:00 — 21:00',
     hoursTh: 'เปิดทุกวัน · 10:00 — 21:00',
     landmarks: ['5 min from Suvarnabhumi terminals', 'Free valet parking'],
@@ -990,14 +990,14 @@ const BRANCHES = [
   {
     id: 'romklao',
     name: 'Romklao',
-    nameTh: 'ร่มเกล้า',
+    nameTh: 'บางปะกอก',
     label: 'Community branch',
     labelTh: 'สาขาชุมชน',
     address: '45 ถนนร่มเกล้า แขวงคลองสามประเวศ เขตลาดกระบัง กรุงเทพฯ 10520',
     addressEn: '45 Romklao Rd., Khlong Sam Prawet, Lat Krabang, Bangkok 10520',
     phone: '063-879-8450',
     lineId: '@wesmile-rk',
-    facebook_url: 'https://facebook.com/wesmiledental1',
+    facebook_url: 'https://www.facebook.com/wesmiledental3',
     hours: '09:00 — 19:00',
     hoursTh: 'เปิดทุกวัน · 09:00 — 19:00',
     landmarks: ['Inside Mega Lifestyle Plaza', 'BTS shuttle every 20 min'],
@@ -1009,14 +1009,14 @@ const BRANCHES = [
   {
     id: 'onnut',
     name: 'On Nut',
-    nameTh: 'อ่อนนุช',
+    nameTh: 'เทพรักษ์',
     label: 'City branch',
     labelTh: 'สาขาในเมือง',
     address: '1199 ถนนสุขุมวิท 77 แขวงพระโขนงเหนือ เขตวัฒนา กรุงเทพฯ 10110',
     addressEn: '1199 Sukhumvit 77, Phra Khanong Nuea, Watthana, Bangkok 10110',
     phone: '063-879-8451',
     lineId: '@wesmile-on',
-    facebook_url: 'https://facebook.com/wesmiledental1',
+    facebook_url: 'https://www.facebook.com/wesmiledental4',
     hours: '11:00 — 21:00',
     hoursTh: 'เปิดทุกวัน · 11:00 — 21:00',
     landmarks: ['Connected to On Nut BTS exit 2', '24-hr secure parking'],
@@ -3368,7 +3368,7 @@ function BranchCard({ b, photoFilter, onBook }) {
 
         {/* Footer actions */}
         <div style={{ marginTop: 'auto', paddingTop: 24, borderTop: '1px solid var(--ws-line)', display: 'flex', gap: 8 }}>
-          <a href={b.facebook_url || 'https://www.facebook.com/wesmiledental1'}
+          <a href={b.facebook_url || 'https://www.facebook.com/wesmiledental1'} translate="no"
             target="_blank" rel="noopener noreferrer"
             className="btn btn-primary"
             style={{ flex: 1, padding: '14px 20px', fontSize: 14, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
@@ -3698,7 +3698,7 @@ function HomeBranchTabs({ branches, onNav }) {
 
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: 10, marginTop: 'auto' }}>
-              <a href={b.facebook_url || 'https://www.facebook.com/wesmiledental1'}
+              <a href={b.facebook_url || 'https://www.facebook.com/wesmiledental1'} translate="no"
                 target="_blank" rel="noopener noreferrer"
                 className="btn btn-primary"
                 style={{ flex: 1, padding: '14px 20px', fontSize: 14, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
