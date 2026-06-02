@@ -958,6 +958,7 @@ const BRANCHES = [
     addressEn: '222/15 Luang Phaeng Rd., Lat Krabang, Bangkok 10520',
     phone: '063-879-8448',
     lineId: '@wesmiledc1',
+    facebook_url: 'https://facebook.com/wesmiledental1',
     hours: '09:00 — 20:00',
     hoursTh: 'เปิดทุกวัน · 09:00 — 20:00',
     landmarks: ['Near Lat Krabang ARL', '8 min to Suvarnabhumi'],
@@ -977,6 +978,7 @@ const BRANCHES = [
     addressEn: '88/2 King Kaeo Rd., Racha Thewa, Bang Phli, Samut Prakan 10540',
     phone: '063-879-8449',
     lineId: '@wesmile-sv',
+    facebook_url: 'https://facebook.com/wesmiledental1',
     hours: '10:00 — 21:00',
     hoursTh: 'เปิดทุกวัน · 10:00 — 21:00',
     landmarks: ['5 min from Suvarnabhumi terminals', 'Free valet parking'],
@@ -995,6 +997,7 @@ const BRANCHES = [
     addressEn: '45 Romklao Rd., Khlong Sam Prawet, Lat Krabang, Bangkok 10520',
     phone: '063-879-8450',
     lineId: '@wesmile-rk',
+    facebook_url: 'https://facebook.com/wesmiledental1',
     hours: '09:00 — 19:00',
     hoursTh: 'เปิดทุกวัน · 09:00 — 19:00',
     landmarks: ['Inside Mega Lifestyle Plaza', 'BTS shuttle every 20 min'],
@@ -1013,6 +1016,7 @@ const BRANCHES = [
     addressEn: '1199 Sukhumvit 77, Phra Khanong Nuea, Watthana, Bangkok 10110',
     phone: '063-879-8451',
     lineId: '@wesmile-on',
+    facebook_url: 'https://facebook.com/wesmiledental1',
     hours: '11:00 — 21:00',
     hoursTh: 'เปิดทุกวัน · 11:00 — 21:00',
     landmarks: ['Connected to On Nut BTS exit 2', '24-hr secure parking'],
@@ -3364,13 +3368,20 @@ function BranchCard({ b, photoFilter, onBook }) {
 
         {/* Footer actions */}
         <div style={{ marginTop: 'auto', paddingTop: 24, borderTop: '1px solid var(--ws-line)', display: 'flex', gap: 8 }}>
-          <button onClick={onBook} className="btn btn-primary" style={{ flex: 1, padding: '14px 20px', fontSize: 14 }}>
+          <a href={b.facebook_url || 'https://www.facebook.com/wesmiledental1'}
+            target="_blank" rel="noopener noreferrer"
+            className="btn btn-primary"
+            style={{ flex: 1, padding: '14px 20px', fontSize: 14, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
             <i data-lucide="calendar-check" style={{ width: 16, height: 16 }}></i>
-            {`นัดที่สาขา${b.nameTh}`}
-          </button>
-          <button onClick={() => window.open(b.mapsUrl || `https://maps.google.com/?q=We+Smile+Dental+Clinic+${b.name}`, '_blank')} className="btn btn-ghost" style={{ padding: '14px 16px', fontSize: 14 }} aria-label="Directions">
+            <span translate="no">{`นัดที่สาขา${b.nameTh}`}</span>
+          </a>
+          <a href={b.mapsUrl || `https://maps.google.com/?q=We+Smile+Dental+Clinic+${encodeURIComponent(b.nameTh || b.name)}`}
+            target="_blank" rel="noopener noreferrer"
+            className="btn btn-ghost"
+            style={{ padding: '14px 16px', fontSize: 14, textDecoration: 'none', display: 'grid', placeItems: 'center' }}
+            aria-label="Directions">
             <i data-lucide="navigation" style={{ width: 16, height: 16 }}></i>
-          </button>
+          </a>
         </div>
       </div>
     </div>
@@ -3687,18 +3698,20 @@ function HomeBranchTabs({ branches, onNav }) {
 
             {/* Action buttons */}
             <div style={{ display: 'flex', gap: 10, marginTop: 'auto' }}>
-              <button onClick={() => onNav('branches')} className="btn btn-primary"
-                style={{ flex: 1, padding: '14px 20px', fontSize: 14 }}>
+              <a href={b.facebook_url || 'https://www.facebook.com/wesmiledental1'}
+                target="_blank" rel="noopener noreferrer"
+                className="btn btn-primary"
+                style={{ flex: 1, padding: '14px 20px', fontSize: 14, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 <i data-lucide="calendar-check" style={{ width: 16, height: 16 }}></i>
-                {'นัดที่สาขา'}{b.nameTh}
-              </button>
-              <button
-                onClick={() => window.open(b.mapsUrl || `https://maps.google.com/?q=We+Smile+Dental+Clinic+${b.name}`, '_blank')}
+                <span translate="no">{`นัดที่สาขา${b.nameTh}`}</span>
+              </a>
+              <a href={b.mapsUrl || `https://maps.google.com/?q=We+Smile+Dental+Clinic+${encodeURIComponent(b.nameTh || b.name)}`}
+                target="_blank" rel="noopener noreferrer"
                 className="btn btn-ghost"
-                style={{ padding: '14px 16px', fontSize: 14 }}
+                style={{ padding: '14px 16px', fontSize: 14, textDecoration: 'none', display: 'grid', placeItems: 'center' }}
                 aria-label="Directions">
                 <i data-lucide="navigation" style={{ width: 16, height: 16 }}></i>
-              </button>
+              </a>
             </div>
           </div>
 
@@ -6492,7 +6505,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
               <button type="button" onClick={() => { window.location.reload(); }}
                 style={{ display:'inline-flex', alignItems:'center', gap:6, minHeight:36, padding:'0 16px', background:'#ea580c', border:0, color:'#fff', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer', flexShrink:0 }}>
                 <i data-lucide="refresh-cw" style={{ width:13, height:13 }}></i>
-                รีเฟรช
+                <span translate="no">รีเฟรช</span>
               </button>
             </div>
           )}
@@ -6521,7 +6534,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
               {/* Close */}
               <button type="button" onClick={onClose} style={cancelBtnStyle}>
                 <i data-lucide="x" style={{ width:14, height:14 }}></i>
-                ปิด
+                <span translate="no">ปิด</span>
               </button>
 
               {/* Save — three distinct visual states */}
@@ -6541,25 +6554,25 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation:'spin 0.9s linear infinite', flexShrink:0 }}>
                       <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                     </svg>
-                    กำลังบันทึก…
+                    <span translate="no">กำลังบันทึก…</span>
                   </>
                 )}
                 {saveStatus === 'ok' && (
                   <>
                     <i data-lucide="check" style={{ width:14, height:14 }}></i>
-                    บันทึกแล้ว!
+                    <span translate="no">บันทึกแล้ว!</span>
                   </>
                 )}
                 {saveStatus === 'error' && (
                   <>
                     <i data-lucide="alert-circle" style={{ width:14, height:14 }}></i>
-                    บันทึกไม่สำเร็จ
+                    <span translate="no">บันทึกไม่สำเร็จ</span>
                   </>
                 )}
                 {saveStatus === 'idle' && (
                   <>
                     <i data-lucide="save" style={{ width:14, height:14 }}></i>
-                    บันทึกข้อมูล
+                    <span translate="no">บันทึกข้อมูล</span>
                   </>
                 )}
               </button>
@@ -7009,6 +7022,12 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                         onChange={e => updateBranch(selectedBranchIdx, 'lineId', e.target.value)} style={inp} placeholder="@wesmile-lk" />
                     </div>
                     <div>
+                      <label style={lbl}>Facebook URL (ลิงก์ปุ่มนัดหมาย)</label>
+                      <input type="url" value={formData.branches[selectedBranchIdx].facebook_url || ''}
+                        onChange={e => updateBranch(selectedBranchIdx, 'facebook_url', e.target.value)}
+                        style={inp} placeholder="https://facebook.com/..." />
+                    </div>
+                    <div>
                       <label style={lbl}>เวลาทำการ (ภาษาไทย)</label>
                       <input type="text" value={formData.branches[selectedBranchIdx].hoursTh || ''}
                         onChange={e => updateBranch(selectedBranchIdx, 'hoursTh', e.target.value)} style={inp} />
@@ -7236,17 +7255,17 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                     <button type="button" onClick={addDoctor} style={{
                       background: 'linear-gradient(135deg,#0d9488,#0891b2)', border: 0, color: '#fff',
                       padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
-                    }}>+ เพิ่มแพทย์</button>
-                    {onPreview && formData.doctors[selectedDoctorIdx]?.id && (
+                    }}><span translate="no">+ เพิ่มแพทย์</span></button>
+                    {onPreview && formData.doctors[selectedDoctorIdx]?.id ? (
                       <button type="button" onClick={() => onPreview(formData.doctors[selectedDoctorIdx].id, formData)} style={{
                         background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', border: 0, color: '#fff',
                         padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
-                      }}>👁 ดูโปรไฟล์</button>
-                    )}
+                      }}><span translate="no">👁 ดูโปรไฟล์</span></button>
+                    ) : null}
                     <button type="button" onClick={() => removeDoctor(selectedDoctorIdx)} style={{
                       background: '#7f1d1d', border: 0, color: '#fca5a5',
                       padding: '9px 12px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
-                    }}>ลบ</button>
+                    }}><span translate="no">ลบ</span></button>
                   </div>
                 </div>
 
@@ -7334,14 +7353,14 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                       }} style={{
                         background: 'linear-gradient(135deg,#0d9488,#0891b2)', border: 0, color: '#fff',
                         padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer'
-                      }}>+ เพิ่มรูป</button>
+                      }}><span translate="no">+ เพิ่มรูป</span></button>
                     </div>
 
-                    {(formData.doctors[selectedDoctorIdx].portfolioImages || []).length === 0 && (
+                    {(formData.doctors[selectedDoctorIdx].portfolioImages || []).length === 0 ? (
                       <div style={{ textAlign: 'center', padding: 24, color: '#334155', fontSize: 13 }}>
-                        ยังไม่มีรูป — กด "เพิ่มรูป" เพื่อเพิ่มรูปผลงาน
+                        ยังไม่มีรูป — กด &quot;เพิ่มรูป&quot; เพื่อเพิ่มรูปผลงาน
                       </div>
-                    )}
+                    ) : null}
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                       {(formData.doctors[selectedDoctorIdx].portfolioImages || []).map((imgUrl, pIdx) => (
@@ -7364,7 +7383,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                           }} style={{
                             background: '#7f1d1d', border: 0, color: '#fca5a5',
                             padding: '7px 10px', borderRadius: 7, fontSize: 11, fontWeight: 700, cursor: 'pointer', flexShrink: 0
-                          }}>ลบ</button>
+                          }}><span translate="no">ลบ</span></button>
                         </div>
                       ))}
                     </div>
