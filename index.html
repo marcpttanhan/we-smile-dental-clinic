@@ -1649,7 +1649,7 @@ Object.assign(window, {
 
 const NAV_LINKS = [
   { id: 'home',     label: 'หน้าแรก' },
-  { id: 'services', label: 'บริการ' },
+  { id: 'services', label: 'หัตถการ' },
   { id: 'doctors',  label: 'ทีมทันตแพทย์' },
   { id: 'branches', label: 'สาขา' },
   { id: 'cases',    label: 'ความประทับใจ' },
@@ -1695,7 +1695,7 @@ function Navbar({ active, onNav }) {
   // Mobile menu nav items per spec
   const MOBILE_MENU_LINKS = [
     { id: 'home',     label: 'หน้าแรก' },
-    { id: 'services', label: 'บริการ' },
+    { id: 'services', label: 'หัตถการ' },
     { id: 'doctors',  label: 'ทีมทันตแพทย์' },
     { id: 'branches', label: 'สาขา' },
     { id: 'cases',    label: 'ความประทับใจ' },
@@ -1880,7 +1880,7 @@ function Footer({ onNav, config }) {
             </div>
           </div>
 
-          <FooterCol title={'บริการ'} items={[
+          <FooterCol title={'หัตถการ'} items={[
             'จัดฟัน',
             'จัดฟันแบบใส',
             'วีเนียร์',
@@ -2073,7 +2073,7 @@ function ServiceCategoryScreen({ onNav, photoFilter, serviceId }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 56, marginTop: 28, alignItems: 'end' }} className="grid-2-md-1">
             <div>
               <div className="ws-num" style={{ marginBottom: 22 }}>
-                {'หมวดบริการ'}
+                {'หมวดหัตถการ'}
               </div>
               <h1 className="ws-h1" style={{ margin: 0, fontSize: 'clamp(40px, 5.4vw, 76px)' }}>
                 {s.titleTh}
@@ -2245,7 +2245,7 @@ function SubServiceScreen({ onNav, photoFilter, categoryId, subId }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 56, marginTop: 28, alignItems: 'center' }} className="grid-2-md-1">
             <div>
               <div className="ws-num" style={{ marginBottom: 22 }}>
-                {cat.titleTh} · {'รายละเอียดบริการ'}
+                {cat.titleTh} · {'รายละเอียดหัตถการ'}
               </div>
               <h1 className="ws-h1" style={{ margin: 0, fontSize: 'clamp(36px, 4.6vw, 64px)' }}>
                 {sub.titleTh}
@@ -3298,13 +3298,8 @@ function BranchListItem({ b, active, onClick, onBook, index }) {
         {String(index).padStart(2, '0')}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-          <div style={{ font: '500 22px/1.1 var(--ws-font-display)', color: 'var(--ws-fg-1)', letterSpacing: '-0.01em' }}>
-            {b.nameTh}
-          </div>
-          <div style={{ font: '500 11px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-            {b.labelTh}
-          </div>
+        <div style={{ font: '500 22px/1.1 var(--ws-font-display)', color: 'var(--ws-fg-1)', letterSpacing: '-0.01em' }}>
+          {b.nameTh}
         </div>
         <div style={{ font: '500 13px/1.5 var(--ws-font-sans)', color: 'var(--ws-fg-3)', marginTop: 8, textWrap: 'pretty' }}>
           {b.address}
@@ -3346,13 +3341,6 @@ function BranchCard({ b, photoFilter, onBook }) {
         ) : (
           <SingleBranchMap b={b} />
         )}
-        <div style={{
-          position: 'absolute', left: 18, top: 18,
-          background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)',
-          borderRadius: 999, padding: '6px 14px',
-          font: '600 11px/1 var(--ws-font-sans)', color: 'var(--ws-primary)',
-          letterSpacing: '0.08em', textTransform: 'uppercase', zIndex: 2,
-        }}>{b.labelTh}</div>
       </div>
 
       {/* Body */}
@@ -3628,13 +3616,6 @@ function HomeBranchTabs({ branches, onNav }) {
                 <h3 style={{ margin: 0, font: '700 20px/1.15 var(--ws-font-display)', color: 'var(--ws-fg-1)', letterSpacing: '-0.01em' }}>
                   {'We Smile · '}{b.nameTh}
                 </h3>
-                <span style={{
-                  display: 'inline-block', marginTop: 4,
-                  font: '600 10px/1 var(--ws-font-sans)', color: 'var(--ws-primary)',
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                }}>
-                  {b.labelTh}
-                </span>
               </div>
             </div>
 
@@ -3818,7 +3799,7 @@ function Hero({ onNav, photoFilter, config }) {
               onMouseDown={e => Object.assign(e.currentTarget.style, { transform:'scale(0.97)', transitionDuration:'0.12s' })}
               onMouseUp={e   => Object.assign(e.currentTarget.style, { transform:'translateY(-1px)', transitionDuration:'0.5s' })}>
               <i data-lucide="layout-grid" style={{ width: isMobile ? 16 : 18, height: isMobile ? 16 : 18 }}></i>
-              {'บริการของเรา'}
+              {'หัตถการของเรา'}
             </button>
           </div>
           <div className="rise rise-4" style={{ display:'flex', gap: isMobile ? 20 : 0, marginTop: isMobile ? 28 : 56, paddingTop: isMobile ? 20 : 32, borderTop:'1px solid var(--ws-line)' }}>
@@ -3948,7 +3929,7 @@ function ServicesPreview({ onNav, services, config }) {
     <section id="section-services" className="ws-section" style={{ background:'transparent' }}>
       <div className="container">
         <SectionHead num={1} total={7} align="stacked"
-          eyebrow={cfg.servicesEyebrow || 'บริการของทางคลินิก'}
+          eyebrow={cfg.servicesEyebrow || 'หัตถการของทางคลินิก'}
           title={'ปลอดภัย สะอาด มั่นใจ โดยทันตแพทย์เฉพาะทาง'} />
         <p style={{
           font: `500 ${isMobile ? '17px' : 'clamp(16px,2.2vw,22px)'}/1.65 var(--ws-font-display)`,
@@ -3973,7 +3954,7 @@ function ServicesPreview({ onNav, services, config }) {
         </div>
         <div style={{ marginTop: isMobile ? 32 : 48, display:'flex', justifyContent:'center' }}>
           <button onClick={() => onNav('services')} className="btn btn-ghost">
-            {cfg.servicesCtaLabel || 'ดูบริการทั้งหมด'}
+            {cfg.servicesCtaLabel || 'ดูหัตถการทั้งหมด'}
             <i data-lucide="arrow-right" style={{ width:16, height:16 }}></i>
           </button>
         </div>
@@ -4298,7 +4279,7 @@ function AllDoctorsView({ onNav, photoFilter, config, doctors }) {
             textAlign: 'center', marginTop: isMobile ? 20 : 28,
             font: '500 13px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)',
           }}>
-            แตะที่บัตรแพทย์เพื่อดูประวัติและตารางเวรออกตรวจ
+            แตะที่บัตรแพทย์เพื่อดูประวัติและตัวอย่างเคส
           </p>
         </div>
       </section>
@@ -4671,8 +4652,8 @@ function ServicesScreen({ onNav }) {
   return (
     <div data-screen-label="02 Services">
       <PageHeader
-        eyebrow={'บริการของทางคลินิก'}
-        title={<>ทุกบริการ <em className="accent-fg">ราคาโปร่งใส</em></>}
+        eyebrow={'หัตถการของทางคลินิก'}
+        title={<>ทุกหัตถการ <em className="accent-fg">ราคาโปร่งใส</em></>}
         lead={'หกสาขาความเชี่ยวชาญ ครอบคลุมทุกขั้นตอนของรอยยิ้มคุณ — ใช้ประกันได้ทั้งบริษัทประกันชั้นนำของไทยส่วนใหญ่'}
       />
 
@@ -5187,7 +5168,7 @@ function BookingScreen({ onNav }) {
                   {'ขั้นตอน'}
                 </div>
                 <Step n={1} active={step === 1} done={step > 1}
-                  label={'บริการ'}
+                  label={'หัตถการ'}
                   detail={service ? service.titleTh : 'ยังไม่ได้เลือก'} />
                 <Step n={2} active={step === 2} done={step > 2}
                   label={'หมอ'}
@@ -5226,10 +5207,10 @@ function BookingScreen({ onNav }) {
               {step === 1 && (
                 <div className="page-enter">
                   <div className="ws-num" style={{ marginBottom: 14 }}>
-                    01 / 04 — {'เลือกบริการ'}
+                    01 / 04 — {'เลือกหัตถการ'}
                   </div>
                   <h2 style={{ font: `500 ${isMobile ? '22px' : '28px'}/1.2 var(--ws-font-display)`, margin: 0, color: 'var(--ws-fg-1)' }}>
-                    {'เลือกบริการที่คุณต้องการ'}
+                    {'เลือกหัตถการที่คุณต้องการ'}
                   </h2>
                   <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: isMobile ? 10 : 12, marginTop: isMobile ? 20 : 32 }}>
                     {SERVICES.map(s => (
@@ -5611,15 +5592,6 @@ function ContactScreen({ onNav, config, branches }) {
                       <div style={{ font: '700 21px/1.2 var(--ws-font-display)', color: 'var(--ws-fg-1)', letterSpacing: '-0.01em' }}>
                         {'We Smile · '}{b.nameTh}
                       </div>
-                      <span style={{
-                        display: 'inline-block', marginTop: 7,
-                        background: 'var(--ws-orange-50)', color: 'var(--ws-primary)',
-                        font: '600 10px/1 var(--ws-font-sans)', letterSpacing: '0.1em',
-                        textTransform: 'uppercase', padding: '4px 10px', borderRadius: 999,
-                        border: '1px solid rgba(232,90,20,0.18)',
-                      }}>
-                        {b.labelTh}
-                      </span>
                     </div>
                   </div>
 
@@ -6486,7 +6458,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
 
   const TABS = [
     { id:'dashboard', label:'แผงควบคุมหลัก', lucide:'layout-dashboard', color:'#0d9488', desc:'Overview & ตั้งค่าหน้าแรก' },
-    { id:'services',  label:'จัดการบริการ',   lucide:'tooth',            color:'#f59e0b', desc:'Service Catalog' },
+    { id:'services',  label:'จัดการหัตถการ',  lucide:'tooth',            color:'#f59e0b', desc:'Service Catalog' },
     { id:'doctors',   label:'จัดการทีมแพทย์', lucide:'user-check',       color:'#3b82f6', desc:'Doctors Roster' },
     { id:'branches',  label:'จัดการสาขา',     lucide:'map-pin',          color:'#ef4444', desc:'Branch Editor' },
     { id:'reviews',   label:'รีวิวจากเพจ',     lucide:'star',             color:'#f59e0b', desc:'Review Images' },
@@ -6722,7 +6694,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                   {cardTitle('#8b5cf6','🏷️','Section Headers — หัวข้อแต่ละส่วน')}
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20 }}>
                     <div>
-                      <div style={{ fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:12, paddingBottom:8, borderBottom:'1px solid #f1f5f9' }}>🦷 บริการ</div>
+                      <div style={{ fontSize:11, fontWeight:700, color:'#94a3b8', letterSpacing:'0.06em', textTransform:'uppercase', marginBottom:12, paddingBottom:8, borderBottom:'1px solid #f1f5f9' }}>🦷 หัตถการ</div>
                       <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
                         <div><label style={lbl}>Eyebrow</label><input type="text" value={formData.config.servicesEyebrow||''} onChange={e=>updateConfig('servicesEyebrow',e.target.value)} style={inp} /></div>
                         <div><label style={lbl}>หัวข้อหลัก</label><input type="text" value={formData.config.servicesTitle||''} onChange={e=>updateConfig('servicesTitle',e.target.value)} style={inp} /></div>
@@ -6769,8 +6741,8 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1.5px solid #e8edf5', paddingBottom: 14 }}>
                   <div>
-                    <h3 style={{ margin: 0, color: '#1e293b', fontSize: 16, fontWeight: 700 }}>🦷 จัดการบริการและราคา</h3>
-                    <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>แก้ไขชื่อ คำอธิบาย ราคา และระยะเวลาของแต่ละบริการ</p>
+                    <h3 style={{ margin: 0, color: '#1e293b', fontSize: 16, fontWeight: 700 }}>🦷 จัดการหัตถการและราคา</h3>
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: '#94a3b8' }}>แก้ไขชื่อ คำอธิบาย ราคา และระยะเวลาของแต่ละหัตถการ</p>
                   </div>
                   <select value={selectedServiceIdx} onChange={e => setSelectedServiceIdx(Number(e.target.value))}
                     style={{ ...inp, width: 'auto', padding: '8px 14px' }}>
@@ -6783,12 +6755,12 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                 {/* ── Core Service Fields ── */}
                 <div style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:24, boxShadow:'0 1px 4px rgba(15,23,42,0.06)' }}>
                   <div style={{ fontSize:10, color:'#0d9488', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:18 }}>
-                    ข้อมูลบริการหลัก
+                    ข้อมูลหัตถการหลัก
                   </div>
 
                   {/* Service ID — editable */}
                   <div style={{ marginBottom:18 }}>
-                    <label style={lbl}>รหัสบริการ</label>
+                    <label style={lbl}>รหัสหัตถการ</label>
                     <input type="text"
                       value={formData.services[selectedServiceIdx].id || ''}
                       onChange={e => {
@@ -6803,12 +6775,12 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                   {/* Title row */}
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:18 }}>
                     <div>
-                      <label style={lbl}>ชื่อบริการ (ภาษาไทย)</label>
+                      <label style={lbl}>ชื่อหัตถการ (ภาษาไทย)</label>
                       <input type="text" value={formData.services[selectedServiceIdx].titleTh || ''}
                         onChange={e => updateService(selectedServiceIdx, 'titleTh', e.target.value)} style={inp} />
                     </div>
                     <div>
-                      <label style={lbl}>ชื่อบริการ (English)</label>
+                      <label style={lbl}>ชื่อหัตถการ (English)</label>
                       <input type="text" value={formData.services[selectedServiceIdx].title || ''}
                         onChange={e => updateService(selectedServiceIdx, 'title', e.target.value)} style={inp} />
                     </div>
@@ -6824,11 +6796,11 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
 
                   {/* Description */}
                   <div>
-                    <label style={lbl}>คำอธิบายบริการ (ภาษาไทย)</label>
+                    <label style={lbl}>คำอธิบายหัตถการ (ภาษาไทย)</label>
                     <textarea rows={3} value={formData.services[selectedServiceIdx].blurbTh || ''}
                       onChange={e => updateService(selectedServiceIdx, 'blurbTh', e.target.value)}
                       style={{ ...inp, resize:'vertical' }}
-                      placeholder="อธิบายบริการนี้ให้คนไข้เข้าใจ..." />
+                      placeholder="อธิบายหัตถการนี้ให้คนไข้เข้าใจ..." />
                   </div>
                 </div>
 
@@ -6836,23 +6808,23 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                 <div style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:24, boxShadow:'0 1px 4px rgba(15,23,42,0.06)' }}>
                   <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:18 }}>
                     <div style={{ fontSize:10, color:'#6366f1', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase' }}>
-                      รายการบริการย่อย ({(formData.services[selectedServiceIdx].subServices||[]).length} รายการ)
+                      รายการหัตถการย่อย ({(formData.services[selectedServiceIdx].subServices||[]).length} รายการ)
                     </div>
                     <button type="button"
                       onClick={() => {
                         const svcs = [...formData.services];
                         const subs = [...(svcs[selectedServiceIdx].subServices||[])];
-                        subs.push({ id:`sub-${Date.now()}`, title:'New Service', titleTh:'บริการใหม่', blurb:'', blurbTh:'', priceLabel:'฿ —', image:'' });
+                        subs.push({ id:`sub-${Date.now()}`, title:'New Service', titleTh:'หัตถการใหม่', blurb:'', blurbTh:'', priceLabel:'฿ —', image:'' });
                         svcs[selectedServiceIdx] = { ...svcs[selectedServiceIdx], subServices: subs };
                         setFormData(p => ({ ...p, services: svcs }));
                       }}
                       style={{ background:'linear-gradient(135deg,#6366f1,#8b5cf6)', border:0, color:'#fff', borderRadius:9, padding:'8px 16px', fontSize:12, fontWeight:700, cursor:'pointer' }}>
-                      + เพิ่มบริการย่อย
+                      + เพิ่มหัตถการย่อย
                     </button>
                   </div>
 
                   {(formData.services[selectedServiceIdx].subServices||[]).length === 0 ? (
-                    <div style={{ textAlign:'center', padding:'28px 0', color:'#94a3b8', fontSize:13 }}>ยังไม่มีบริการย่อย — กด "+ เพิ่มบริการย่อย"</div>
+                    <div style={{ textAlign:'center', padding:'28px 0', color:'#94a3b8', fontSize:13 }}>ยังไม่มีหัตถการย่อย — กด "+ เพิ่มหัตถการย่อย"</div>
                   ) : (
                     <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
                       {(formData.services[selectedServiceIdx].subServices||[]).map((sub, sIdx) => {
@@ -6880,7 +6852,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                             </div>
                             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
                               <div>
-                                <label style={lbl}>ชื่อบริการย่อย (ไทย)</label>
+                                <label style={lbl}>ชื่อหัตถการย่อย (ไทย)</label>
                                 <input type="text" value={sub.titleTh||''} onChange={e=>updateSub('titleTh',e.target.value)} style={inp} />
                               </div>
                               <div>
@@ -6893,7 +6865,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                               <textarea rows={2} value={sub.blurbTh||''} onChange={e=>updateSub('blurbTh',e.target.value)} style={{ ...inp, resize:'vertical' }} />
                             </div>
                             <div>
-                              <label style={lbl}>รูปภาพบริการย่อย</label>
+                              <label style={lbl}>รูปภาพหัตถการย่อย</label>
                               <div style={{ display:'flex', gap:10, alignItems:'center' }}>
                                 <input type="file" accept="image/*"
                                   onChange={async e => {
@@ -6921,7 +6893,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                 {/* ── Banner Image ── */}
                 <div style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:24, boxShadow:'0 1px 4px rgba(15,23,42,0.06)' }}>
                   <div style={{ fontSize:10, color:'#f59e0b', fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:18 }}>
-                    รูปภาพปกบริการ (Supabase Storage)
+                    รูปภาพปกหัตถการ (Supabase Storage)
                   </div>
                   <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, alignItems:'start' }}>
                     <div>
@@ -7632,10 +7604,10 @@ function App() {
       badge3Title:'From ฿ 35,000',
       badge3Sub:  'จัดฟันแบบใส',
       /* ── Services section ── */
-      servicesEyebrow: 'บริการของทางคลินิก',
+      servicesEyebrow: 'หัตถการของทางคลินิก',
       servicesTitle:   'ปลอดภัย สะอาด มั่นใจ โดยทันตแพทย์เฉพาะทาง',
       servicesLead:    'หกสาขาความเชี่ยวชาญหลัก ครอบคลุมทุกขั้นตอนของการดูแลรอยยิ้มคุณ โดยทันตแพทย์เฉพาะทางที่อธิบายเข้าใจง่าย',
-      servicesCtaLabel:'ดูบริการทั้งหมด',
+      servicesCtaLabel:'ดูหัตถการทั้งหมด',
       /* ── Doctors section ── */
       doctorsEyebrow: 'ทีมทันตแพทย์', /* hardcoded in JSX — this default syncs value on next admin Save */
       doctorsTitle:   'ทีมทันตแพทย์ของเรา',
