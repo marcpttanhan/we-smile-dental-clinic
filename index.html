@@ -958,6 +958,7 @@ const BRANCHES = [
     addressEn: '222/15 Luang Phaeng Rd., Lat Krabang, Bangkok 10520',
     phone: '063-879-8448',
     lineId: '@wesmiledc1',
+    branch_subtext: '',
     facebook_url: 'https://www.facebook.com/wesmiledental1',
     hours: '09:00 — 20:00',
     hoursTh: 'เปิดทุกวัน · 09:00 — 20:00',
@@ -978,6 +979,7 @@ const BRANCHES = [
     addressEn: '88/2 King Kaeo Rd., Racha Thewa, Bang Phli, Samut Prakan 10540',
     phone: '063-879-8449',
     lineId: '@wesmile-sv',
+    branch_subtext: '',
     facebook_url: 'https://www.facebook.com/wesmiledental2',
     hours: '10:00 — 21:00',
     hoursTh: 'เปิดทุกวัน · 10:00 — 21:00',
@@ -997,6 +999,7 @@ const BRANCHES = [
     addressEn: '45 Romklao Rd., Khlong Sam Prawet, Lat Krabang, Bangkok 10520',
     phone: '063-879-8450',
     lineId: '@wesmile-rk',
+    branch_subtext: '',
     facebook_url: 'https://www.facebook.com/wesmiledental3',
     hours: '09:00 — 19:00',
     hoursTh: 'เปิดทุกวัน · 09:00 — 19:00',
@@ -1016,6 +1019,7 @@ const BRANCHES = [
     addressEn: '1199 Sukhumvit 77, Phra Khanong Nuea, Watthana, Bangkok 10110',
     phone: '063-879-8451',
     lineId: '@wesmile-on',
+    branch_subtext: '',
     facebook_url: 'https://www.facebook.com/wesmiledental4',
     hours: '11:00 — 21:00',
     hoursTh: 'เปิดทุกวัน · 11:00 — 21:00',
@@ -3352,6 +3356,11 @@ function BranchCard({ b, photoFilter, onBook }) {
         <h3 style={{ margin: 0, font: '500 28px/1.1 var(--ws-font-display)', color: 'var(--ws-fg-1)', letterSpacing: '-0.02em' }}>
           We Smile · {b.nameTh}
         </h3>
+        {b.branch_subtext ? (
+          <p style={{ margin: '6px 0 0', font: '500 13px/1.4 var(--ws-font-sans)', color: 'var(--ws-primary)' }}>
+            <span translate="no">{b.branch_subtext}</span>
+          </p>
+        ) : null}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 20, marginBottom: 20 }}>
           <BranchRow icon="map-pin">{b.address}</BranchRow>
@@ -3627,6 +3636,11 @@ function HomeBranchTabs({ branches, onNav }) {
                 <h3 style={{ margin: 0, font: '700 20px/1.15 var(--ws-font-display)', color: 'var(--ws-fg-1)', letterSpacing: '-0.01em' }}>
                   {'We Smile · '}{b.nameTh}
                 </h3>
+                {b.branch_subtext ? (
+                  <p style={{ margin: '4px 0 0', font: '500 12px/1.4 var(--ws-font-sans)', color: 'var(--ws-primary)' }}>
+                    <span translate="no">{b.branch_subtext}</span>
+                  </p>
+                ) : null}
               </div>
             </div>
 
@@ -4292,7 +4306,7 @@ function AllDoctorsView({ onNav, photoFilter, config, doctors }) {
             textAlign: 'center', marginTop: isMobile ? 20 : 28,
             font: '500 13px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)',
           }}>
-            แตะที่บัตรแพทย์เพื่อดูประวัติและตัวอย่างเคส
+            <span translate="no">{cfg.doctor_section_helper_text || 'แตะที่บัตรแพทย์เพื่อดูประวัติและตัวอย่างเคส'}</span>
           </p>
         </div>
       </section>
@@ -7028,6 +7042,12 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                         style={inp} placeholder="https://facebook.com/..." />
                     </div>
                     <div>
+                      <label style={lbl}>ข้อความใต้ชื่อสาขา (branch_subtext)</label>
+                      <input type="text" value={formData.branches[selectedBranchIdx].branch_subtext || ''}
+                        onChange={e => updateBranch(selectedBranchIdx, 'branch_subtext', e.target.value)}
+                        style={inp} placeholder="เช่น เปิดใหม่ · ใกล้ BTS" />
+                    </div>
+                    <div>
                       <label style={lbl}>เวลาทำการ (ภาษาไทย)</label>
                       <input type="text" value={formData.branches[selectedBranchIdx].hoursTh || ''}
                         onChange={e => updateBranch(selectedBranchIdx, 'hoursTh', e.target.value)} style={inp} />
@@ -7497,6 +7517,15 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                     <label style={lbl}>Slogan / คำอธิบายสั้น (แสดงใน Footer)</label>
                     <textarea rows={2} value={formData.config.footerSlogan||''} onChange={e=>updateConfig('footerSlogan',e.target.value)} style={{ ...inp, resize:'vertical' }} placeholder="คลินิกทันตกรรมครบวงจร..." />
                   </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={lbl}>คำอธิบายเว็บไซต์สำหรับแชร์ลิงก์ / SEO (meta_description_text)</label>
+                    <input type="text" value={formData.config.meta_description_text||''} onChange={e=>updateConfig('meta_description_text',e.target.value)} style={inp} placeholder="คลินิกทันตกรรมครบวงจร" />
+                    <div style={{ fontSize:10, color:'#94a3b8', marginTop:5 }}>ข้อความนี้แสดงเมื่อแชร์ลิงก์บน LINE / Facebook / Google</div>
+                  </div>
+                  <div style={{ marginBottom:14 }}>
+                    <label style={lbl}>ข้อความแนะนำใต้ทีมแพทย์ (doctor_section_helper_text)</label>
+                    <input type="text" value={formData.config.doctor_section_helper_text||''} onChange={e=>updateConfig('doctor_section_helper_text',e.target.value)} style={inp} placeholder="แตะที่บัตรแพทย์เพื่อดูประวัติและตัวอย่างเคส" />
+                  </div>
                   <div>
                     <label style={lbl}>Sub-text ใต้หัวข้อ (เช่น มีที่จอดรถฟรี — ใกล้สนามบิน)</label>
                     <input type="text" value={formData.config.contactSubtext||''} onChange={e=>updateConfig('contactSubtext',e.target.value)} style={inp} placeholder="มีที่จอดรถฟรี — ใกล้สนามบินสุวรรณภูมิ" />
@@ -7650,6 +7679,8 @@ function App() {
       contactHours:      'เปิดทุกวัน · 09:00 — 20:00',
       contactHoursNote:  'รวมวันหยุดราชการส่วนใหญ่',
       footerSlogan:      'คลินิกทันตกรรมครบวงจร ทำฟัน จัดฟัน รากฟันเทียม ฟันปลอม ครอบฟัน ฟอกสีฟัน รักษาโรคเหงือก ทันตกรรมเด็ก',
+      doctor_section_helper_text: 'แตะที่บัตรแพทย์เพื่อดูประวัติและตัวอย่างเคส',
+      meta_description_text: 'คลินิกทันตกรรมครบวงจร',
       socialFacebook:    'https://facebook.com/wesmiledental1',
       socialInstagram:   'https://instagram.com/wesmiledentalclinic',
       socialTikTok:      'https://tiktok.com/@wesmiledent',
@@ -7747,7 +7778,7 @@ function App() {
   React.useEffect(() => {
     const cfg = webData.config || {};
     const title = cfg.clinicName || 'We Smile Dental Clinic';
-    const desc  = cfg.footerSlogan || 'คลินิกทันตกรรมครบวงจร ใจกลางลาดกระบัง';
+    const desc  = cfg.meta_description_text || cfg.footerSlogan || 'คลินิกทันตกรรมครบวงจร';
     const img   = cfg.heroImage    || 'assets/hero.webp';
 
     document.title = title;
