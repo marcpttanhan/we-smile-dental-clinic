@@ -6491,7 +6491,8 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     { id:'services',  label:'จัดการหัตถการ',  lucide:'tooth',            color:'#f59e0b', desc:'Service Catalog' },
     { id:'doctors',   label:'จัดการทีมแพทย์', lucide:'user-check',       color:'#3b82f6', desc:'Doctors Roster' },
     { id:'branches',  label:'จัดการสาขา',     lucide:'map-pin',          color:'#ef4444', desc:'Branch Editor' },
-    { id:'reviews',   label:'รีวิวจากเพจ',     lucide:'star',             color:'#f59e0b', desc:'Review Images' },
+    { id:'testimonials', label:'เสียงจากลูกค้า',  lucide:'message-square',   color:'#8b5cf6', desc:'Customer Reviews' },
+    { id:'reviews',      label:'รีวิวจากเพจ',     lucide:'star',             color:'#f59e0b', desc:'Review Images' },
   ];
 
   return (
@@ -7412,6 +7413,96 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                     </div>
                   </div>
                 )}
+
+              </div>
+            )}
+
+            {/* ═══════════════════════════════════════════
+                TAB — เสียงจากลูกค้า (Testimonials)
+            ═══════════════════════════════════════════ */}
+            {activeTab === 'testimonials' && (
+              <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+
+                {/* Header */}
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1.5px solid #e8edf5', paddingBottom:14 }}>
+                  <div>
+                    <h3 style={{ margin:0, color:'#8b5cf6', fontSize:15, fontWeight:700 }}>💬 จัดการเสียงจากลูกค้า</h3>
+                    <p style={{ margin:'4px 0 0', fontSize:12, color:'#94a3b8' }}>แก้ไขข้อความ ชื่อ และคะแนนรีวิวที่แสดงในส่วน 04 / 07 — เสียงจากลูกค้า</p>
+                  </div>
+                  <button type="button" onClick={addTestimonial}
+                    style={{ display:'inline-flex', alignItems:'center', gap:6, minHeight:44, padding:'0 18px', background:'linear-gradient(135deg,#8b5cf6,#7c3aed)', border:0, color:'#fff', borderRadius:10, fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                    <i data-lucide="plus" style={{ width:14, height:14 }}></i>
+                    <span translate="no">+ เพิ่มรีวิว</span>
+                  </button>
+                </div>
+
+                {/* Card list */}
+                {(formData.testimonials || []).length === 0 ? (
+                  <div style={{ textAlign:'center', padding:'32px 0', color:'#94a3b8', fontSize:13 }}>
+                    ยังไม่มีรีวิว — กด "+ เพิ่มรีวิว" เพื่อเริ่มต้น
+                  </div>
+                ) : (formData.testimonials || []).map((t, idx) => (
+                  <div key={idx} style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:22, boxShadow:'0 1px 4px rgba(15,23,42,0.06)', display:'flex', flexDirection:'column', gap:14 }}>
+
+                    {/* Card header */}
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+                        <div style={{ width:36, height:36, borderRadius:'50%', background:'linear-gradient(135deg,#8b5cf620,#8b5cf610)', border:'1.5px solid #8b5cf640', display:'grid', placeItems:'center', font:'700 15px/1 var(--ws-font-sans)', color:'#8b5cf6', flexShrink:0 }}>
+                          {t.initial || (t.aTh || t.a || '?').charAt(0)}
+                        </div>
+                        <span style={{ font:'700 13px/1 var(--ws-font-sans)', color:'#1e293b' }}>
+                          รีวิวที่ {idx + 1}
+                        </span>
+                        {/* Star rating preview */}
+                        <span style={{ font:'500 12px/1 var(--ws-font-sans)', color:'#f59e0b', letterSpacing:1 }}>
+                          {'★'.repeat(t.rating || 5)}
+                        </span>
+                      </div>
+                      <button type="button"
+                        onClick={() => removeTestimonial(idx)}
+                        style={{ minHeight:36, padding:'0 12px', background:'#7f1d1d', border:0, color:'#fca5a5', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer' }}>
+                        <span translate="no">✕ ลบ</span>
+                      </button>
+                    </div>
+
+                    {/* Review text */}
+                    <div>
+                      <label style={lbl}>ข้อความรีวิว (ภาษาไทย)</label>
+                      <textarea rows={3} value={t.qTh || t.q || ''}
+                        onChange={e => { updateTestimonial(idx, 'qTh', e.target.value); updateTestimonial(idx, 'q', e.target.value); }}
+                        style={{ ...inp, resize:'vertical' }}
+                        placeholder="ข้อความรีวิวจากลูกค้า..." />
+                    </div>
+
+                    {/* Name + initial row */}
+                    <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr auto', gap:12, alignItems:'end' }}>
+                      <div>
+                        <label style={lbl}>ชื่อผู้รีวิว</label>
+                        <input type="text" value={t.aTh || t.a || ''}
+                          onChange={e => { updateTestimonial(idx, 'aTh', e.target.value); updateTestimonial(idx, 'a', e.target.value); }}
+                          style={inp} placeholder="เช่น คุณ Phuncharat" />
+                      </div>
+                      <div>
+                        <label style={lbl}>ตัวอักษรอวตาร (initial)</label>
+                        <input type="text" maxLength={2} value={t.initial || ''}
+                          onChange={e => updateTestimonial(idx, 'initial', e.target.value)}
+                          style={{ ...inp, textAlign:'center', fontWeight:700, fontSize:18 }}
+                          placeholder="P" />
+                      </div>
+                      <div>
+                        <label style={lbl}>คะแนน (1–5)</label>
+                        <select value={t.rating || 5}
+                          onChange={e => updateTestimonial(idx, 'rating', Number(e.target.value))}
+                          style={{ ...inp, width:'auto', padding:'11px 14px', cursor:'pointer' }}>
+                          {[5,4,3,2,1].map(n => (
+                            <option key={n} value={n}>{n} ★</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                  </div>
+                ))}
 
               </div>
             )}
