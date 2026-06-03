@@ -3942,7 +3942,7 @@ function ServicesPreview({ onNav, services, config }) {
     <section id="section-services" className="ws-section" style={{ background:'transparent' }}>
       <div className="container">
         <SectionHead num={1} total={7} align="stacked"
-          eyebrow={cfg.servicesEyebrow || 'หัตถการของทางคลินิก'}
+          eyebrow={'หัตถการของเรา'}
           title={'ปลอดภัย สะอาด มั่นใจ โดยทันตแพทย์เฉพาะทาง'} />
         <p style={{
           font: `500 ${isMobile ? '17px' : 'clamp(16px,2.2vw,22px)'}/1.65 var(--ws-font-display)`,
@@ -4665,7 +4665,7 @@ function ServicesScreen({ onNav }) {
   return (
     <div data-screen-label="02 Services">
       <PageHeader
-        eyebrow={'หัตถการของทางคลินิก'}
+        eyebrow={'หัตถการของเรา'}
         title={<>ทุกหัตถการ <em className="accent-fg">ราคาโปร่งใส</em></>}
         lead={'หกสาขาความเชี่ยวชาญ ครอบคลุมทุกขั้นตอนของรอยยิ้มคุณ — ใช้ประกันได้ทั้งบริษัทประกันชั้นนำของไทยส่วนใหญ่'}
       />
@@ -7623,7 +7623,7 @@ function App() {
       badge3Title:'From ฿ 35,000',
       badge3Sub:  'จัดฟันแบบใส',
       /* ── Services section ── */
-      servicesEyebrow: 'หัตถการของทางคลินิก',
+      servicesEyebrow: 'หัตถการของเรา',
       servicesTitle:   'ปลอดภัย สะอาด มั่นใจ โดยทันตแพทย์เฉพาะทาง',
       servicesLead:    'หกสาขาความเชี่ยวชาญหลัก ครอบคลุมทุกขั้นตอนของการดูแลรอยยิ้มคุณ โดยทันตแพทย์เฉพาะทางที่อธิบายเข้าใจง่าย',
       servicesCtaLabel:'ดูหัตถการทั้งหมด',
