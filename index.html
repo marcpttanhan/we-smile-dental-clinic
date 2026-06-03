@@ -1510,6 +1510,7 @@ const TESTIMONIALS = [
     qTh: 'คุณหมอมือเบา ใจเย็น มีความชำนาญในการรักษาดีมากค่ะ คลินิกสะอาด ปลอดภัย มั่นใจได้ค่ะ จนท. ผู้ช่วยฯ และหน้าเคาน์เตอร์ก็น่ารัก ให้คำแนะนำและบริการดี ประทับใจมากค่ะ',
     a: 'คุณ Phuncharat',
     aTh: 'คุณ Phuncharat',
+    initial: 'P',
     rating: 5,
   },
   {
@@ -1517,6 +1518,7 @@ const TESTIMONIALS = [
     qTh: 'บริการดีมากค่ะ มาครั้งแรกรู้สึกประทับใจมากๆ พี่ๆให้คำแนะนำ เข้าใจ คลินิกสะอาด คุณหมอขูดหินปูนมือเบามากเลยค่ะ อธิบายการตรวจฟันผุให้ด้วยค่ะ',
     a: 'คุณ อ๊ะอาย',
     aTh: 'คุณ อ๊ะอาย',
+    initial: 'อ',
     rating: 5,
   },
   {
@@ -1524,6 +1526,7 @@ const TESTIMONIALS = [
     qTh: 'ครั้งแรกที่เข้าไปรับบริการขูดหินปูน ใช้สิทธบัตรทองไม่เสียเงินเลย เจ้าหน้าที่เคาเตอร์พุดจาดี คุณหมอมือเบามากกก แนะนำดี ผู้ช่วยที่อยู่กับคุณหมอให้บริการดี คลีนิคสะอาดมาก',
     a: 'คุณ นานา',
     aTh: 'คุณ นานา',
+    initial: 'น',
     rating: 5,
   },
 ];
@@ -4594,7 +4597,7 @@ function Testimonials({ config, testimonials }) {
                 <p style={{ margin:0, font:`500 ${isMobile ? '15px' : '17px'}/1.65 var(--ws-font-display)`, color:accent?'rgba(255,255,255,0.92)':'var(--ws-fg-2)', textWrap:'pretty', flex:1, fontStyle:'italic', position:'relative', zIndex:1 }}>"{t.qTh||t.q}"</p>
                 <div style={{ display:'flex', alignItems:'center', gap:12, position:'relative', zIndex:1, paddingTop: isMobile ? 10 : 0, borderTop: isMobile ? `1px solid ${accent ? 'rgba(255,255,255,0.15)' : 'var(--ws-line)'}` : 'none' }}>
                   <div style={{ width:36, height:36, borderRadius:'50%', flex:'none', background:accent?'rgba(255,255,255,0.14)':'var(--ws-orange-100)', color:accent?'#fff':'var(--ws-primary)', display:'grid', placeItems:'center', font:'700 15px/1 var(--ws-font-sans)' }}>
-                    {(t.aTh||t.a).charAt(0)}
+                    {t.initial || (t.aTh||t.a).charAt(0)}
                   </div>
                   <div style={{ font:'600 13px/1.3 var(--ws-font-sans)', color:accent?'rgba(255,255,255,0.95)':'var(--ws-fg-1)' }}>{t.aTh||t.a}</div>
                 </div>
