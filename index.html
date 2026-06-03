@@ -6069,10 +6069,14 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
         testimonials: (formData.testimonials && formData.testimonials.length > 0)
           ? formData.testimonials
           : TESTIMONIALS_FALLBACK,
+        faqs: (formData.faqs && formData.faqs.length > 0)
+          ? formData.faqs
+          : (window.FAQS || FAQS).map(f => ({ qTh: f.qTh || f.q, aTh: f.aTh || f.a })),
         updated_at: new Date().toISOString(),
       };
 
       console.log('SENDING TO SUPABASE:', JSON.stringify(payload, null, 2));
+      console.log('[FAQ data in payload]', JSON.stringify(payload.faqs, null, 2));
 
       // ── Write to site_config row id='main' ──────────────────────────────────
       await onSave(payload);
@@ -6176,6 +6180,27 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     setFormData(prev => ({
       ...prev,
       testimonials: (prev.testimonials || []).filter((_, i) => i !== idx)
+    }));
+  };
+
+  // ── ฟังก์ชันจัดการ FAQ ──
+  const updateFaq = (idx, key, val) => {
+    setFormData(prev => {
+      const faqs = [...(prev.faqs || [])];
+      faqs[idx] = { ...faqs[idx], [key]: val };
+      return { ...prev, faqs };
+    });
+  };
+  const addFaq = () => {
+    setFormData(prev => ({
+      ...prev,
+      faqs: [...(prev.faqs || []), { qTh: '', aTh: '' }],
+    }));
+  };
+  const removeFaq = (idx) => {
+    setFormData(prev => ({
+      ...prev,
+      faqs: (prev.faqs || []).filter((_, i) => i !== idx),
     }));
   };
 
@@ -6486,6 +6511,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
     { id:'services',  label:'จัดการหัตถการ',  lucide:'tooth',            color:'#f59e0b', desc:'Service Catalog' },
     { id:'doctors',   label:'จัดการทีมแพทย์', lucide:'user-check',       color:'#3b82f6', desc:'Doctors Roster' },
     { id:'branches',  label:'จัดการสาขา',     lucide:'map-pin',          color:'#ef4444', desc:'Branch Editor' },
+    { id:'faq',          label:'คำถามที่พบบ่อย',   lucide:'help-circle',      color:'#06b6d4', desc:'FAQ Editor' },
     { id:'testimonials', label:'เสียงจากลูกค้า',  lucide:'message-square',   color:'#8b5cf6', desc:'Customer Reviews' },
     { id:'reviews',      label:'รีวิวจากเพจ',     lucide:'star',             color:'#f59e0b', desc:'Review Images' },
   ];
@@ -7395,6 +7421,68 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
             )}
 
             {/* ═══════════════════════════════════════════
+                TAB — คำถามที่พบบ่อย (FAQ)
+            ═══════════════════════════════════════════ */}
+            {activeTab === 'faq' && (
+              <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+
+                {/* Header */}
+                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', borderBottom:'1.5px solid #e8edf5', paddingBottom:14 }}>
+                  <div>
+                    <h3 style={{ margin:0, color:'#06b6d4', fontSize:15, fontWeight:700 }}>❓ จัดการคำถามที่พบบ่อย</h3>
+                    <p style={{ margin:'4px 0 0', fontSize:12, color:'#94a3b8' }}>แก้ไขคำถามและคำตอบที่แสดงในส่วน 07 / 07 — คำถามที่พบบ่อย</p>
+                  </div>
+                  <button type="button" onClick={addFaq}
+                    style={{ display:'inline-flex', alignItems:'center', gap:6, minHeight:44, padding:'0 18px', background:'linear-gradient(135deg,#06b6d4,#0891b2)', border:0, color:'#fff', borderRadius:10, fontSize:13, fontWeight:700, cursor:'pointer' }}>
+                    <i data-lucide="plus" style={{ width:14, height:14 }}></i>
+                    <span translate="no">+ เพิ่มคำถาม</span>
+                  </button>
+                </div>
+
+                {/* FAQ list */}
+                {(formData.faqs || []).length === 0 ? (
+                  <div style={{ textAlign:'center', padding:'32px 0', color:'#94a3b8', fontSize:13 }}>
+                    ยังไม่มีคำถาม — กด "+ เพิ่มคำถาม" เพื่อเริ่มต้น
+                  </div>
+                ) : (formData.faqs || []).map((f, idx) => (
+                  <div key={idx} style={{ background:'#fff', border:'1.5px solid #e8edf5', borderRadius:14, padding:22, boxShadow:'0 1px 4px rgba(15,23,42,0.06)', display:'flex', flexDirection:'column', gap:14 }}>
+
+                    {/* Card header */}
+                    <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+                      <span style={{ font:'700 13px/1 var(--ws-font-sans)', color:'#0891b2' }}>
+                        คำถามที่ {String(idx + 1).padStart(2,'0')}
+                      </span>
+                      <button type="button" onClick={() => removeFaq(idx)}
+                        style={{ minHeight:36, padding:'0 12px', background:'#7f1d1d', border:0, color:'#fca5a5', borderRadius:8, fontSize:12, fontWeight:700, cursor:'pointer' }}>
+                        <span translate="no">✕ ลบ</span>
+                      </button>
+                    </div>
+
+                    {/* Question */}
+                    <div>
+                      <label style={lbl}>คำถาม (ภาษาไทย)</label>
+                      <input type="text" value={f.qTh || ''}
+                        onChange={e => updateFaq(idx, 'qTh', e.target.value)}
+                        style={inp}
+                        placeholder="เช่น คลินิกเปิดกี่โมง?" />
+                    </div>
+
+                    {/* Answer */}
+                    <div>
+                      <label style={lbl}>คำตอบ (ภาษาไทย)</label>
+                      <textarea rows={3} value={f.aTh || ''}
+                        onChange={e => updateFaq(idx, 'aTh', e.target.value)}
+                        style={{ ...inp, resize:'vertical' }}
+                        placeholder="ตอบให้ครบถ้วน ชัดเจน..." />
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+            )}
+
+            {/* ═══════════════════════════════════════════
                 TAB — เสียงจากลูกค้า (Testimonials)
             ═══════════════════════════════════════════ */}
             {activeTab === 'testimonials' && (
@@ -7692,6 +7780,7 @@ function App() {
       ...d,
     })),
     testimonials: window.TESTIMONIALS,
+    faqs: (window.FAQS || FAQS).map(f => ({ qTh: f.qTh || f.q, aTh: f.aTh || f.a })),
     config: {
       /* ── Clinic basics ── */
       clinicName:  'We Smile Dental Clinic',
