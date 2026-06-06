@@ -4156,17 +4156,6 @@ function DoctorsPreview({ onNav, photoFilter, config, doctors }) {
                 </button>
               )}
             </div>
-            {/* Dot indicators */}
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginTop: 20 }}>
-              {allDocs.map((_,i) => (
-                <button key={i} onClick={() => setActiveIdx(i)} style={{
-                  width: i === activeIdx ? 24 : 8, height: 8,
-                  borderRadius: 999, border: 0, cursor: 'pointer', padding: 0,
-                  background: i === activeIdx ? 'var(--ws-primary)' : 'rgba(33,53,133,0.22)',
-                  transition: 'all 0.28s var(--ws-ease)',
-                }} />
-              ))}
-            </div>
           </div>
         ) : (
           /* ── Desktop / tablet: grid ── */
@@ -4265,10 +4254,14 @@ function DoctorCardSmall({ d, i, photoFilter, onClick }) {
           {d.cred}
         </div>
 
-        {/* Short education */}
+        {/* Short education — split on newlines so multi-line entries render as separate readable items */}
         {d.shortEduTh && (
-          <div style={{ font:'400 11px/1.55 var(--ws-font-sans)', color:'var(--ws-fg-3)', marginTop:10, paddingTop:10, borderTop:'1px solid var(--ws-line)' }}>
-            {d.shortEduTh}
+          <div style={{ display:'flex', flexDirection:'column', gap:4, marginTop:10, paddingTop:10, borderTop:'1px solid var(--ws-line)' }}>
+            {d.shortEduTh.split('\n').map((line, li) => line.trim() ? (
+              <span key={li} style={{ font:'400 11px/1.55 var(--ws-font-sans)', color:'var(--ws-fg-3)', display:'block' }}>
+                {line.trim()}
+              </span>
+            ) : null)}
           </div>
         )}
       </div>
@@ -4561,29 +4554,9 @@ function PageReviewsSection({ config }) {
             {images.length > 1 && <ArrowBtn onClick={next} icon="chevron-right" />}
           </div>
 
-          {/* Dot row + counter — Lens 3: 44px touch row via padding */}
+          {/* Counter only — dots removed per client request */}
           {images.length > 1 && (
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:10, marginTop: isMobile ? 22 : 30 }}>
-              {/* Dots — 44px tall hit area via vertical padding */}
-              <div style={{ display:'flex', gap:8, padding:'18px 0' }}>
-                {images.map((_, i) => (
-                  <button key={i} onClick={() => setActiveIdx(i)} style={{
-                    width: i === activeIdx ? 28 : 8,
-                    height: 8,
-                    borderRadius: 999,
-                    border: 0,
-                    cursor: 'pointer',
-                    padding: 0,
-                    // Active: gradient pill. Inactive: soft navy tint
-                    background: i === activeIdx
-                      ? 'linear-gradient(90deg, var(--ws-primary), var(--ws-orange-300))'
-                      : 'rgba(33,53,133,0.16)',
-                    // Lens 2: cubic-bezier width animation
-                    transition: `all 0.35s cubic-bezier(0.4, 0, 0.2, 1)`,
-                  }} />
-                ))}
-              </div>
-              {/* Counter — formatted 01 — 06 style */}
+            <div style={{ display:'flex', justifyContent:'center', marginTop: isMobile ? 18 : 24 }}>
               <span style={{ font:'600 11px/1 var(--ws-font-sans)', color:'var(--ws-fg-4)', letterSpacing:'0.08em' }}>
                 {String(activeIdx + 1).padStart(2,'0')} — {String(images.length).padStart(2,'0')}
               </span>
