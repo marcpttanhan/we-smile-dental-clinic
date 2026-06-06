@@ -1341,6 +1341,50 @@ const SERVICES = [
 // Schedule format: list of {branch, day, weeks}
 // weeks = [1..5] means "1st through 5th week of month" (5 = if applicable)
 const DOCTORS = [
+  /* ── Priority 1–7 (client-specified order) ── */
+  {
+    id: 'thanya', name: 'Dr. Thanya', nameTh: 'ทพญ. ธัญญา', nameShort: 'ธัญญา',
+    role: 'General Dentistry', roleTh: 'ทันตกรรมทั่วไป', cred: 'ทพ.', years: 5,
+    bio: '', bioTh: '', photo: '', specialties: ['general'], languages: ['Thai'],
+    certifications: [], schedule: [],
+  },
+  {
+    id: 'torpon', name: 'Dr. Torpon', nameTh: 'ทพ. ต่อพล', nameShort: 'ต่อพล',
+    role: 'General Dentistry', roleTh: 'ทันตกรรมทั่วไป', cred: 'ทพ.', years: 5,
+    bio: '', bioTh: '', photo: '', specialties: ['general'], languages: ['Thai'],
+    certifications: [], schedule: [],
+  },
+  {
+    id: 'benjarat', name: 'Dr. Benjarat', nameTh: 'ทพญ. เบญจรัตน์', nameShort: 'เบญจรัตน์',
+    role: 'General Dentistry', roleTh: 'ทันตกรรมทั่วไป', cred: 'ทพ.', years: 5,
+    bio: '', bioTh: '', photo: '', specialties: ['general'], languages: ['Thai'],
+    certifications: [], schedule: [],
+  },
+  {
+    id: 'worawat', name: 'Dr. Worawat', nameTh: 'ทพ. วรวัฒน์', nameShort: 'วรวัฒน์',
+    role: 'General Dentistry', roleTh: 'ทันตกรรมทั่วไป', cred: 'ทพ.', years: 5,
+    bio: '', bioTh: '', photo: '', specialties: ['general'], languages: ['Thai'],
+    certifications: [], schedule: [],
+  },
+  {
+    id: 'thanapol', name: 'Dr. Thanapol', nameTh: 'ทพ. ธนพล', nameShort: 'ธนพล',
+    role: 'General Dentistry', roleTh: 'ทันตกรรมทั่วไป', cred: 'ทพ.', years: 5,
+    bio: '', bioTh: '', photo: '', specialties: ['general'], languages: ['Thai'],
+    certifications: [], schedule: [],
+  },
+  {
+    id: 'weeraya', name: 'Dr. Weeraya', nameTh: 'ทพญ. วีรยา', nameShort: 'วีรยา',
+    role: 'General Dentistry', roleTh: 'ทันตกรรมทั่วไป', cred: 'ทพ.', years: 5,
+    bio: '', bioTh: '', photo: '', specialties: ['general'], languages: ['Thai'],
+    certifications: [], schedule: [],
+  },
+  {
+    id: 'jiraporn', name: 'Dr. Jiraporn', nameTh: 'ทพญ. จิราภรณ์', nameShort: 'จิราภรณ์',
+    role: 'General Dentistry', roleTh: 'ทันตกรรมทั่วไป', cred: 'ทพ.', years: 5,
+    bio: '', bioTh: '', photo: '', specialties: ['general'], languages: ['Thai'],
+    certifications: [], schedule: [],
+  },
+  /* ── Remaining doctors (existing data) ── */
   {
     id: 'pichaya',
     name: 'Dr. Pichaya Saetang',
@@ -2875,9 +2919,31 @@ function DoctorProfileScreen({ onNav, photoFilter, doctorId, doctors }) {
                 <div style={{ font: '700 11px/1 var(--ws-font-sans)', color: 'var(--ws-primary)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 14 }}>
                   ประวัติการศึกษาของทันตแพทย์
                 </div>
-                <p style={{ margin: 0, font: '500 17px/1.85 var(--ws-font-sans)', color: 'var(--ws-fg-2)', textWrap: 'pretty' }}>
-                  {d.bioTh}
-                </p>
+                {d.bioTh && (
+                  <p style={{ margin: 0, font: '500 17px/1.85 var(--ws-font-sans)', color: 'var(--ws-fg-2)', textWrap: 'pretty' }}>
+                    {d.bioTh}
+                  </p>
+                )}
+                {d.certifications && d.certifications.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 10 : 8, marginTop: d.bioTh ? 16 : 0 }}>
+                    {d.certifications.map((cert, ci) => (
+                      <div key={ci} style={{
+                        display: 'flex', alignItems: 'flex-start', gap: 10,
+                        padding: isMobile ? '10px 12px' : '8px 12px',
+                        background: 'var(--ws-navy-50)',
+                        borderRadius: 10,
+                        borderLeft: '3px solid var(--ws-primary)',
+                      }}>
+                        <span style={{ font: '600 11px/1.6 var(--ws-font-sans)', color: 'var(--ws-primary)', minWidth: 36, flexShrink: 0 }}>
+                          {cert.year}
+                        </span>
+                        <span style={{ font: `500 ${isMobile ? '13px' : '14px'}/1.6 var(--ws-font-sans)`, color: 'var(--ws-fg-2)' }}>
+                          {cert.item}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>
@@ -3815,7 +3881,7 @@ function Hero({ onNav, photoFilter, config }) {
           </div>
           <div className="rise rise-4" style={{ display:'flex', gap: isMobile ? 20 : 0, marginTop: isMobile ? 28 : 56, paddingTop: isMobile ? 20 : 32, borderTop:'1px solid var(--ws-line)' }}>
             {[
-              { n: cfg.heroStat1Num||'12+',   label: cfg.heroStat1Label||'ปีที่ดูแล' },
+              { n: cfg.heroStat1Num||'ตั้งแต่ พ.ศ. 2560',   label: cfg.heroStat1Label||'Since 2560 / 2017' },
               { n: cfg.heroStat2Num||'8,400', label: cfg.heroStat2Label||'รอยยิ้ม' },
               { n: cfg.heroStat3Num||'4.9★',  label: cfg.heroStat3Label||'คะแนนกูเกิล' },
             ].map((s,i) => (
@@ -4864,7 +4930,7 @@ function DoctorsScreen({ onNav, photoFilter, doctors }) {
           {/* Stats */}
           <div style={{ marginTop: 80, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 20 }} className="grid-4-md-2">
             {[
-              { n: '12+', l: 'ปีที่เปิดทำการ' },
+              { n: 'ตั้งแต่ พ.ศ. 2560', l: 'Since 2560 / 2017' },
               { n: '8,400', l: 'คนไข้ที่ดูแล' },
               { n: '4.9★', l: 'คะแนนเฉลี่ย' },
               { n: '7', l: 'วันต่อสัปดาห์' },
@@ -4984,7 +5050,7 @@ function AboutScreen({ onNav, photoFilter }) {
               </p>
               <div style={{ display: 'flex', gap: 48, marginTop: 40, paddingTop: 40, borderTop: '1px solid var(--ws-line)' }}>
                 <Stat n="2014" label={'เปิดทำการ'} />
-                <Stat n="12+" label={'ปี'} />
+                <Stat n="ตั้งแต่ พ.ศ. 2560" label={'Since 2560 / 2017'} />
                 <Stat n="8,400" label={'คนไข้'} />
               </div>
             </div>
@@ -7794,8 +7860,8 @@ function App() {
       heroTitleLine3: 'ของเรา',
       heroLead:       'ทันตกรรมครบวงจรในที่เดียว — จัดฟัน จัดฟันแบบใส รากฟันเทียม วีเนียร์ ดูแลโดยทีมหมอเฉพาะทาง',
       heroCta1:       'นัดหมายตรวจฟัน',
-      heroStat1Num:   '12+',
-      heroStat1Label: 'ปีที่ดูแล',
+      heroStat1Num:   'ตั้งแต่ พ.ศ. 2560',
+      heroStat1Label: 'Since 2560 / 2017',
       heroStat2Num:   '8,400',
       heroStat2Label: 'รอยยิ้ม',
       heroStat3Num:   '4.9★',
