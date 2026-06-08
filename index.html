@@ -1686,7 +1686,7 @@ const WHAT_WE_DO = {
 };
 
 // ---------- Helpers ----------
-function getService(id) { return SERVICES.find(s => s.id === id); }
+function getService(id) { return (window.SERVICES || SERVICES).find(s => s.id === id); }
 function getDoctor(id) { return (window.DOCTORS || DOCTORS).find(d => d.id === id); }
 function getBranch(id) { return BRANCHES.find(b => b.id === id); }
 function getSubService(catId, subId) {
