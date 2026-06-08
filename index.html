@@ -2323,7 +2323,7 @@ function SubServiceScreen({ onNav, photoFilter, categoryId, subId }) {
             <div className={photoFilter} style={{
               borderRadius: 28, overflow: 'hidden', aspectRatio: '4/5',
               boxShadow: 'var(--ws-shadow-xl)',
-              backgroundImage: 'url(assets/hero.webp)',
+              backgroundImage: `url(${sub.image || cat.image || 'assets/hero.webp'})`,
               backgroundSize: 'cover', backgroundPosition: 'center',
             }} />
           </div>
@@ -7020,11 +7020,10 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                         แนะนำสัดส่วน 3:2 หรือกว้างกว่า ความละเอียดขั้นต่ำ 1200×800 px<br/>
                         รองรับ JPG, PNG, WEBP — อัปโหลดไปยัง clinic-images โดยตรง
                       </p>
-                      {formData.services[selectedServiceIdx].image && (
-                        <div style={{ marginTop:10, padding:'8px 12px', background:'#f0fdf4', border:'1px solid #bbf7d0', borderRadius:8, fontSize:11, color:'#15803d', wordBreak:'break-all', fontFamily:'monospace' }}>
-                          {formData.services[selectedServiceIdx].image}
-                        </div>
-                      )}
+                      <input type="text" value={formData.services[selectedServiceIdx].image || ''}
+                        onChange={e => updateService(selectedServiceIdx, 'image', e.target.value)}
+                        style={{ ...inp, marginTop:10, fontSize:11, color:'#64748b' }}
+                        placeholder="หรือวาง URL รูปภาพโดยตรง..." />
                     </div>
                     <div>
                       <label style={lbl}>ตัวอย่างรูปภาพ (16:9)</label>
