@@ -6297,6 +6297,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
       id: newId, name: '', nameTh: 'แพทย์ใหม่', role: '', roleTh: '',
       cred: '', photo: '', bioTh: '', shortEduTh: '',
       specialties: [], schedule: [], showPortfolio: false, portfolioImages: [],
+      sort_order: formData.doctors.length,
     };
     setFormData(prev => {
       const doctors = [...prev.doctors, newDoc];
@@ -6312,6 +6313,24 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
       return { ...prev, doctors };
     });
     setSelectedDoctorIdx(prev => Math.max(0, prev - (idx <= prev ? 1 : 0)));
+  };
+
+  // ── เลื่อนลำดับแพทย์ขึ้น/ลง — swaps array position and re-derives sort_order
+  // from the new index order, so the landing-page grid (sortDoctors) mirrors
+  // exactly what the admin arranges here once saved to Supabase.
+  const moveDoctor = (idx, dir) => {
+    setFormData(prev => {
+      const target = idx + dir;
+      if (target < 0 || target >= prev.doctors.length) return prev;
+      const list = [...prev.doctors];
+      [list[idx], list[target]] = [list[target], list[idx]];
+      const doctors = list.map((d, i) => ({ ...d, sort_order: i }));
+      return { ...prev, doctors };
+    });
+    setSelectedDoctorIdx(prev => {
+      const target = prev + dir;
+      return (target >= 0 && target < formData.doctors.length) ? target : prev;
+    });
   };
 
   // ── อัปโหลดรูปภาพ → Supabase Storage (debounced, security-hardening v1.0.0) ──
@@ -7341,6 +7360,27 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                         <option key={`doctor-opt-${i}`} value={i}>{d.nameTh || d.name || `แพทย์ #${i + 1}`}</option>
                       ))}
                     </select>
+                    {/* ── ปุ่มเลื่อนลำดับการแสดงผล — ขยับแพทย์ที่เลือกขึ้น/ลง โดยอัปเดต
+                         sort_order ให้ตรงกับตำแหน่งใหม่ทันที (ลำดับนี้คือลำดับที่จะ
+                         แสดงบนหน้าเว็บจริงเมื่อกด "บันทึก") ────────────────────── */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: '#f1f5f9', borderRadius: 9, padding: '4px 10px' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b', whiteSpace: 'nowrap' }}>
+                        ลำดับ {selectedDoctorIdx + 1}/{formData.doctors.length}
+                      </span>
+                      <button type="button" onClick={() => moveDoctor(selectedDoctorIdx, -1)} disabled={selectedDoctorIdx === 0}
+                        title="เลื่อนขึ้น" style={{
+                          background: '#fff', border: '1.5px solid #cbd5e1', color: selectedDoctorIdx === 0 ? '#cbd5e1' : '#0d9488',
+                          width: 30, height: 30, borderRadius: 7, fontSize: 13, fontWeight: 700,
+                          cursor: selectedDoctorIdx === 0 ? 'not-allowed' : 'pointer', lineHeight: '1'
+                        }}><span translate="no">▲</span></button>
+                      <button type="button" onClick={() => moveDoctor(selectedDoctorIdx, 1)} disabled={selectedDoctorIdx === formData.doctors.length - 1}
+                        title="เลื่อนลง" style={{
+                          background: '#fff', border: '1.5px solid #cbd5e1',
+                          color: selectedDoctorIdx === formData.doctors.length - 1 ? '#cbd5e1' : '#0d9488',
+                          width: 30, height: 30, borderRadius: 7, fontSize: 13, fontWeight: 700,
+                          cursor: selectedDoctorIdx === formData.doctors.length - 1 ? 'not-allowed' : 'pointer', lineHeight: '1'
+                        }}><span translate="no">▼</span></button>
+                    </div>
                     <button type="button" onClick={addDoctor} style={{
                       background: 'linear-gradient(135deg,#0d9488,#0891b2)', border: 0, color: '#fff',
                       padding: '9px 14px', borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap'
@@ -7837,8 +7877,8 @@ function App() {
       dailyHours: (b.dailyHours && b.dailyHours.length === 7) ? b.dailyHours : makeDefaultDailyHours(b.hours),
     })),
     services: window.SERVICES,
-    doctors: sortDoctors(window.DOCTORS.map(d => ({
-      specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '',
+    doctors: sortDoctors(window.DOCTORS.map((d, i) => ({
+      specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '', sort_order: i,
       ...d,
     }))),
     testimonials: window.TESTIMONIALS,
@@ -7916,7 +7956,7 @@ function App() {
     if (_ls) {
       const _p = JSON.parse(_ls);
       const _docDefaults = { specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '' };
-      const normalizedDoctors = sortDoctors((_p.doctors || _def.doctors).map(d => ({ ..._docDefaults, ...d })));
+      const normalizedDoctors = sortDoctors((_p.doctors || _def.doctors).map((d, i) => ({ ..._docDefaults, sort_order: i, ...d })));
       return { ..._def, ..._p, doctors: normalizedDoctors, config: { ..._def.config, ...(_p.config || {}) } };
     }
   } catch (_e) { /* corrupted — fall through to defaults */ }
@@ -8063,7 +8103,7 @@ function App() {
       if (!remote) return; // null = empty table or network error (already logged inside helper)
       setWebData(prev => {
         const _docDef = { specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '' };
-        const docs    = sortDoctors((remote.doctors || prev.doctors || []).map(d => ({ ..._docDef, ...d })));
+        const docs    = sortDoctors((remote.doctors || prev.doctors || []).map((d, i) => ({ ..._docDef, sort_order: i, ...d })));
         return {
           ...prev,
           ...remote,
