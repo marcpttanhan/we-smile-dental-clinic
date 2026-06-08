@@ -513,6 +513,18 @@ function sanitizeInput(val) {
 //   }/*EDITMODE-END*/;
 //
 //   function App() {
+
+// Sorts doctors by sort_order (then priority) ascending so that backend-assigned
+// positions automatically bubble the right doctors to the front. Doctors without
+// either field get a high default (999) and fall to the end.
+function sortDoctors(arr) {
+  return [...arr].sort((a, b) => {
+    const ao = (a.sort_order != null ? a.sort_order : (a.priority != null ? a.priority : 999));
+    const bo = (b.sort_order != null ? b.sort_order : (b.priority != null ? b.priority : 999));
+    return ao - bo;
+  });
+}
+
 //     const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
 //     return (
 //       <div style={{ fontSize: t.fontSize, color: t.primaryColor }}>
@@ -3881,9 +3893,9 @@ function Hero({ onNav, photoFilter, config }) {
           </div>
           <div className="rise rise-4" style={{ display:'flex', gap: isMobile ? 20 : 0, marginTop: isMobile ? 28 : 56, paddingTop: isMobile ? 20 : 32, borderTop:'1px solid var(--ws-line)' }}>
             {[
-              { n: cfg.heroStat1Num||'ตั้งแต่ พ.ศ. 2560',   label: cfg.heroStat1Label||'Since 2560 / 2017' },
-              { n: cfg.heroStat2Num||'8,400', label: cfg.heroStat2Label||'รอยยิ้ม' },
-              { n: cfg.heroStat3Num||'4.9★',  label: cfg.heroStat3Label||'คะแนนกูเกิล' },
+              { n: 'ตั้งแต่ พ.ศ. 2560', label: '' },
+              { n: 'since 2017',         label: '' },
+              { n: cfg.heroStat3Num||'4.9★', label: cfg.heroStat3Label||'คะแนนกูเกิล' },
             ].map((s,i) => (
               <div key={i} className="stat-item" style={{ flex:1, paddingRight: isMobile ? 0 : (i<2?32:0), marginRight: isMobile ? 0 : (i<2?32:0), borderRight: isMobile ? 'none' : (i<2?'1px solid var(--ws-line)':'none') }}
                 onMouseEnter={e => e.currentTarget.style.transform='translateY(-3px)'}
@@ -4249,15 +4261,22 @@ function DoctorCardSmall({ d, i, photoFilter, onClick }) {
           {d.nameTh}
         </div>
 
-        {/* Credential line */}
-        <div style={{ font:'500 10.5px/1.45 var(--ws-font-sans)', color:'var(--ws-fg-4)', marginTop:7 }}>
-          {d.cred}
-        </div>
+        {/* Credential line — split on newlines / em-dashes / spaced hyphens so long
+            credential strings from the DB render as separate readable items */}
+        {d.cred && (
+          <div style={{ display:'flex', flexDirection:'column', gap:3, marginTop:7 }}>
+            {d.cred.split(/\n|—| - /).map((s,i) => s.trim() ? (
+              <span key={i} style={{ font:'500 10.5px/1.45 var(--ws-font-sans)', color:'var(--ws-fg-4)', display:'block' }}>
+                {s.trim()}
+              </span>
+            ) : null)}
+          </div>
+        )}
 
-        {/* Short education — split on newlines so multi-line entries render as separate readable items */}
+        {/* Short education — split on newlines and em-dashes */}
         {d.shortEduTh && (
           <div style={{ display:'flex', flexDirection:'column', gap:4, marginTop:10, paddingTop:10, borderTop:'1px solid var(--ws-line)' }}>
-            {d.shortEduTh.split('\n').map((line, li) => line.trim() ? (
+            {d.shortEduTh.split(/\n|—/).map((line, li) => line.trim() ? (
               <span key={li} style={{ font:'400 11px/1.55 var(--ws-font-sans)', color:'var(--ws-fg-3)', display:'block' }}>
                 {line.trim()}
               </span>
@@ -4947,8 +4966,12 @@ function DoctorBigCard({ d, i, photoFilter, onBook, onView }) {
         <h3 className="ws-h3" style={{ margin: 0, fontFamily: 'var(--ws-font-display)', fontWeight: 500, fontSize: 'clamp(28px, 3vw, 40px)' }}>
           {d.nameTh}
         </h3>
-        <div style={{ font: '500 13px/1.4 var(--ws-font-sans)', color: 'var(--ws-fg-4)', marginTop: 16, paddingTop: 16, borderTop: '1px dashed var(--ws-line)', letterSpacing: '0.04em' }}>
-          {d.cred}
+        <div style={{ display:'flex', flexDirection:'column', gap:4, marginTop: 16, paddingTop: 16, borderTop: '1px dashed var(--ws-line)' }}>
+          {(d.cred || '').split(/\n|—| - /).map((s, ci) => s.trim() ? (
+            <span key={ci} style={{ font: '500 13px/1.4 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.04em', display: 'block' }}>
+              {s.trim()}
+            </span>
+          ) : null)}
         </div>
         <p style={{ margin: '24px 0 0', font: '500 16px/1.7 var(--ws-font-sans)', color: 'var(--ws-fg-2)', maxWidth: 620 }}>
           {d.bioTh}
@@ -7814,10 +7837,10 @@ function App() {
       dailyHours: (b.dailyHours && b.dailyHours.length === 7) ? b.dailyHours : makeDefaultDailyHours(b.hours),
     })),
     services: window.SERVICES,
-    doctors: window.DOCTORS.map(d => ({
+    doctors: sortDoctors(window.DOCTORS.map(d => ({
       specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '',
       ...d,
-    })),
+    }))),
     testimonials: window.TESTIMONIALS,
     faqs: (window.FAQS || FAQS).map(f => ({ qTh: f.qTh || f.q, aTh: f.aTh || f.a })),
     config: {
@@ -7893,7 +7916,7 @@ function App() {
     if (_ls) {
       const _p = JSON.parse(_ls);
       const _docDefaults = { specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '' };
-      const normalizedDoctors = (_p.doctors || _def.doctors).map(d => ({ ..._docDefaults, ...d }));
+      const normalizedDoctors = sortDoctors((_p.doctors || _def.doctors).map(d => ({ ..._docDefaults, ...d })));
       return { ..._def, ..._p, doctors: normalizedDoctors, config: { ..._def.config, ...(_p.config || {}) } };
     }
   } catch (_e) { /* corrupted — fall through to defaults */ }
@@ -8040,7 +8063,7 @@ function App() {
       if (!remote) return; // null = empty table or network error (already logged inside helper)
       setWebData(prev => {
         const _docDef = { specialties: [], schedule: [], showPortfolio: false, portfolioImages: [], shortEduTh: '' };
-        const docs    = (remote.doctors || prev.doctors || []).map(d => ({ ..._docDef, ...d }));
+        const docs    = sortDoctors((remote.doctors || prev.doctors || []).map(d => ({ ..._docDef, ...d })));
         return {
           ...prev,
           ...remote,
