@@ -2227,17 +2227,35 @@ function SubServiceCard({ sub, cat, index, onClick }) {
         <p style={{ margin:0, font:'400 13px/1.6 var(--ws-font-sans)', color:'var(--ws-fg-3)', flex:1 }}>
           {sub.blurbTh}
         </p>
-        {/* Price only — ระยะเวลา and การรับประกัน removed */}
-        <div style={{ paddingTop:12, borderTop:'1px dashed var(--ws-line)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div>
-            <div style={{ font:'500 9.5px/1 var(--ws-font-sans)', color:'var(--ws-fg-4)', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:4 }}>
-              {'ราคาเริ่มต้น'}
+        {/* Price + optional installment / split-payment info */}
+        <div style={{ paddingTop:12, borderTop:'1px dashed var(--ws-line)' }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+            <div>
+              <div style={{ font:'500 9.5px/1 var(--ws-font-sans)', color:'var(--ws-fg-4)', letterSpacing:'0.08em', textTransform:'uppercase', marginBottom:4 }}>
+                {'ราคาเริ่มต้น'}
+              </div>
+              <div style={{ font:'700 16px/1 var(--ws-font-sans)', color:'var(--ws-primary)' }}>
+                {sub.priceLabel}
+              </div>
             </div>
-            <div style={{ font:'700 16px/1 var(--ws-font-sans)', color:'var(--ws-primary)' }}>
-              {sub.priceLabel}
-            </div>
+            <i data-lucide="chevron-right" style={{ width:16, height:16, color:'var(--ws-fg-4)' }}></i>
           </div>
-          <i data-lucide="chevron-right" style={{ width:16, height:16, color:'var(--ws-fg-4)' }}></i>
+          {(sub.installment_pay || sub.split_pay) && (
+            <div style={{ display:'flex', flexDirection:'column', gap:4, marginTop:9, paddingTop:9, borderTop:'1px dashed var(--ws-line)' }}>
+              {sub.installment_pay && (
+                <div style={{ display:'flex', alignItems:'baseline', gap:5 }}>
+                  <span style={{ font:'600 9px/1 var(--ws-font-sans)', color:'#0d9488', letterSpacing:'0.08em', textTransform:'uppercase', flexShrink:0 }}>ผ่อนชำระ</span>
+                  <span style={{ font:'500 11px/1.3 var(--ws-font-sans)', color:'var(--ws-fg-2)' }}>{sub.installment_pay}</span>
+                </div>
+              )}
+              {sub.split_pay && (
+                <div style={{ display:'flex', alignItems:'baseline', gap:5 }}>
+                  <span style={{ font:'600 9px/1 var(--ws-font-sans)', color:'var(--ws-primary)', letterSpacing:'0.08em', textTransform:'uppercase', flexShrink:0 }}>แบ่งชำระ</span>
+                  <span style={{ font:'500 11px/1.3 var(--ws-font-sans)', color:'var(--ws-fg-2)' }}>{sub.split_pay}</span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -2302,10 +2320,30 @@ function SubServiceScreen({ onNav, photoFilter, categoryId, subId }) {
                 {sub.blurbTh}
               </p>
 
-              {/* Price only — duration and warranty removed */}
-              <div style={{ marginTop: 28, padding: '20px 24px', borderRadius: 18, background: 'var(--ws-orange-50)', display: 'inline-flex', flexDirection: 'column', gap: 4 }}>
-                <div style={{ font: '500 10px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{'ราคาเริ่มต้น'}</div>
-                <div style={{ font: '500 28px/1.1 var(--ws-font-display)', color: 'var(--ws-primary)', letterSpacing: '-0.01em' }}>{sub.priceLabel}</div>
+              {/* Price + optional installment / split-payment info */}
+              <div style={{ marginTop: 28, display: 'inline-flex', flexDirection: 'column', gap: 10, maxWidth: 340 }}>
+                <div style={{ padding: '20px 24px', borderRadius: 18, background: 'var(--ws-orange-50)', display: 'inline-flex', flexDirection: 'column', gap: 4 }}>
+                  <div style={{ font: '500 10px/1 var(--ws-font-sans)', color: 'var(--ws-fg-4)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{'ราคาเริ่มต้น'}</div>
+                  <div style={{ font: '500 28px/1.1 var(--ws-font-display)', color: 'var(--ws-primary)', letterSpacing: '-0.01em' }}>{sub.priceLabel}</div>
+                </div>
+                {sub.installment_pay && (
+                  <div style={{ display:'flex', alignItems:'center', gap:10, padding:'11px 16px', borderRadius:14, background:'#f0fdf9', border:'1px solid #a7f3d0' }}>
+                    <i data-lucide="credit-card" style={{ width:14, height:14, color:'#0d9488', flexShrink:0 }}></i>
+                    <div>
+                      <div style={{ font:'600 9px/1 var(--ws-font-sans)', color:'#0d9488', letterSpacing:'0.09em', textTransform:'uppercase', marginBottom:4 }}>ผ่อนชำระ</div>
+                      <div style={{ font:'500 13px/1.3 var(--ws-font-sans)', color:'#064e3b' }}>{sub.installment_pay}</div>
+                    </div>
+                  </div>
+                )}
+                {sub.split_pay && (
+                  <div style={{ display:'flex', alignItems:'center', gap:10, padding:'11px 16px', borderRadius:14, background:'var(--ws-orange-50)', border:'1px solid rgba(232,90,20,0.25)' }}>
+                    <i data-lucide="calendar-days" style={{ width:14, height:14, color:'var(--ws-primary)', flexShrink:0 }}></i>
+                    <div>
+                      <div style={{ font:'600 9px/1 var(--ws-font-sans)', color:'var(--ws-primary)', letterSpacing:'0.09em', textTransform:'uppercase', marginBottom:4 }}>แบ่งชำระ</div>
+                      <div style={{ font:'500 13px/1.3 var(--ws-font-sans)', color:'var(--ws-fg-1)' }}>{sub.split_pay}</div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div style={{ display: 'flex', gap: 12, marginTop: 28, flexWrap: 'wrap' }}>
@@ -6929,7 +6967,7 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                       onClick={() => {
                         const svcs = [...formData.services];
                         const subs = [...(svcs[selectedServiceIdx].subServices||[])];
-                        subs.push({ id:`sub-${Date.now()}`, title:'New Service', titleTh:'หัตถการใหม่', blurb:'', blurbTh:'', priceLabel:'฿ —', image:'' });
+                        subs.push({ id:`sub-${Date.now()}`, title:'New Service', titleTh:'หัตถการใหม่', blurb:'', blurbTh:'', priceLabel:'฿ —', image:'', installment_pay:'', split_pay:'' });
                         svcs[selectedServiceIdx] = { ...svcs[selectedServiceIdx], subServices: subs };
                         setFormData(p => ({ ...p, services: svcs }));
                       }}
@@ -6978,6 +7016,19 @@ function AdminDashboard({ isOpen, onClose, webData, onSave, onPreview }) {
                             <div>
                               <label style={lbl}>คำอธิบาย (ไทย)</label>
                               <textarea rows={2} value={sub.blurbTh||''} onChange={e=>updateSub('blurbTh',e.target.value)} style={{ ...inp, resize:'vertical' }} />
+                            </div>
+                            {/* ── Payment plan fields ── */}
+                            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                              <div>
+                                <label style={lbl}>ข้อมูลการผ่อนชำระ</label>
+                                <input type="text" value={sub.installment_pay||''} onChange={e=>updateSub('installment_pay',e.target.value)}
+                                  style={inp} placeholder="เช่น เริ่มต้น 1,500 บาท/เดือน" />
+                              </div>
+                              <div>
+                                <label style={lbl}>ข้อมูลการแบ่งชำระ</label>
+                                <input type="text" value={sub.split_pay||''} onChange={e=>updateSub('split_pay',e.target.value)}
+                                  style={inp} placeholder="เช่น แบ่งชำระ 3 ครั้ง เริ่มต้น 25,000 บาท" />
+                              </div>
                             </div>
                             <div>
                               <label style={lbl}>รูปภาพหัตถการย่อย</label>
